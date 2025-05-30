@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Relatório de Resíduos Gerados</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 95vw;
+        margin: 20px auto;
+        padding: 20px;
+        text-align: center;
+        background-color: #f5f5f5;
+      }
+      h1 {
+        color: #333;
+        margin-bottom: 20px;
+      }
+      .input-container {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+      }
+      input[type="file"] {
+        display: none;
+      }
+      .custom-file-upload {
+        display: inline-block;
+        padding: 12px 20px;
+        background-color: #ffffff;
+        color: #333;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+      }
+      .custom-file-upload:hover {
+        background-color: #f0f0f0;
+      }
+      .custom-file-upload i {
+        margin-right: 8px;
+      }
+      #textOutput {
+        margin-top: 20px;
+      }
+      .table-container {
+        overflow-x: auto;
+        max-width: 95vw;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      th,
+      td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #e0e0e0;
+        font-weight: bold;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 10px 0;
+        background-color: #ffffff;
+        color: #333;
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s;
+      }
+      button:hover {
+        background-color: #4caf50;
+        color: white;
+      }
+      button i {
+        margin-right: 8px;
+      }
+      #error {
+        color: red;
+        display: none;
+        margin-top: 10px;
+      }
+      @media screen and (max-width: 600px) {
+        body {
+          padding: 10px;
+        }
+        h1 {
+          font-size: 24px;
+        }
+        .custom-file-upload {
+          padding: 10px 16px;
+          font-size: 14px;
+        }
+        th,
+        td {
+          padding: 6px;
+          font-size: 14px;
+        }
+        button {
+          padding: 8px 16px;
+          font-size: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Relatório de Resíduos Gerados</h1>
+    <div class="input-container">
+      <label for="pdfInput" class="custom-file-upload">
+        <i class="fas fa-upload"></i> Selecionar PDFs
+      </label>
+      <input type="file" id="pdfInput" accept="application/pdf" multiple />
+    </div>
+    <div id="textOutput"></div>
+    <div id="error"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>
+      // Configura o worker do PDF.js
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+
+      // Mapeamento de códigos IBAMA para tipos
+      const ibamaCodeToType = {
+        191213: "NÃO RECICLÁVEL",
+        150202: "CONTAMINADO",
+        "030101": "MADEIRA",
+        200139: "PLASTICO",
+        "030308": "PAPEL",
+        200108: "ORGANICO",
+        170503: "SOLO CONTAMINADO",
+        170407: "SUCATA FERROSA",
+        190899: "EFLUENTE SANITÁRIO",
+        130201: "OLEO QUEIMADO",
+        130507: "ÁGUA E ÓLEO",
+      };
+      const rccCodes = [
+        "170201",
+        "170202",
+        "170203",
+        "170401",
+        "170402",
+        "170403",
+        "170404",
+        "170405",
+        "170406",
+        "170411",
+        "170412",
+        "170413",
+        "170802",
+      ];
+
+      document
+        .getElementById("pdfInput")
+        .addEventListener("change", async (event) => {
+          const files = event.target.files;
+          if (!files || files.length === 0) return;
+
+          const textOutput = document.getElementById("textOutput");
+          const errorDiv = document.getElementById("error");
+          textOutput.innerHTML = "Carregando...";
+          errorDiv.style.display = "none";
+
+          try {
+            const extractedDataList = [];
+
+            // Processa cada arquivo PDF
+            for (const file of files) {
+              // Lê o arquivo como ArrayBuffer
+              const arrayBuffer = await file.arrayBuffer();
+              const pdf = await pdfjsLib.getDocument({ data: arrayBuffer })
+                .promise;
+
+              let fullText = "";
+              // Itera por todas as páginas do PDF
+              for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items
+                  .map((item) => item.str)
+                  .join(" ");
+                fullText += pageText + " ";
+              }
+
+              // Função para extrair dados específicos
+              const extractData = (text) => {
+                const extracted = {};
+
+                // Extrair Data da Emissão (ex.: "28/05/2025")
+                const dataEmissaoMatch = text.match(
+                  /Data\s*da\s*emissão:?\s*(\d{2}\/\d{2}\/\d{4})/i
+                );
+                extracted.dataEmissao = dataEmissaoMatch
+                  ? dataEmissaoMatch[1]
+                  : "Não encontrada";
+
+                // Extrair MTR (ex.: "511025473858")
+                const mtrMatch = text.match(/MTR\s*n[ºo]:?\s*(\d+)/i);
+                extracted.mtr = mtrMatch ? mtrMatch[1] : "Não encontrado";
+                extracted.mtrFormatted = mtrMatch
+                  ? `MTR nº: ${mtrMatch[1]}`
+                  : "Não encontrado";
+
+                // Extrair MTR Referenciado (ex.: "Referente ao MTR 3519" ou "Referente ao Ticket CCO 174399")
+                const mtrRefMatch = text.match(
+                  /Referente\s*ao\s*(?:MTR|Ticket\s*CCO)\s*(\d+)/i
+                );
+                extracted.mtrRef = mtrRefMatch ? mtrRefMatch[1] : "N/A";
+
+                // Extrair as duas primeiras Razões Sociais (antes de Telefone/Endereço)
+                const razaoInicialMatches = text.matchAll(
+                  /Raz[ãa]o\s*Social:?\s*([^:]+?)(?=\s*(?:Raz[ãa]o\s*Social|Telefone|Endereço|$))/gi
+                );
+                let razoesIniciais = Array.from(razaoInicialMatches, (match) =>
+                  match[1].trim().split("-")[0].trim()
+                );
+
+                // Extrair Razão Social do Destinador (após Identificação do Destinador, antes de Estado/Município)
+                const razaoDestinadorMatch = text.match(
+                  /Identificação\s*do\s*Destinador.*?Raz[ãa]o\s*Social:?\s*([^:]+?)(?=\s*(?:Estado|Município|$))/is
+                );
+                const razaoDestinador = razaoDestinadorMatch
+                  ? razaoDestinadorMatch[1].trim().split("-")[0].trim()
+                  : null;
+
+                // Combinar todas as Razões Sociais e filtrar o Consórcio
+                let razoesSociais = [...razoesIniciais];
+                if (razaoDestinador) razoesSociais.push(razaoDestinador);
+                razoesSociais = razoesSociais.filter(
+                  (razao) =>
+                    !razao
+                      .toUpperCase()
+                      .includes(
+                        "CONSORCIO CONSTRUTOR FERROVIA LUCAS DO RIO VERDE"
+                      )
+                );
+
+                // Selecionar as duas primeiras Razões Sociais
+                extracted.razaoSocial1 =
+                  razoesSociais.length > 0
+                    ? razoesSociais[0]
+                    : "Não encontrada";
+                extracted.razaoSocial2 =
+                  razoesSociais.length > 1
+                    ? razoesSociais[1]
+                    : razoesSociais.length === 1
+                    ? razoesSociais[0]
+                    : "Não encontrada";
+
+                // Extrair Estado Físico (ex.: "SÓLIDO" ou "LÍQUIDO" antes de "CLASSE")
+                const estadoFisicoMatch = text.match(
+                  /.*?(SÓLIDO|LÍQUIDO)\s*CLASSE/i
+                );
+                extracted.estadoFisico = estadoFisicoMatch
+                  ? estadoFisicoMatch[1]
+                  : "Não encontrado";
+
+                // Extrair Quantidade (ex.: "0,5940", "1,1926")
+                const quantidadeMatch = text.match(/Qtde.*?(\d+,\d{4})/is);
+                extracted.quantidade = quantidadeMatch
+                  ? quantidadeMatch[1]
+                  : "Não encontrada";
+                // Definir LITROS e TONELADAS com base no estado físico
+                extracted.litros =
+                  extracted.estadoFisico === "LÍQUIDO"
+                    ? extracted.quantidade
+                    : "";
+                extracted.toneladas =
+                  extracted.estadoFisico === "SÓLIDO"
+                    ? extracted.quantidade
+                    : "";
+
+                // Extrair Código IBAMA e mapear para tipo
+                const ibamaMatch = text.match(
+                  /Código\s*IBAMA\s*e\s*Denominação.*?(\d{6}(?:\(*\))?)/is
+                );
+                const ibamaCode = ibamaMatch
+                  ? ibamaMatch[1].replace(/\(.*\)/, "")
+                  : "Não encontrado";
+                if (ibamaCode === "Não encontrado") {
+                  extracted.tipo = "Não encontrado";
+                } else if (ibamaCodeToType[ibamaCode]) {
+                  extracted.tipo = ibamaCodeToType[ibamaCode];
+                } else if (rccCodes.includes(ibamaCode)) {
+                  extracted.tipo = "RCC";
+                } else {
+                  extracted.tipo = ibamaCode;
+                }
+
+                return extracted;
+              };
+
+              // Extrai os dados e adiciona à lista
+              const data = extractData(fullText);
+              extractedDataList.push(data);
+            }
+
+            // Monta a tabela HTML
+            let tableRows = extractedDataList
+              .map(
+                (data) => `
+          <tr>
+            <td>${data.dataEmissao}</td>
+            <td>${data.mtrFormatted}</td>
+            <td>${data.razaoSocial1}</td>
+            <td>${data.razaoSocial2}</td>
+            <td>${data.tipo}</td>
+            <td>${data.litros}</td>
+            <td>${data.toneladas}</td>
+          </tr>
+        `
+              )
+              .join("");
+
+            textOutput.innerHTML = `
+          <button id="copyButton"><i class="fas fa-copy"></i> Copiar</button>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>DATA</th>
+                  <th>MTR</th>
+                  <th>TRANSPORTADOR</th>
+                  <th>DESTINADOR</th>
+                  <th>TIPO</th>
+                  <th>LITROS</th>
+                  <th>TONELADAS</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${tableRows}
+              </tbody>
+            </table>
+          </div>
+        `;
+
+            // Adiciona evento ao botão de copiar
+            document
+              .getElementById("copyButton")
+              .addEventListener("click", () => {
+                const copyText = extractedDataList
+                  .map(
+                    (data) =>
+                      `${data.dataEmissao}\t${data.mtrFormatted}\t${data.razaoSocial1}\t${data.razaoSocial2}\t${data.tipo}\t${data.litros}\t${data.toneladas}`
+                  )
+                  .join("\n");
+                navigator.clipboard
+                  .writeText(copyText)
+                  .then(() => {
+                    alert("Dados copiados para a área de transferência!");
+                  })
+                  .catch((err) => {
+                    console.error("Erro ao copiar:", err);
+                    alert("Erro ao copiar os dados.");
+                  });
+              });
+          } catch (error) {
+            console.error("Erro ao processar os PDFs:", error);
+            errorDiv.textContent =
+              "Erro ao extrair texto dos PDFs. Verifique se os arquivos são válidos.";
+            errorDiv.style.display = "block";
+            textOutput.innerHTML = "";
+          }
+        });
+    </script>
+  </body>
+</html>
