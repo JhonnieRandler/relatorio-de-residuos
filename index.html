@@ -17,7 +17,7 @@
     <meta property="og:type" content="website" />
     <meta
       property="og:url"
-      content="https://jhonnierandler.github.io/relatorio-de-residuos/"
+      content="https://jhonnierandler.github.io/relatorio-de-residuos"
     />
     <!-- Ajuste para o URL real -->
     <meta property="og:image" content="footer.png" />
@@ -27,14 +27,25 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
     <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
       body {
         font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh; /* Garante que o body ocupe pelo menos a altura da tela */
+      }
+      main {
+        flex: 1 0 auto; /* Cresce para ocupar o espaço disponível, empurrando o rodapé */
         max-width: 95vw;
         margin: 20px auto;
         padding: 20px;
-        padding-bottom: 100px; /* Espaço para o rodapé fixo */
         text-align: center;
-        background-color: #f5f5f5;
       }
       h1 {
         color: #333;
@@ -115,22 +126,19 @@
         margin-top: 10px;
       }
       footer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        max-width: 100%; /* Evita overflow */
-        box-sizing: border-box; /* Inclui padding na largura */
+        flex: 0 0 auto; /* Não cresce, apenas ocupa o espaço necessário */
+        width: 100vw; /* Ocupa toda a largura da viewport */
         background-color: #ffcead;
         padding: 15px;
         text-align: center;
-        border-top-left-radius: 8px;
-        border-top-right-radius: 8px;
         box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 15px;
+        box-sizing: border-box;
+        position: relative;
+        left: calc(-50vw + 50%); /* Compensa o centralizado do body */
       }
       footer img {
         max-width: 100px;
@@ -141,12 +149,11 @@
         font-size: 14px;
         margin: 0;
         flex: 1;
-        overflow-wrap: break-word; /* Quebra o texto para evitar overflow */
+        overflow-wrap: break-word;
       }
       @media screen and (max-width: 600px) {
-        body {
+        main {
           padding: 10px;
-          padding-bottom: 120px; /* Mais espaço para o rodapé fixo em mobile */
         }
         h1 {
           font-size: 24px;
@@ -166,7 +173,7 @@
         }
         footer {
           flex-direction: column;
-          padding: 10px 15px; /* Ajuste de padding para evitar overflow */
+          padding: 10px 15px;
         }
         footer img {
           max-width: 80px;
@@ -174,21 +181,23 @@
         }
         footer p {
           font-size: 12px;
-          max-width: 100%; /* Garante que o texto não escape */
+          max-width: 100%;
         }
       }
     </style>
   </head>
   <body>
-    <h1>Relatório de Resíduos Gerados</h1>
-    <div class="input-container">
-      <label for="pdfInput" class="custom-file-upload">
-        <i class="fas fa-upload"></i> Selecionar PDFs
-      </label>
-      <input type="file" id="pdfInput" accept="application/pdf" multiple />
-    </div>
-    <div id="textOutput"></div>
-    <div id="error"></div>
+    <main>
+      <h1>Relatório de Resíduos Gerados</h1>
+      <div class="input-container">
+        <label for="pdfInput" class="custom-file-upload">
+          <i class="fas fa-upload"></i> Selecionar PDFs
+        </label>
+        <input type="file" id="pdfInput" accept="application/pdf" multiple />
+      </div>
+      <div id="textOutput"></div>
+      <div id="error"></div>
+    </main>
     <footer>
       <img src="footer.png" alt="Footer Image" />
       <p>
