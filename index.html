@@ -4,11 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Relatório de Resíduos Gerados</title>
+    <!-- Metadados para SEO e Descrição da Página -->
     <meta
       name="description"
       content="Ferramenta prática e gratuita para gestão de resíduos gerados, com extração de dados de PDFs e geração de relatórios."
     />
-    <!-- Open Graph Metadados para Redes Sociais -->
+    <meta name="author" content="Jhonnierandler" />
+    <meta
+      name="keywords"
+      content="gestão de resíduos, relatório de resíduos, PDF, extração de dados, MTR, histórico de resíduos, ferramenta gratuita"
+    />
+
+    <!-- Open Graph Metadados para Redes Sociais (Facebook, WhatsApp, LinkedIn) -->
     <meta property="og:title" content="Relatório de Resíduos Gerados" />
     <meta
       property="og:description"
@@ -19,7 +26,29 @@
       property="og:url"
       content="https://jhonnierandler.github.io/relatorio-de-residuos"
     />
-    <meta property="og:image" content="footer.png" />
+    <!-- IMPORTANTE: Usar URL absoluta para a imagem para funcionar no WhatsApp e outras plataformas -->
+    <!-- Recomenda-se que a imagem tenha pelo menos 1200x630 pixels para melhor exibição -->
+    <meta
+      property="og:image"
+      content="https://jhonnierandler.github.io/relatorio-de-residuos/footer.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="pt_BR" />
+
+    <!-- Twitter Card Metadados -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Relatório de Resíduos Gerados" />
+    <meta
+      name="twitter:description"
+      content="Ferramenta prática e gratuita para gestão de resíduos gerados, com extração de dados de PDFs e geração de relatórios."
+    />
+    <meta
+      name="twitter:image"
+      content="https://jhonnierandler.github.io/relatorio-de-residuos/footer.png"
+    />
+    <meta name="twitter:creator" content="@JhonnieRandler" />
+
     <link rel="icon" type="image/png" href="footer.png" />
     <link
       rel="stylesheet"
@@ -51,7 +80,7 @@
         flex: 1 0 auto;
         /* Usar 100% da largura do corpo, e o padding garantirá o espaçamento */
         width: 100%;
-        max-width: 1200px; /* Define uma largura máxima para o conteúdo principal */
+        max-width: 95%; /* Define uma largura máxima para o conteúdo principal */
         margin: 20px auto; /* Centraliza o conteúdo principal */
         padding: 0 20px; /* Adiciona padding nas laterais, agora incluído na largura total devido ao box-sizing */
         text-align: center;
@@ -77,12 +106,12 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         cursor: pointer;
         font-size: 16px;
-        transition: background-color 0.3s, transform 0.2s;
+        transition: background-color 0.3s, transform 0.2s; /* Adiciona transição de transformação */
       }
       .custom-file-upload:hover {
         background-color: #4caf50;
         color: white;
-        transform: translateY(-2px);
+        transform: translateY(-2px); /* Efeito de elevação no hover */
       }
       .custom-file-upload i {
         margin-right: 8px;
@@ -93,7 +122,7 @@
       .table-container {
         overflow-x: auto; /* Permite que o conteúdo da tabela role horizontalmente dentro do contêiner */
         width: 100%; /* Garante que o contêiner da tabela ocupe toda a largura disponível do seu pai (main) */
-        margin-bottom: 20px;
+        margin-bottom: 20px; /* Adicionado margem inferior para separar do botão de copiar */
       }
       table {
         width: 100%;
@@ -123,12 +152,12 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         cursor: pointer;
         font-size: 16px;
-        transition: background-color 0.3s, transform 0.2s;
+        transition: background-color 0.3s, transform 0.2s; /* Adiciona transição de transformação */
       }
       button:hover {
         background-color: #4caf50;
         color: white;
-        transform: translateY(-2px);
+        transform: translateY(-2px); /* Efeito de elevação no hover */
       }
       .history-button {
         margin: 10px 0;
@@ -138,12 +167,12 @@
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         cursor: pointer;
-        transition: background-color 0.3s, transform 0.2s;
+        transition: background-color 0.3s, transform 0.2s; /* Adiciona transição de transformação */
       }
       .history-button:hover {
         background-color: #4caf50;
         color: white;
-        transform: translateY(-2px);
+        transform: translateY(-2px); /* Efeito de elevação no hover */
       }
       #error,
       #messageBox {
@@ -162,7 +191,7 @@
       }
       footer {
         flex: 0 0 auto;
-        width: 100vw;
+        width: 100%; /* Ajustado para 100% e confiar no overflow-x: hidden do body */
         background-color: #ffcead;
         padding: 15px;
         text-align: center;
@@ -172,8 +201,6 @@
         justify-content: center;
         gap: 15px;
         box-sizing: border-box;
-        position: relative;
-        left: calc(-50vw + 50%);
       }
       footer img {
         max-width: 100px;
@@ -376,6 +403,123 @@
         okBtn.addEventListener("click", handleOk);
       }
 
+      // Função para extrair dados do texto (usada por processPdfFile)
+      function extractData(text) {
+        const extracted = {};
+
+        const dataEmissaoMatch = text.match(
+          /Data\s*da\s*emissão:?\s*(\d{2}\/\d{2}\/\d{4})/i
+        );
+        extracted.dataEmissao = dataEmissaoMatch
+          ? dataEmissaoMatch[1]
+          : "Não encontrada";
+
+        const mtrMatch = text.match(/MTR\s*n[ºo]:?\s*(\d+)/i);
+        extracted.mtr = mtrMatch ? mtrMatch[1] : "Não encontrado";
+        extracted.mtrFormatted = mtrMatch
+          ? `MTR nº: ${mtrMatch[1]}`
+          : "Não encontrado";
+
+        const mtrRefMatch = text.match(
+          /Referente\s*ao\s*(?:MTR|Ticket\s*CCO)\s*(\d+)/i
+        );
+        extracted.mtrRef = mtrRefMatch ? mtrRefMatch[1] : "N/A";
+
+        const razaoInicialMatches = text.matchAll(
+          /Raz[ãa]o\s*Social:?\s*([^:]+?)(?=\s*(?:Raz[ãa]o\s*Social|Telefone|Endereço|$))/gi
+        );
+        let razoesIniciais = Array.from(razaoInicialMatches, (match) =>
+          match[1].trim().split("-")[0].trim()
+        );
+
+        const razaoDestinadorMatch = text.match(
+          /Identificação\s*do\s*Destinador.*?Raz[ãa]o\s*Social:?\s*([^:]+?)(?=\s*(?:Estado|Município|$))/is
+        );
+        const razaoDestinador = razaoDestinadorMatch
+          ? razaoDestinadorMatch[1].trim().split("-")[0].trim()
+          : null;
+
+        let razoesSociais = [...razoesIniciais];
+        if (razaoDestinador) razoesSociais.push(razaoDestinador);
+        razoesSociais = razoesSociais.filter(
+          (razao) =>
+            !razao
+              .toUpperCase()
+              .includes("CONSORCIO CONSTRUTOR FERROVIA LUCAS DO RIO VERDE")
+        );
+
+        extracted.razaoSocial1 =
+          razoesSociais.length > 0 ? razoesSociais[0] : "Não encontrada";
+        extracted.razaoSocial2 =
+          razoesSociais.length > 1
+            ? razoesSociais[1]
+            : razoesSociais.length === 1
+            ? razoesSociais[0]
+            : "Não encontrada";
+
+        const estadoFisicoMatch = text.match(/.*?(SÓLIDO|LÍQUIDO)\s*CLASSE/i);
+        extracted.estadoFisico = estadoFisicoMatch
+          ? estadoFisicoMatch[1]
+          : "Não encontrado";
+
+        const quantidadeMatch = text.match(/Qtde.*?(\d+,\d{4})/i);
+        let quantidade = quantidadeMatch
+          ? quantidadeMatch[1]
+          : "Não encontrada";
+
+        const unidadeMatch = text.match(/\s(KG|TON)\s/i);
+        const unidade = unidadeMatch ? unidadeMatch[1].toUpperCase() : "";
+
+        const ibamaMatch = text.match(
+          /Código\s*IBAMA\s*e\s*Denominação.*?(\d{6}(?:\(*\))?)/is
+        );
+        const ibamaCode = ibamaMatch
+          ? ibamaMatch[1].replace(/\(.*\)/, "").trim()
+          : "Não encontrado";
+        if (ibamaCode === "Não encontrado") {
+          extracted.tipo = "Não encontrado";
+        } else if (ibamaCodeToType[ibamaCode]) {
+          extracted.tipo = ibamaCodeToType[ibamaCode];
+        } else if (rccCodes.includes(ibamaCode)) {
+          extracted.tipo = "RCC";
+        } else {
+          extracted.tipo = ibamaCode;
+        }
+
+        extracted.litros =
+          extracted.estadoFisico === "LÍQUIDO" ? quantidade : "";
+        extracted.toneladas =
+          extracted.estadoFisico === "SÓLIDO" ? quantidade : "";
+        if (
+          extracted.toneladas &&
+          unidade === "KG" &&
+          extracted.tipo === "RCC"
+        ) {
+          extracted.toneladas = (
+            parseFloat(quantidade.replace(",", ".")) / 1000
+          )
+            .toFixed(4)
+            .replace(".", ",");
+        }
+
+        return extracted;
+      }
+
+      // Função original para processar um único arquivo PDF
+      async function processPdfFile(file) {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+        let fullText = "";
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          const textContent = await page.getTextContent();
+          const pageText = textContent.items.map((item) => item.str).join(" ");
+          fullText += pageText + " ";
+        }
+        return extractData(fullText); // Chama a função extractData
+      }
+
       document
         .getElementById("pdfInput")
         .addEventListener("change", async (event) => {
@@ -393,24 +537,9 @@
 
           try {
             // Cria um array de promessas para processar cada PDF
-            const processingPromises = Array.from(files).map(async (file) => {
-              const arrayBuffer = await file.arrayBuffer();
-              const pdf = await pdfjsLib.getDocument({ data: arrayBuffer })
-                .promise;
-
-              let fullText = "";
-              for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                const page = await pdf.getPage(pageNum);
-                const textContent = await page.getTextContent();
-                const pageText = textContent.items
-                  .map((item) => item.str)
-                  .join(" ");
-                fullText += pageText + " ";
-              }
-              return extractData(fullText); // Chama a função extractData para cada PDF
-            });
-
-            // Aguarda que todas as promessas de processamento de PDF sejam resolvidas
+            const processingPromises = Array.from(files).map((file) =>
+              processPdfFile(file)
+            );
             const extractedDataList = await Promise.all(processingPromises);
 
             let storedData = JSON.parse(
@@ -544,110 +673,6 @@
             ); // Mensagem de erro
           }
         });
-
-      // Função para extrair dados do texto do PDF
-      function extractData(text) {
-        const extracted = {};
-
-        const dataEmissaoMatch = text.match(
-          /Data\s*da\s*emissão:?\s*(\d{2}\/\d{2}\/\d{4})/i
-        );
-        extracted.dataEmissao = dataEmissaoMatch
-          ? dataEmissaoMatch[1]
-          : "Não encontrada";
-
-        const mtrMatch = text.match(/MTR\s*n[ºo]:?\s*(\d+)/i);
-        extracted.mtr = mtrMatch ? mtrMatch[1] : "Não encontrado";
-        extracted.mtrFormatted = mtrMatch
-          ? `MTR nº: ${mtrMatch[1]}`
-          : "Não encontrado";
-
-        const mtrRefMatch = text.match(
-          /Referente\s*ao\s*(?:MTR|Ticket\s*CCO)\s*(\d+)/i
-        );
-        extracted.mtrRef = mtrRefMatch ? mtrRefMatch[1] : "N/A";
-
-        const razaoInicialMatches = text.matchAll(
-          /Raz[ãa]o\s*Social:?\s*([^:]+?)(?=\s*(?:Raz[ãa]o\s*Social|Telefone|Endereço|$))/gi
-        );
-        let razoesIniciais = Array.from(razaoInicialMatches, (match) =>
-          match[1].trim().split("-")[0].trim()
-        );
-
-        const razaoDestinadorMatch = text.match(
-          /Identificação\s*do\s*Destinador.*?Raz[ãa]o\s*Social:?\s*([^:]+?)(?=\s*(?:Estado|Município|$))/is
-        );
-        const razaoDestinador = razaoDestinadorMatch
-          ? razaoDestinadorMatch[1].trim().split("-")[0].trim()
-          : null;
-
-        let razoesSociais = [...razoesIniciais];
-        if (razaoDestinador) razoesSociais.push(razaoDestinador);
-        razoesSociais = razoesSociais.filter(
-          (razao) =>
-            !razao
-              .toUpperCase()
-              .includes("CONSORCIO CONSTRUTOR FERROVIA LUCAS DO RIO VERDE")
-        );
-
-        extracted.razaoSocial1 =
-          razoesSociais.length > 0 ? razoesSociais[0] : "Não encontrada";
-        extracted.razaoSocial2 =
-          razoesSociais.length > 1
-            ? razoesSociais[1]
-            : razoesSociais.length === 1
-            ? razoesSociais[0]
-            : "Não encontrada";
-
-        const estadoFisicoMatch = text.match(/.*?(SÓLIDO|LÍQUIDO)\s*CLASSE/i);
-        extracted.estadoFisico = estadoFisicoMatch
-          ? estadoFisicoMatch[1]
-          : "Não encontrado";
-
-        const quantidadeMatch = text.match(/Qtde.*?(\d+,\d{4})/i);
-        let quantidade = quantidadeMatch
-          ? quantidadeMatch[1]
-          : "Não encontrada";
-
-        // Captura da unidade separada no texto com espaço simples antes e depois
-        const unidadeMatch = text.match(/\s(KG|TON)\s/i);
-        const unidade = unidadeMatch ? unidadeMatch[1].toUpperCase() : "";
-
-        const ibamaMatch = text.match(
-          /Código\s*IBAMA\s*e\s*Denominação.*?(\d{6}(?:\(*\))?)/is
-        );
-        const ibamaCode = ibamaMatch
-          ? ibamaMatch[1].replace(/\(.*\)/, "").trim()
-          : "Não encontrado";
-        if (ibamaCode === "Não encontrado") {
-          extracted.tipo = "Não encontrado";
-        } else if (ibamaCodeToType[ibamaCode]) {
-          extracted.tipo = ibamaCodeToType[ibamaCode];
-        } else if (rccCodes.includes(ibamaCode)) {
-          extracted.tipo = "RCC";
-        } else {
-          extracted.tipo = ibamaCode;
-        }
-
-        // Conversão de KG para toneladas se for RCC e sólido
-        extracted.litros =
-          extracted.estadoFisico === "LÍQUIDO" ? quantidade : "";
-        extracted.toneladas =
-          extracted.estadoFisico === "SÓLIDO" ? quantidade : "";
-        if (
-          extracted.toneladas &&
-          unidade === "KG" &&
-          extracted.tipo === "RCC"
-        ) {
-          extracted.toneladas = (
-            parseFloat(quantidade.replace(",", ".")) / 1000
-          )
-            .toFixed(4)
-            .replace(".", ",");
-        }
-
-        return extracted;
-      }
     </script>
   </body>
 </html>
