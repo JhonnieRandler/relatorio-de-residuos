@@ -19,7 +19,6 @@
       property="og:url"
       content="https://jhonnierandler.github.io/relatorio-de-residuos"
     />
-    <!-- Ajuste para o URL real -->
     <meta property="og:image" content="footer.png" />
     <link rel="icon" type="image/png" href="footer.png" />
     <link
@@ -33,18 +32,28 @@
         padding: 0;
         height: 100%;
       }
+      /* Adiciona box-sizing universal para um modelo de caixa consistente */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
       body {
         font-family: Arial, sans-serif;
         background-color: #f5f5f5;
         display: flex;
         flex-direction: column;
-        min-height: 100vh; /* Garante que o body ocupe pelo menos a altura da tela */
+        min-height: 100vh;
+        /* Impede a rolagem horizontal da página principal */
+        overflow-x: hidden;
       }
       main {
-        flex: 1 0 auto; /* Cresce para ocupar o espaço disponível, empurrando o rodapé */
-        max-width: 95vw;
-        margin: 20px auto;
-        padding: 20px;
+        flex: 1 0 auto;
+        /* Usar 100% da largura do corpo, e o padding garantirá o espaçamento */
+        width: 100%;
+        max-width: 1200px; /* Define uma largura máxima para o conteúdo principal */
+        margin: 20px auto; /* Centraliza o conteúdo principal */
+        padding: 0 20px; /* Adiciona padding nas laterais, agora incluído na largura total devido ao box-sizing */
         text-align: center;
       }
       h1 {
@@ -68,10 +77,12 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         cursor: pointer;
         font-size: 16px;
-        transition: background-color 0.3s;
+        transition: background-color 0.3s, transform 0.2s;
       }
       .custom-file-upload:hover {
-        background-color: #f0f0f0;
+        background-color: #4caf50;
+        color: white;
+        transform: translateY(-2px);
       }
       .custom-file-upload i {
         margin-right: 8px;
@@ -80,8 +91,9 @@
         margin-top: 20px;
       }
       .table-container {
-        overflow-x: auto;
-        max-width: 95vw;
+        overflow-x: auto; /* Permite que o conteúdo da tabela role horizontalmente dentro do contêiner */
+        width: 100%; /* Garante que o contêiner da tabela ocupe toda a largura disponível do seu pai (main) */
+        margin-bottom: 20px;
       }
       table {
         width: 100%;
@@ -111,23 +123,46 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         cursor: pointer;
         font-size: 16px;
-        transition: background-color 0.3s;
+        transition: background-color 0.3s, transform 0.2s;
       }
       button:hover {
         background-color: #4caf50;
         color: white;
+        transform: translateY(-2px);
       }
-      button i {
-        margin-right: 8px;
+      .history-button {
+        margin: 10px 0;
+        padding: 10px;
+        background-color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.2s;
       }
-      #error {
+      .history-button:hover {
+        background-color: #4caf50;
+        color: white;
+        transform: translateY(-2px);
+      }
+      #error,
+      #messageBox {
         color: red;
-        display: none;
+        background-color: #ffe0e0;
+        border: 1px solid red;
+        padding: 10px;
         margin-top: 10px;
+        border-radius: 8px;
+        display: none;
+      }
+      #messageBox.success {
+        color: green;
+        background-color: #e0ffe0;
+        border-color: green;
       }
       footer {
-        flex: 0 0 auto; /* Não cresce, apenas ocupa o espaço necessário */
-        width: 100vw; /* Ocupa toda a largura da viewport */
+        flex: 0 0 auto;
+        width: 100vw;
         background-color: #ffcead;
         padding: 15px;
         text-align: center;
@@ -138,7 +173,7 @@
         gap: 15px;
         box-sizing: border-box;
         position: relative;
-        left: calc(-50vw + 50%); /* Compensa o centralizado do body */
+        left: calc(-50vw + 50%);
       }
       footer img {
         max-width: 100px;
@@ -171,6 +206,10 @@
           padding: 8px 16px;
           font-size: 14px;
         }
+        .history-button {
+          padding: 8px;
+          font-size: 14px;
+        }
         footer {
           flex-direction: column;
           padding: 10px 15px;
@@ -184,6 +223,48 @@
           max-width: 100%;
         }
       }
+
+      /* Estilos para o Modal de Alerta Customizado */
+      .modal-overlay {
+        display: none; /* Escondido por padrão */
+        position: fixed; /* Fica no lugar */
+        z-index: 1000; /* Fica acima de tudo */
+        left: 0;
+        top: 0;
+        width: 100%; /* Largura total */
+        height: 100%; /* Altura total */
+        overflow: auto; /* Habilita rolagem se necessário */
+        background-color: rgba(0, 0, 0, 0.4); /* Fundo preto com opacidade */
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal-content {
+        background-color: #fefefe;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%; /* Largura responsiva */
+        max-width: 400px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        text-align: center;
+      }
+
+      .modal-buttons button {
+        padding: 10px 15px;
+        margin: 10px 5px 0;
+        border-radius: 5px;
+        cursor: pointer;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        transition: background-color 0.3s ease;
+      }
+
+      .modal-buttons button:hover {
+        opacity: 0.9;
+      }
     </style>
   </head>
   <body>
@@ -195,8 +276,16 @@
         </label>
         <input type="file" id="pdfInput" accept="application/pdf" multiple />
       </div>
+      <button
+        class="history-button"
+        onclick="window.location.href='historico.html'"
+      >
+        <i class="fas fa-history"></i> Histórico
+      </button>
       <div id="textOutput"></div>
       <div id="error"></div>
+      <div id="messageBox"></div>
+      <!-- Adicionado para mensagens de sucesso/erro -->
     </main>
     <footer>
       <img src="footer.png" alt="Footer Image" />
@@ -207,19 +296,30 @@
       </p>
     </footer>
 
+    <!-- Modal de Alerta Customizado -->
+    <div id="customAlertModal" class="modal-overlay">
+      <div class="modal-content">
+        <p id="alertMessage"></p>
+        <div class="modal-buttons">
+          <button id="alertOkBtn">OK</button>
+        </div>
+      </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script>
       // Configura o worker do PDF.js
       pdfjsLib.GlobalWorkerOptions.workerSrc =
         "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
 
-      // Mapeamento de códigos IBAMA para tipos
+      // Mapeamento de códigos IBAMA para tipos, ajustado para consistência
       const ibamaCodeToType = {
         191213: "NÃO RECICLÁVEL",
         150202: "CONTAMINADO",
         "030101": "MADEIRA",
-        200139: "PLÁSTICO",
+        "030301": "MADEIRA",
         "030308": "PAPEL",
+        200139: "PLÁSTICO",
         200108: "ORGÂNICO",
         170503: "SOLO CONTAMINADO",
         170407: "SUCATA FERROSA",
@@ -243,6 +343,39 @@
         "170802",
       ];
 
+      // Função para exibir modais de alerta
+      function showAlertModal(message, isSuccess = false) {
+        const modal = document.getElementById("customAlertModal");
+        const alertMessage = document.getElementById("alertMessage");
+        const okBtn = document.getElementById("alertOkBtn");
+
+        alertMessage.textContent = message;
+
+        // Remove classes anteriores
+        alertMessage.classList.remove("success", "error");
+        modal.classList.remove("success", "error");
+
+        if (isSuccess) {
+          alertMessage.classList.add("success");
+          modal.classList.add("success");
+          // Altera a cor do botão OK para verde em caso de sucesso
+          okBtn.style.backgroundColor = "#4CAF50";
+        } else {
+          alertMessage.classList.add("error");
+          modal.classList.add("error");
+          // Altera a cor do botão OK para vermelho em caso de erro
+          okBtn.style.backgroundColor = "#f44336";
+        }
+
+        modal.style.display = "flex"; // Usa flex para centralizar
+
+        const handleOk = () => {
+          modal.style.display = "none";
+          okBtn.removeEventListener("click", handleOk);
+        };
+        okBtn.addEventListener("click", handleOk);
+      }
+
       document
         .getElementById("pdfInput")
         .addEventListener("change", async (event) => {
@@ -251,21 +384,21 @@
 
           const textOutput = document.getElementById("textOutput");
           const errorDiv = document.getElementById("error");
+          const messageBox = document.getElementById("messageBox"); // Elemento para exibir mensagens
+
           textOutput.innerHTML = "Carregando...";
           errorDiv.style.display = "none";
+          messageBox.style.display = "none"; // Esconde a caixa de mensagem
+          messageBox.classList.remove("success", "error");
 
           try {
-            const extractedDataList = [];
-
-            // Processa cada arquivo PDF
-            for (const file of files) {
-              // Lê o arquivo como ArrayBuffer
+            // Cria um array de promessas para processar cada PDF
+            const processingPromises = Array.from(files).map(async (file) => {
               const arrayBuffer = await file.arrayBuffer();
               const pdf = await pdfjsLib.getDocument({ data: arrayBuffer })
                 .promise;
 
               let fullText = "";
-              // Itera por todas as páginas do PDF
               for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                 const page = await pdf.getPage(pageNum);
                 const textContent = await page.getTextContent();
@@ -274,122 +407,43 @@
                   .join(" ");
                 fullText += pageText + " ";
               }
+              return extractData(fullText); // Chama a função extractData para cada PDF
+            });
 
-              // Função para extrair dados específicos
-              const extractData = (text) => {
-                const extracted = {};
+            // Aguarda que todas as promessas de processamento de PDF sejam resolvidas
+            const extractedDataList = await Promise.all(processingPromises);
 
-                // Extrair Data da Emissão (ex.: "28/05/2025")
-                const dataEmissaoMatch = text.match(
-                  /Data\s*da\s*emissão:?\s*(\d{2}\/\d{2}\/\d{4})/i
-                );
-                extracted.dataEmissao = dataEmissaoMatch
-                  ? dataEmissaoMatch[1]
-                  : "Não encontrada";
+            let storedData = JSON.parse(
+              localStorage.getItem("residuosData") || "[]"
+            );
+            // Filtra dados antes de salvar, removendo aqueles com "Não encontrada" ou "Não encontrado" em colunas críticas
+            const filteredData = extractedDataList.filter(
+              (item) =>
+                item.dataEmissao !== "Não encontrada" &&
+                item.mtrFormatted !== "Não encontrado" &&
+                item.razaoSocial1 !== "Não encontrada" &&
+                item.razaoSocial2 !== "Não encontrada" &&
+                item.tipo !== "Não encontrado"
+            );
 
-                // Extrair MTR (ex.: "511025473858")
-                const mtrMatch = text.match(/MTR\s*n[ºo]:?\s*(\d+)/i);
-                extracted.mtr = mtrMatch ? mtrMatch[1] : "Não encontrado";
-                extracted.mtrFormatted = mtrMatch
-                  ? `MTR nº: ${mtrMatch[1]}`
-                  : "Não encontrado";
+            // Filtra novos dados para evitar duplicatas antes de adicionar ao storedData
+            const newUniqueData = filteredData.filter((newItem) => {
+              // Verifica se o newItem já existe em storedData
+              const isDuplicate = storedData.some(
+                (existingItem) =>
+                  existingItem.mtrFormatted === newItem.mtrFormatted &&
+                  existingItem.dataEmissao === newItem.dataEmissao
+              );
+              return !isDuplicate;
+            });
 
-                // Extrair MTR Referenciado (ex.: "Referente ao MTR 3519" ou "Referente ao Ticket CCO 174399")
-                const mtrRefMatch = text.match(
-                  /Referente\s*ao\s*(?:MTR|Ticket\s*CCO)\s*(\d+)/i
-                );
-                extracted.mtrRef = mtrRefMatch ? mtrRefMatch[1] : "N/A";
-
-                // Extrair as duas primeiras Razões Sociais (antes de Telefone/Endereço)
-                const razaoInicialMatches = text.matchAll(
-                  /Raz[ãa]o\s*Social:?\s*([^:]+?)(?=\s*(?:Raz[ãa]o\s*Social|Telefone|Endereço|$))/gi
-                );
-                let razoesIniciais = Array.from(razaoInicialMatches, (match) =>
-                  match[1].trim().split("-")[0].trim()
-                );
-
-                // Extrair Razão Social do Destinador (após Identificação do Destinador, antes de Estado/Município)
-                const razaoDestinadorMatch = text.match(
-                  /Identificação\s*do\s*Destinador.*?Raz[ãa]o\s*Social:?\s*([^:]+?)(?=\s*(?:Estado|Município|$))/is
-                );
-                const razaoDestinador = razaoDestinadorMatch
-                  ? razaoDestinadorMatch[1].trim().split("-")[0].trim()
-                  : null;
-
-                // Combinar todas as Razões Sociais e filtrar o Consórcio
-                let razoesSociais = [...razoesIniciais];
-                if (razaoDestinador) razoesSociais.push(razaoDestinador);
-                razoesSociais = razoesSociais.filter(
-                  (razao) =>
-                    !razao
-                      .toUpperCase()
-                      .includes(
-                        "CONSORCIO CONSTRUTOR FERROVIA LUCAS DO RIO VERDE"
-                      )
-                );
-
-                // Selecionar as duas primeiras Razões Sociais
-                extracted.razaoSocial1 =
-                  razoesSociais.length > 0
-                    ? razoesSociais[0]
-                    : "Não encontrada";
-                extracted.razaoSocial2 =
-                  razoesSociais.length > 1
-                    ? razoesSociais[1]
-                    : razoesSociais.length === 1
-                    ? razoesSociais[0]
-                    : "Não encontrada";
-
-                // Extrair Estado Físico (ex.: "SÓLIDO" ou "LÍQUIDO" antes de "CLASSE")
-                const estadoFisicoMatch = text.match(
-                  /.*?(SÓLIDO|LÍQUIDO)\s*CLASSE/i
-                );
-                extracted.estadoFisico = estadoFisicoMatch
-                  ? estadoFisicoMatch[1]
-                  : "Não encontrado";
-
-                // Extrair Quantidade (ex.: "0,5940", "1,1926")
-                const quantidadeMatch = text.match(/Qtde.*?(\d+,\d{4})/is);
-                extracted.quantidade = quantidadeMatch
-                  ? quantidadeMatch[1]
-                  : "Não encontrada";
-                // Definir LITROS e TONELADAS com base no estado físico
-                extracted.litros =
-                  extracted.estadoFisico === "LÍQUIDO"
-                    ? extracted.quantidade
-                    : "";
-                extracted.toneladas =
-                  extracted.estadoFisico === "SÓLIDO"
-                    ? extracted.quantidade
-                    : "";
-
-                // Extrair Código IBAMA e mapear para tipo
-                const ibamaMatch = text.match(
-                  /Código\s*IBAMA\s*e\s*Denominação.*?(\d{6}(?:\(*\))?)/is
-                );
-                const ibamaCode = ibamaMatch
-                  ? ibamaMatch[1].replace(/\(.*\)/, "")
-                  : "Não encontrado";
-                if (ibamaCode === "Não encontrado") {
-                  extracted.tipo = "Não encontrado";
-                } else if (ibamaCodeToType[ibamaCode]) {
-                  extracted.tipo = ibamaCodeToType[ibamaCode];
-                } else if (rccCodes.includes(ibamaCode)) {
-                  extracted.tipo = "RCC";
-                } else {
-                  extracted.tipo = ibamaCode;
-                }
-
-                return extracted;
-              };
-
-              // Extrai os dados e adiciona à lista
-              const data = extractData(fullText);
-              extractedDataList.push(data);
+            // Adiciona apenas os dados únicos ao storedData
+            if (newUniqueData.length > 0) {
+              storedData = storedData.concat(newUniqueData);
+              localStorage.setItem("residuosData", JSON.stringify(storedData));
             }
 
-            // Monta a tabela HTML
-            let tableRows = extractedDataList
+            let tableRows = filteredData
               .map(
                 (data) => `
           <tr>
@@ -429,34 +483,171 @@
           </div>
         `;
 
-            // Adiciona evento ao botão de copiar
             document
               .getElementById("copyButton")
               .addEventListener("click", () => {
-                const copyText = extractedDataList
-                  .map(
-                    (data) =>
-                      `${data.dataEmissao}\t${data.mtrFormatted}\t${data.razaoSocial1}\t${data.razaoSocial2}\t${data.tipo}\t${data.mtrRef}\t${data.litros}\t${data.toneladas}`
-                  )
-                  .join("\n");
-                navigator.clipboard
-                  .writeText(copyText)
-                  .then(() => {
-                    alert("Dados copiados para a área de transferência!");
-                  })
-                  .catch((err) => {
-                    console.error("Erro ao copiar:", err);
-                    alert("Erro ao copiar os dados.");
-                  });
+                // Nova lógica de cópia: lê diretamente da tabela HTML
+                const tableRowsToCopy = document.querySelectorAll(
+                  "#textOutput table tbody tr"
+                );
+                if (tableRowsToCopy.length > 0) {
+                  const copyText = Array.from(tableRowsToCopy)
+                    .map((row) => {
+                      return Array.from(row.cells)
+                        .map((cell) => cell.textContent)
+                        .join("\t"); // Junta as células com tab
+                    })
+                    .join("\n"); // Junta as linhas com quebra de linha
+
+                  navigator.clipboard
+                    .writeText(copyText)
+                    .then(() => {
+                      showAlertModal(
+                        "Dados copiados para a área de transferência!",
+                        true
+                      ); // Mensagem de sucesso
+                    })
+                    .catch((err) => {
+                      console.error("Erro ao copiar:", err);
+                      showAlertModal("Erro ao copiar os dados.", false); // Mensagem de erro
+                    });
+                } else {
+                  showAlertModal("Nenhum dado para copiar.", false);
+                }
               });
+
+            if (newUniqueData.length > 0) {
+              // Verifica se novos dados únicos foram adicionados
+              showAlertModal("Dados extraídos e salvos com sucesso!", true); // Mensagem de sucesso após extração
+            } else if (filteredData.length > 0) {
+              // Se houver dados filtrados mas nenhum novo único
+              showAlertModal(
+                "Os PDFs contêm dados já existentes no histórico. Nenhum novo dado foi adicionado.",
+                false
+              );
+            } else {
+              // Se não houver dados válidos em geral
+              showAlertModal(
+                "Nenhum dado válido foi extraído dos PDFs.",
+                false
+              ); // Mensagem de aviso se não houver dados válidos
+            }
           } catch (error) {
             console.error("Erro ao processar os PDFs:", error);
             errorDiv.textContent =
               "Erro ao extrair texto dos PDFs. Verifique se os arquivos são válidos.";
             errorDiv.style.display = "block";
             textOutput.innerHTML = "";
+            showAlertModal(
+              "Erro ao processar os PDFs. Verifique se os arquivos são válidos.",
+              false
+            ); // Mensagem de erro
           }
         });
+
+      // Função para extrair dados do texto do PDF
+      function extractData(text) {
+        const extracted = {};
+
+        const dataEmissaoMatch = text.match(
+          /Data\s*da\s*emissão:?\s*(\d{2}\/\d{2}\/\d{4})/i
+        );
+        extracted.dataEmissao = dataEmissaoMatch
+          ? dataEmissaoMatch[1]
+          : "Não encontrada";
+
+        const mtrMatch = text.match(/MTR\s*n[ºo]:?\s*(\d+)/i);
+        extracted.mtr = mtrMatch ? mtrMatch[1] : "Não encontrado";
+        extracted.mtrFormatted = mtrMatch
+          ? `MTR nº: ${mtrMatch[1]}`
+          : "Não encontrado";
+
+        const mtrRefMatch = text.match(
+          /Referente\s*ao\s*(?:MTR|Ticket\s*CCO)\s*(\d+)/i
+        );
+        extracted.mtrRef = mtrRefMatch ? mtrRefMatch[1] : "N/A";
+
+        const razaoInicialMatches = text.matchAll(
+          /Raz[ãa]o\s*Social:?\s*([^:]+?)(?=\s*(?:Raz[ãa]o\s*Social|Telefone|Endereço|$))/gi
+        );
+        let razoesIniciais = Array.from(razaoInicialMatches, (match) =>
+          match[1].trim().split("-")[0].trim()
+        );
+
+        const razaoDestinadorMatch = text.match(
+          /Identificação\s*do\s*Destinador.*?Raz[ãa]o\s*Social:?\s*([^:]+?)(?=\s*(?:Estado|Município|$))/is
+        );
+        const razaoDestinador = razaoDestinadorMatch
+          ? razaoDestinadorMatch[1].trim().split("-")[0].trim()
+          : null;
+
+        let razoesSociais = [...razoesIniciais];
+        if (razaoDestinador) razoesSociais.push(razaoDestinador);
+        razoesSociais = razoesSociais.filter(
+          (razao) =>
+            !razao
+              .toUpperCase()
+              .includes("CONSORCIO CONSTRUTOR FERROVIA LUCAS DO RIO VERDE")
+        );
+
+        extracted.razaoSocial1 =
+          razoesSociais.length > 0 ? razoesSociais[0] : "Não encontrada";
+        extracted.razaoSocial2 =
+          razoesSociais.length > 1
+            ? razoesSociais[1]
+            : razoesSociais.length === 1
+            ? razoesSociais[0]
+            : "Não encontrada";
+
+        const estadoFisicoMatch = text.match(/.*?(SÓLIDO|LÍQUIDO)\s*CLASSE/i);
+        extracted.estadoFisico = estadoFisicoMatch
+          ? estadoFisicoMatch[1]
+          : "Não encontrado";
+
+        const quantidadeMatch = text.match(/Qtde.*?(\d+,\d{4})/i);
+        let quantidade = quantidadeMatch
+          ? quantidadeMatch[1]
+          : "Não encontrada";
+
+        // Captura da unidade separada no texto com espaço simples antes e depois
+        const unidadeMatch = text.match(/\s(KG|TON)\s/i);
+        const unidade = unidadeMatch ? unidadeMatch[1].toUpperCase() : "";
+
+        const ibamaMatch = text.match(
+          /Código\s*IBAMA\s*e\s*Denominação.*?(\d{6}(?:\(*\))?)/is
+        );
+        const ibamaCode = ibamaMatch
+          ? ibamaMatch[1].replace(/\(.*\)/, "").trim()
+          : "Não encontrado";
+        if (ibamaCode === "Não encontrado") {
+          extracted.tipo = "Não encontrado";
+        } else if (ibamaCodeToType[ibamaCode]) {
+          extracted.tipo = ibamaCodeToType[ibamaCode];
+        } else if (rccCodes.includes(ibamaCode)) {
+          extracted.tipo = "RCC";
+        } else {
+          extracted.tipo = ibamaCode;
+        }
+
+        // Conversão de KG para toneladas se for RCC e sólido
+        extracted.litros =
+          extracted.estadoFisico === "LÍQUIDO" ? quantidade : "";
+        extracted.toneladas =
+          extracted.estadoFisico === "SÓLIDO" ? quantidade : "";
+        if (
+          extracted.toneladas &&
+          unidade === "KG" &&
+          extracted.tipo === "RCC"
+        ) {
+          extracted.toneladas = (
+            parseFloat(quantidade.replace(",", ".")) / 1000
+          )
+            .toFixed(4)
+            .replace(".", ",");
+        }
+
+        return extracted;
+      }
     </script>
   </body>
 </html>
