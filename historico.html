@@ -23,10 +23,8 @@
         height: 100%;
       }
       /* Adiciona box-sizing universal para um modelo de caixa consistente */
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
+      *, *::before, *::after {
+          box-sizing: border-box;
       }
       body {
         font-family: Arial, sans-serif;
@@ -85,12 +83,9 @@
         align-items: center;
         justify-content: center;
         flex: 0 0 auto; /* Não cresce nem encolhe por padrão, baseia-se no conteúdo */
-        min-width: calc(
-          180px + 150px + 5px
-        ); /* Largura mínima combinada dos filhos + gap */
+        min-width: calc(180px + 150px + 5px); /* Largura mínima combinada dos filhos + gap */
       }
-      .filter-input-wrapper {
-        /* Contêiner para o input de filtro e botão de limpar */
+      .filter-input-wrapper { /* Contêiner para o input de filtro e botão de limpar */
         position: relative;
         display: flex; /* Usa flex para alinhar input e botão */
         align-items: center;
@@ -143,7 +138,6 @@
       }
       #chartContainer {
         width: 100%;
-        /* max-width: 95%; REMOVIDO para que tenha a mesma largura do main e da tabela */
         margin: 20px auto;
         height: 800px;
         padding: 10px;
@@ -289,7 +283,7 @@
         margin: 10px 5px 0;
         border-radius: 5px;
         cursor: pointer;
-        background-color: #4caf50;
+        background-color: #4CAF50;
         color: white;
         border: none;
         transition: background-color 0.3s ease;
@@ -311,7 +305,7 @@
     <main>
       <h1>Histórico de Resíduos</h1>
       <div class="buttons" id="buttonsContainer">
-        <div class="filter-controls-group">
+        <div class="filter-controls-group" id="filterControlsGroup"> <!-- Added ID for easier targeting -->
           <div class="filter-input-wrapper">
             <input
               type="text"
@@ -377,7 +371,9 @@
 
     <script>
       let sortDirection = {};
-      let storedData = JSON.parse(localStorage.getItem("residuosData") || "[]");
+      let storedData = JSON.parse(
+        localStorage.getItem("residuosData") || "[]"
+      );
 
       // Funções para Modais Customizados
       function showConfirmModal(message, onConfirm) {
@@ -412,21 +408,21 @@
         const okBtn = document.getElementById("alertOkBtn");
 
         alertMessage.textContent = message;
-
+        
         // Remove classes anteriores
-        alertMessage.classList.remove("success", "error");
+        alertMessage.classList.remove("success", "error"); 
         modal.classList.remove("success", "error");
 
         if (isSuccess) {
           alertMessage.classList.add("success");
           modal.classList.add("success");
           // Altera a cor do botão OK para verde em caso de sucesso
-          okBtn.style.backgroundColor = "#4CAF50";
+          okBtn.style.backgroundColor = "#4CAF50"; 
         } else {
           alertMessage.classList.add("error");
           modal.classList.add("error");
           // Altera a cor do botão OK para vermelho em caso de erro
-          okBtn.style.backgroundColor = "#f44336";
+          okBtn.style.backgroundColor = "#f44336"; 
         }
 
         modal.style.display = "flex"; // Usa flex para centralizar
@@ -437,6 +433,7 @@
         };
         okBtn.addEventListener("click", handleOk);
       }
+
 
       function renderTable(data) {
         if (data.length > 0) {
@@ -525,9 +522,7 @@
             if (confirmed) {
               localStorage.removeItem("residuosData");
               // Reatribui storedData para refletir o armazenamento local limpo
-              storedData = JSON.parse(
-                localStorage.getItem("residuosData") || "[]"
-              );
+              storedData = JSON.parse(localStorage.getItem("residuosData") || "[]");
               renderTable([]);
               updateChart([]);
               toggleButtons();
@@ -622,8 +617,8 @@
                 top: 40, // Aumentado para dar mais espaço no topo
                 right: 20, // Adiciona 20px de padding à direita
                 bottom: 0,
-                left: 0,
-              },
+                left: 0
+              }
             },
             scales: {
               x: {},
@@ -663,7 +658,7 @@
       // Função de throttling
       function throttle(func, delay) {
         let timeoutId;
-        return function (...args) {
+        return function(...args) {
           if (!timeoutId) {
             timeoutId = setTimeout(() => {
               func.apply(this, args);
@@ -674,19 +669,15 @@
       }
 
       // Listener para redimensionamento da janela, agora com throttling
-      window.addEventListener(
-        "resize",
-        throttle(() => {
-          if (
-            window.myChart &&
-            document.getElementById("chartContainer").style.display !== "none"
-          ) {
-            updateChart(
-              JSON.parse(localStorage.getItem("residuosData") || "[]")
-            );
-          }
-        }, 200)
-      ); // Atraso de 200ms
+      window.addEventListener("resize", throttle(() => {
+        if (
+          window.myChart &&
+          document.getElementById("chartContainer").style.display !== "none"
+        ) {
+          updateChart(JSON.parse(localStorage.getItem("residuosData") || "[]"));
+        }
+      }, 200)); // Atraso de 200ms
+
 
       // Atualizar gráfico ao mudar o filtro de mês
       document.getElementById("monthFilter").addEventListener("change", (e) => {
@@ -705,34 +696,34 @@
         const clearButton = document.getElementById("clearHistory");
         const downloadButton = document.getElementById("downloadChart");
         const copyButton = document.getElementById("copyButton");
-        const filterInputWrapper = document.querySelector(
-          ".filter-input-wrapper"
-        );
-        const monthFilter = document.getElementById("monthFilter");
+        const filterControlsGroup = document.getElementById("filterControlsGroup"); // Get by new ID
+        const monthFilter = document.getElementById("monthFilter"); // Still needed for its own value etc.
         const chartContainer = document.getElementById("chartContainer");
         const clearFilter = document.getElementById("clearFilter");
-        // Verifica o storedData AGORA ATUALIZADO
+        
         if (storedData.length > 0) {
           clearButton.style.display = "inline-block";
           downloadButton.style.display = "inline-block";
           copyButton.style.display = "inline-block";
-          filterInputWrapper.style.display =
-            "flex"; /* Usa flex para o wrapper */
-          monthFilter.style.display = "inline-block";
+          filterControlsGroup.style.display = "flex"; // Show the filter group
+          monthFilter.style.display = "inline-block"; 
           chartContainer.style.display = "block";
           clearFilter.style.display = document.getElementById("filterInput")
             .value
             ? "inline-block"
             : "none";
+          // Alinhar ao centro quando houver dados
+          buttonsContainer.style.justifyContent = "center"; 
         } else {
           clearButton.style.display = "none";
           downloadButton.style.display = "none";
           copyButton.style.display = "none";
-          filterInputWrapper.style.display =
-            "none"; /* Esconde o wrapper completo */
-          monthFilter.style.display = "none";
+          filterControlsGroup.style.display = "none"; // Explicitamente esconde o grupo de filtros
+          monthFilter.style.display = "none"; 
           chartContainer.style.display = "none";
           clearFilter.style.display = "none";
+          // Alinhar ao centro quando apenas o botão "Voltar" estiver visível
+          buttonsContainer.style.justifyContent = "center"; 
         }
       }
 
@@ -786,9 +777,7 @@
           const option = document.createElement("option");
           option.value = month;
           // Alterado para exibir apenas o nome do mês capitalizado
-          const monthName = new Date(2025, month - 1).toLocaleString("pt-BR", {
-            month: "long",
-          });
+          const monthName = new Date(2025, month - 1).toLocaleString("pt-BR", { month: "long" });
           option.text = monthName.charAt(0).toUpperCase() + monthName.slice(1);
           monthSelect.appendChild(option);
         });
