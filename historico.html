@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Histórico de Resíduos</title>
+    <meta
+      name="description"
+      content="Histórico de relatórios de resíduos gerados com gráficos e análises."
+    />
+    <link rel="icon" type="image/png" href="footer.png" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+      /* Adiciona box-sizing universal para um modelo de caixa consistente */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        /* Impede a rolagem horizontal da página principal */
+        overflow-x: hidden;
+      }
+      main {
+        flex: 1 0 auto;
+        /* Aumentado para 95% da largura da tela */
+        width: 100%; /* Garante que ocupe o máximo possível */
+        max-width: 95%; /* Nova largura máxima */
+        margin: 20px auto; /* Centraliza o conteúdo principal */
+        padding: 0 20px; /* Adiciona padding nas laterais, agora incluído na largura total devido ao box-sizing */
+        text-align: center;
+      }
+      h1 {
+        color: #333;
+        margin-bottom: 20px;
+      }
+      .table-container {
+        overflow-x: auto;
+        width: 100%; /* Ocupa 100% da largura do main, que agora é 95% da tela */
+        margin: 0 auto 20px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      th {
+        background-color: #e0e0e0;
+        font-weight: bold;
+        cursor: pointer;
+        padding: 8px;
+        text-align: left;
+      }
+      th:hover {
+        background-color: #d0d0d0;
+      }
+      td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+      }
+      /* Novo contêiner para input de filtro e select de meses */
+      .filter-controls-group {
+        display: flex;
+        flex-wrap: nowrap; /* Por padrão, não quebra os itens internos */
+        gap: 5px;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto; /* Não cresce nem encolhe por padrão, baseia-se no conteúdo */
+        min-width: calc(
+          180px + 150px + 5px
+        ); /* Largura mínima combinada dos filhos + gap */
+      }
+      .filter-input-wrapper {
+        /* Contêiner para o input de filtro e botão de limpar */
+        position: relative;
+        display: flex; /* Usa flex para alinhar input e botão */
+        align-items: center;
+        flex: 1 1 220px; /* Base de 220px, pode crescer/diminuir */
+        min-width: 180px; /* Largura mínima para o input */
+      }
+      .filter-input,
+      .month-select {
+        margin: 0; /* Remove margem para não interferir com flex */
+        padding: 8px;
+        width: 100%; /* Preenche o contêiner */
+        background-color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        outline: none;
+      }
+      .filter-input {
+        padding-right: 30px; /* Espaço para o ícone de limpar */
+      }
+      .month-select {
+        flex: 1 1 180px; /* Base de 180px para o select */
+        min-width: 150px;
+      }
+      .clear-filter {
+        position: absolute; /* Posição absoluta dentro do wrapper */
+        right: 8px; /* Alinha à direita */
+        top: 50%;
+        transform: translateY(-50%); /* Centraliza verticalmente */
+        padding: 0;
+        width: 20px;
+        height: 20px;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+        cursor: pointer;
+        display: none;
+      }
+      .clear-filter i {
+        color: #000; /* X preto por padrão */
+        font-size: 14px;
+      }
+      .clear-filter:hover {
+        background: transparent; /* Sem fundo no hover */
+        border: none; /* Sem borda no hover */
+        box-shadow: none; /* Sem sombra no hover */
+      }
+      .clear-filter:hover i {
+        color: #ff4444; /* X vermelho no hover */
+      }
+      #chartContainer {
+        width: 100%;
+        /* max-width: 95%; REMOVIDO para que tenha a mesma largura do main e da tabela */
+        margin: 20px auto;
+        height: 800px;
+        padding: 10px;
+        box-sizing: border-box;
+        display: block;
+        /* Adicionado para a borda do gráfico */
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        background-color: #ffffff; /* Garante fundo branco para o contêiner */
+      }
+      canvas {
+        max-width: 100%;
+        height: 100%;
+        display: block;
+        margin: 0 auto;
+        width: 100%;
+      }
+      .buttons {
+        margin: 10px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px; /* Espaçamento entre os itens flex */
+        flex-wrap: wrap; /* Permite que os itens quebrem para a próxima linha */
+      }
+      button {
+        padding: 10px 20px;
+        margin: 5px; /* Ajuste a margem para melhor espaçamento com flex-wrap */
+        background-color: #ffffff;
+        color: #333;
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s, transform 0.2s;
+      }
+      button:hover {
+        background-color: #4caf50;
+        color: white;
+        transform: translateY(-2px);
+      }
+      footer {
+        flex: 0 0 auto;
+        width: 100%; /* Ajustado para 100% e confiar no overflow-x: hidden do body */
+        background-color: #ffcead;
+        padding: 15px;
+        text-align: center;
+        box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        box-sizing: border-box;
+      }
+      footer img {
+        max-width: 100px;
+        height: auto;
+      }
+      footer p {
+        color: #333;
+        font-size: 14px;
+        margin: 0;
+        flex: 1;
+        overflow-wrap: break-word;
+      }
+      @media screen and (max-width: 600px) {
+        main {
+          padding: 10px;
+        }
+        h1 {
+          font-size: 24px;
+        }
+        /* Ajustes para inputs e select em telas pequenas */
+        .filter-controls-group {
+          flex-direction: column; /* Empilha os itens verticalmente */
+          width: 100%; /* Ocupa largura total */
+          gap: 10px;
+          flex-wrap: wrap; /* Permite o wrap interno em telas pequenas */
+          min-width: auto; /* Reseta o min-width para permitir o empilhamento */
+        }
+        .filter-input-wrapper,
+        .month-select {
+          width: 100%; /* Faz com que ocupem a largura total do grupo */
+          flex-basis: auto; /* Reseta a base flexível para ocupar 100% */
+        }
+        #chartContainer {
+          height: 500px;
+          padding: 5px;
+        }
+        th,
+        td {
+          padding: 5px;
+          font-size: 13px;
+        }
+        button {
+          padding: 8px 16px;
+          font-size: 14px;
+        }
+        footer {
+          flex-direction: column;
+          padding: 10px 15px;
+        }
+        footer img {
+          max-width: 80px;
+          margin-bottom: 10px;
+        }
+        footer p {
+          font-size: 12px;
+          max-width: 100%;
+        }
+      }
+
+      /* Estilos para o Modal de Confirmação e Alerta */
+      .modal-overlay {
+        display: none; /* Escondido por padrão */
+        position: fixed; /* Fica no lugar */
+        z-index: 1000; /* Fica acima de tudo */
+        left: 0;
+        top: 0;
+        width: 100%; /* Largura total */
+        height: 100%; /* Altura total */
+        overflow: auto; /* Habilita rolagem se necessário */
+        background-color: rgba(0, 0, 0, 0.4); /* Fundo preto com opacidade */
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal-content {
+        background-color: #fefefe;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%; /* Largura responsiva */
+        max-width: 400px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        text-align: center;
+      }
+
+      .modal-buttons button {
+        padding: 10px 15px;
+        margin: 10px 5px 0;
+        border-radius: 5px;
+        cursor: pointer;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        transition: background-color 0.3s ease;
+      }
+
+      .modal-buttons button:hover {
+        opacity: 0.9;
+      }
+
+      #modalCancelBtn {
+        background-color: #f44336;
+      }
+      #modalCancelBtn:hover {
+        background-color: #d32f2f;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Histórico de Resíduos</h1>
+      <div class="buttons" id="buttonsContainer">
+        <div class="filter-controls-group">
+          <div class="filter-input-wrapper">
+            <input
+              type="text"
+              class="filter-input"
+              id="filterInput"
+              placeholder="Filtrar..."
+            />
+            <button class="clear-filter" id="clearFilter">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <select class="month-select" id="monthFilter">
+            <option value="">Todos os Meses</option>
+          </select>
+        </div>
+        <button id="clearHistory" style="display: none">
+          <i class="fas fa-trash"></i> Apagar Histórico
+        </button>
+        <button id="downloadChart" style="display: none">
+          <i class="fas fa-download"></i> Baixar Gráfico
+        </button>
+        <button id="copyButton" style="display: none">
+          <i class="fas fa-copy"></i> Copiar
+        </button>
+        <button onclick="window.location.href='index.html'">
+          <i class="fas fa-arrow-left"></i> Voltar
+        </button>
+      </div>
+      <div class="table-container" id="historyTable"></div>
+      <div id="chartContainer">
+        <canvas id="residuosChart"></canvas>
+      </div>
+    </main>
+    <footer>
+      <img src="footer.png" alt="Footer Image" />
+      <p>
+        Este site foi desenvolvido para facilitar a gestão de resíduos gerados,
+        oferecendo uma ferramenta prática e acessível. É livre para uso por
+        todos!
+      </p>
+    </footer>
+
+    <!-- Modal de Confirmação Customizado -->
+    <div id="customConfirmModal" class="modal-overlay">
+      <div class="modal-content">
+        <p id="modalMessage"></p>
+        <div class="modal-buttons">
+          <button id="modalConfirmBtn">Sim</button>
+          <button id="modalCancelBtn">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Alerta Customizado -->
+    <div id="customAlertModal" class="modal-overlay">
+      <div class="modal-content">
+        <p id="alertMessage"></p>
+        <div class="modal-buttons">
+          <button id="alertOkBtn">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let sortDirection = {};
+      let storedData = JSON.parse(localStorage.getItem("residuosData") || "[]");
+
+      // Funções para Modais Customizados
+      function showConfirmModal(message, onConfirm) {
+        const modal = document.getElementById("customConfirmModal");
+        document.getElementById("modalMessage").textContent = message;
+        modal.style.display = "flex"; // Usa flex para centralizar
+
+        const confirmBtn = document.getElementById("modalConfirmBtn");
+        const cancelBtn = document.getElementById("modalCancelBtn");
+
+        const handleConfirm = () => {
+          onConfirm(true);
+          modal.style.display = "none";
+          confirmBtn.removeEventListener("click", handleConfirm);
+          cancelBtn.removeEventListener("click", handleCancel);
+        };
+
+        const handleCancel = () => {
+          onConfirm(false);
+          modal.style.display = "none";
+          confirmBtn.removeEventListener("click", handleConfirm);
+          cancelBtn.removeEventListener("click", handleCancel);
+        };
+
+        confirmBtn.addEventListener("click", handleConfirm);
+        cancelBtn.addEventListener("click", handleCancel);
+      }
+
+      function showAlertModal(message, isSuccess = false) {
+        const modal = document.getElementById("customAlertModal");
+        const alertMessage = document.getElementById("alertMessage");
+        const okBtn = document.getElementById("alertOkBtn");
+
+        alertMessage.textContent = message;
+
+        // Remove classes anteriores
+        alertMessage.classList.remove("success", "error");
+        modal.classList.remove("success", "error");
+
+        if (isSuccess) {
+          alertMessage.classList.add("success");
+          modal.classList.add("success");
+          // Altera a cor do botão OK para verde em caso de sucesso
+          okBtn.style.backgroundColor = "#4CAF50";
+        } else {
+          alertMessage.classList.add("error");
+          modal.classList.add("error");
+          // Altera a cor do botão OK para vermelho em caso de erro
+          okBtn.style.backgroundColor = "#f44336";
+        }
+
+        modal.style.display = "flex"; // Usa flex para centralizar
+
+        const handleOk = () => {
+          modal.style.display = "none";
+          okBtn.removeEventListener("click", handleOk);
+        };
+        okBtn.addEventListener("click", handleOk);
+      }
+
+      function renderTable(data) {
+        if (data.length > 0) {
+          const tableRows = data
+            .map(
+              (data) => `
+          <tr>
+            <td>${data.dataEmissao}</td>
+            <td>${data.mtrFormatted}</td>
+            <td>${data.razaoSocial1}</td>
+            <td>${data.razaoSocial2}</td>
+            <td>${data.tipo}</td>
+            <td>${data.mtrRef}</td>
+            <td>${data.litros}</td>
+            <td>${data.toneladas}</td>
+          </tr>
+        `
+            )
+            .join("");
+          document.getElementById("historyTable").innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th onclick="sortTable('dataEmissao')">DATA</th>
+                <th onclick="sortTable('mtrFormatted')">MTR</th>
+                <th onclick="sortTable('razaoSocial1')">TRANSPORTADOR</th>
+                <th onclick="sortTable('razaoSocial2')">DESTINADOR</th>
+                <th onclick="sortTable('tipo')">TIPO</th>
+                <th onclick="sortTable('mtrRef')">TICKET</th>
+                <th onclick="sortTable('litros')">LITROS</th>
+                <th onclick="sortTable('toneladas')">TONELADAS</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${tableRows}
+            </tbody>
+          </table>
+        `;
+        } else {
+          document.getElementById("historyTable").innerHTML =
+            "<p>Nenhum dado de histórico disponível.</p>";
+        }
+      }
+
+      function sortTable(column) {
+        sortDirection[column] = !sortDirection[column];
+        const data = [...storedData];
+        data.sort((a, b) => {
+          if (a[column] === b[column]) return 0;
+          if (a[column] === "Não encontrada" || a[column] === "Não encontrado")
+            return sortDirection[column] ? 1 : -1;
+          if (b[column] === "Não encontrada" || b[column] === "Não encontrado")
+            return sortDirection[column] ? -1 : 1;
+          return sortDirection[column]
+            ? a[column].localeCompare(b[column])
+            : b[column].localeCompare(a[column]);
+        });
+        renderTable(data);
+        updateChart(data);
+      }
+
+      document.getElementById("filterInput").addEventListener("input", (e) => {
+        const filter = e.target.value.toLowerCase();
+        const filteredData = filter
+          ? storedData.filter((item) =>
+              Object.values(item).some((value) =>
+                value.toString().toLowerCase().includes(filter)
+              )
+            )
+          : storedData;
+        renderTable(filteredData);
+        updateChart(filteredData);
+        document.getElementById("clearFilter").style.display = filter
+          ? "inline-block"
+          : "none";
+      });
+
+      document
+        .getElementById("clearHistory")
+        .addEventListener("click", clearHistory);
+
+      function clearHistory() {
+        showConfirmModal(
+          "Tem certeza que deseja apagar todo o histórico? Esta ação não pode ser desfeita.",
+          (confirmed) => {
+            if (confirmed) {
+              localStorage.removeItem("residuosData");
+              // Reatribui storedData para refletir o armazenamento local limpo
+              storedData = JSON.parse(
+                localStorage.getItem("residuosData") || "[]"
+              );
+              renderTable([]);
+              updateChart([]);
+              toggleButtons();
+            }
+          }
+        );
+      }
+
+      function updateChart(data) {
+        const dataToUse = data.length > 0 ? data : storedData;
+        if (dataToUse.length === 0) {
+          document.getElementById("chartContainer").style.display = "none";
+          return;
+        } else {
+          document.getElementById("chartContainer").style.display = "block";
+        }
+        const tipos = [
+          ...new Set(
+            dataToUse
+              .map((item) => item.tipo)
+              .filter((tipo) => tipo !== "Não encontrado")
+          ),
+        ];
+        const litrosPorTipo = tipos.map((tipo) => {
+          const sum = dataToUse
+            .filter((item) => item.tipo === tipo && item.litros)
+            .reduce(
+              (sum, item) =>
+                sum + (parseFloat(item.litros.replace(",", ".")) || 0),
+              0
+            );
+          return sum.toFixed(2);
+        });
+        const toneladasPorTipo = tipos.map((tipo) => {
+          const sum = dataToUse
+            .filter((item) => item.tipo === tipo && item.toneladas)
+            .reduce(
+              (sum, item) =>
+                sum + (parseFloat(item.toneladas.replace(",", ".")) || 0),
+              0
+            );
+          return sum.toFixed(2);
+        });
+
+        const maxValue = Math.max(
+          ...litrosPorTipo.map((v) => parseFloat(v)),
+          ...toneladasPorTipo.map((v) => parseFloat(v))
+        );
+        // Aumenta o multiplicador para dar mais espaço acima das barras.
+        const yMax = maxValue ? maxValue * 1.35 : 10; // Alterado de 1.25 para 1.35 para mais espaço
+
+        const chartContainer = document.getElementById("chartContainer");
+        const canvas = document.getElementById("residuosChart");
+        // Atualizar tamanho do canvas dinamicamente
+        canvas.width = chartContainer.clientWidth - 20; // Subtrair padding e margens
+        canvas.height = chartContainer.clientHeight - 20;
+        const ctx = canvas.getContext("2d");
+        // Já define o fundo do canvas como branco.
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (window.myChart) window.myChart.destroy();
+        window.myChart = new Chart(ctx, {
+          type: "bar",
+          plugins: [ChartDataLabels],
+          data: {
+            labels: tipos,
+            datasets: [
+              {
+                label: "Litros",
+                data: litrosPorTipo,
+                backgroundColor: "rgba(75, 192, 192, 0.6)",
+                borderColor: "rgba(75, 192, 192, 1)",
+                borderWidth: 1,
+                stack: "Stack 0",
+              },
+              {
+                label: "Toneladas",
+                data: toneladasPorTipo,
+                backgroundColor: "rgba(255, 99, 132, 0.6)",
+                borderColor: "rgba(255, 99, 132, 1)",
+                borderWidth: 1,
+                stack: "Stack 0",
+              },
+            ],
+          },
+          options: {
+            maintainAspectRatio: false,
+            responsive: true,
+            // Adiciona padding ao layout do gráfico
+            layout: {
+              padding: {
+                top: 40, // Aumentado para dar mais espaço no topo
+                right: 20, // Adiciona 20px de padding à direita
+                bottom: 0,
+                left: 0,
+              },
+            },
+            scales: {
+              x: {},
+              y: {
+                beginAtZero: true,
+                max: yMax,
+                stacked: true,
+                grid: { display: false },
+                ticks: { display: false },
+              },
+            },
+            plugins: {
+              legend: { position: "bottom" },
+              datalabels: {
+                anchor: "end",
+                align: "top",
+                formatter: (value, ctx) => {
+                  if (parseFloat(value) > 0) {
+                    return ctx.dataset.label === "Litros" ||
+                      ctx.dataset.label === "Toneladas"
+                      ? value
+                      : "";
+                  }
+                  return "";
+                },
+                color: "#333",
+                font: { weight: "bold" },
+                offset: 5,
+              },
+            },
+          },
+        });
+        // Forçar resize após renderização
+        window.myChart.resize();
+      }
+
+      // Função de throttling
+      function throttle(func, delay) {
+        let timeoutId;
+        return function (...args) {
+          if (!timeoutId) {
+            timeoutId = setTimeout(() => {
+              func.apply(this, args);
+              timeoutId = null;
+            }, delay);
+          }
+        };
+      }
+
+      // Listener para redimensionamento da janela, agora com throttling
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          if (
+            window.myChart &&
+            document.getElementById("chartContainer").style.display !== "none"
+          ) {
+            updateChart(
+              JSON.parse(localStorage.getItem("residuosData") || "[]")
+            );
+          }
+        }, 200)
+      ); // Atraso de 200ms
+
+      // Atualizar gráfico ao mudar o filtro de mês
+      document.getElementById("monthFilter").addEventListener("change", (e) => {
+        const selectedMonth = e.target.value;
+        const filteredData = selectedMonth
+          ? storedData.filter(
+              (item) => item.dataEmissao.split("/")[1] === selectedMonth
+            )
+          : storedData;
+        renderTable(filteredData);
+        updateChart(filteredData);
+      });
+
+      function toggleButtons() {
+        const buttonsContainer = document.getElementById("buttonsContainer");
+        const clearButton = document.getElementById("clearHistory");
+        const downloadButton = document.getElementById("downloadChart");
+        const copyButton = document.getElementById("copyButton");
+        const filterInputWrapper = document.querySelector(
+          ".filter-input-wrapper"
+        );
+        const monthFilter = document.getElementById("monthFilter");
+        const chartContainer = document.getElementById("chartContainer");
+        const clearFilter = document.getElementById("clearFilter");
+        // Verifica o storedData AGORA ATUALIZADO
+        if (storedData.length > 0) {
+          clearButton.style.display = "inline-block";
+          downloadButton.style.display = "inline-block";
+          copyButton.style.display = "inline-block";
+          filterInputWrapper.style.display =
+            "flex"; /* Usa flex para o wrapper */
+          monthFilter.style.display = "inline-block";
+          chartContainer.style.display = "block";
+          clearFilter.style.display = document.getElementById("filterInput")
+            .value
+            ? "inline-block"
+            : "none";
+        } else {
+          clearButton.style.display = "none";
+          downloadButton.style.display = "none";
+          copyButton.style.display = "none";
+          filterInputWrapper.style.display =
+            "none"; /* Esconde o wrapper completo */
+          monthFilter.style.display = "none";
+          chartContainer.style.display = "none";
+          clearFilter.style.display = "none";
+        }
+      }
+
+      document.getElementById("downloadChart").addEventListener("click", () => {
+        const link = document.createElement("a");
+        link.download = `grafico_residuos_${
+          new Date().toISOString().split("T")[0]
+        }.png`;
+        const chartImage = window.myChart.toBase64Image();
+        link.href = chartImage;
+        link.click();
+      });
+
+      document.getElementById("copyButton").addEventListener("click", () => {
+        const tableRows = document.querySelectorAll(
+          "#historyTable table tbody tr"
+        );
+        if (tableRows.length > 0) {
+          const copyText = Array.from(tableRows)
+            .map((row) => {
+              return Array.from(row.cells)
+                .map((cell) => cell.textContent)
+                .join("\t");
+            })
+            .join("\n");
+          showAlertModal("Dados copiados para a área de transferência!", true);
+        } else {
+          showAlertModal("Nenhum dado para copiar.", false);
+        }
+      });
+
+      document.getElementById("clearFilter").addEventListener("click", () => {
+        document.getElementById("filterInput").value = "";
+        renderTable(storedData);
+        updateChart(storedData);
+        document.getElementById("clearFilter").style.display = "none";
+        document.getElementById("filterInput").focus();
+      });
+
+      const monthSelect = document.getElementById("monthFilter");
+      const months = [
+        ...new Set(
+          storedData
+            .map((item) => item.dataEmissao.split("/")[1])
+            .filter((month) => month !== "Não encontrada")
+        ),
+      ];
+      months
+        .sort((a, b) => a - b)
+        .forEach((month) => {
+          const option = document.createElement("option");
+          option.value = month;
+          // Alterado para exibir apenas o nome do mês capitalizado
+          const monthName = new Date(2025, month - 1).toLocaleString("pt-BR", {
+            month: "long",
+          });
+          option.text = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+          monthSelect.appendChild(option);
+        });
+
+      renderTable(storedData);
+      updateChart(storedData);
+      toggleButtons();
+    </script>
+  </body>
+</html>
