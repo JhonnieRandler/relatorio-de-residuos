@@ -9,7 +9,7 @@
       name="description"
       content="Ferramenta prática e gratuita para gestão de resíduos gerados, com extração de dados de PDFs e geração de relatórios."
     />
-    <meta name="author" content="Jhonnierandler" />
+    <meta name="author" content="Jhon Randler" />
     <meta
       name="keywords"
       content="gestão de resíduos, relatório de resíduos, PDF, extração de dados, MTR, histórico de resíduos, ferramenta gratuita"
@@ -48,6 +48,7 @@
       content="https://jhonnierandler.github.io/relatorio-de-residuos/footer.png"
     />
     <meta name="twitter:creator" content="@JhonnieRandler" />
+    <!-- Altere @SeuHandleTwitter para o seu handle do Twitter, se tiver um -->
 
     <link rel="icon" type="image/png" href="footer.png" />
     <link
@@ -62,10 +63,8 @@
         height: 100%;
       }
       /* Adiciona box-sizing universal para um modelo de caixa consistente */
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
+      *, *::before, *::after {
+          box-sizing: border-box;
       }
       body {
         font-family: Arial, sans-serif;
@@ -174,8 +173,7 @@
         color: white;
         transform: translateY(-2px); /* Efeito de elevação no hover */
       }
-      #error,
-      #messageBox {
+      #error, #messageBox {
         color: red;
         background-color: #ffe0e0;
         border: 1px solid red;
@@ -283,7 +281,7 @@
         margin: 10px 5px 0;
         border-radius: 5px;
         cursor: pointer;
-        background-color: #4caf50;
+        background-color: #4CAF50;
         color: white;
         border: none;
         transition: background-color 0.3s ease;
@@ -305,14 +303,14 @@
       </div>
       <button
         class="history-button"
-        onclick="window.location.href='historico.html'"
+        id="historyButton"
+        onclick="window.location.href='historico/'"
       >
         <i class="fas fa-history"></i> Histórico
       </button>
       <div id="textOutput"></div>
       <div id="error"></div>
-      <div id="messageBox"></div>
-      <!-- Adicionado para mensagens de sucesso/erro -->
+      <div id="messageBox"></div> <!-- Adicionado para mensagens de sucesso/erro -->
     </main>
     <footer>
       <img src="footer.png" alt="Footer Image" />
@@ -339,340 +337,367 @@
       pdfjsLib.GlobalWorkerOptions.workerSrc =
         "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
 
-      // Mapeamento de códigos IBAMA para tipos, ajustado para consistência
-      const ibamaCodeToType = {
-        191213: "NÃO RECICLÁVEL",
-        150202: "CONTAMINADO",
-        "030101": "MADEIRA",
-        "030301": "MADEIRA",
-        "030308": "PAPEL",
-        200139: "PLÁSTICO",
-        200108: "ORGÂNICO",
-        170503: "SOLO CONTAMINADO",
-        170407: "SUCATA FERROSA",
-        190899: "EFLUENTE SANITÁRIO",
-        130201: "ÓLEO QUEIMADO",
-        130507: "ÁGUA E ÓLEO",
-      };
-      const rccCodes = [
-        "170201",
-        "170202",
-        "170203",
-        "170401",
-        "170402",
-        "170403",
-        "170404",
-        "170405",
-        "170406",
-        "170411",
-        "170412",
-        "170413",
-        "170802",
-      ];
+      // Envolve todo o código principal em um listener DOMContentLoaded
+      document.addEventListener('DOMContentLoaded', () => {
 
-      // Função para exibir modais de alerta
-      function showAlertModal(message, isSuccess = false) {
-        const modal = document.getElementById("customAlertModal");
-        const alertMessage = document.getElementById("alertMessage");
-        const okBtn = document.getElementById("alertOkBtn");
-
-        alertMessage.textContent = message;
-
-        // Remove classes anteriores
-        alertMessage.classList.remove("success", "error");
-        modal.classList.remove("success", "error");
-
-        if (isSuccess) {
-          alertMessage.classList.add("success");
-          modal.classList.add("success");
-          // Altera a cor do botão OK para verde em caso de sucesso
-          okBtn.style.backgroundColor = "#4CAF50";
-        } else {
-          alertMessage.classList.add("error");
-          modal.classList.add("error");
-          // Altera a cor do botão OK para vermelho em caso de erro
-          okBtn.style.backgroundColor = "#f44336";
-        }
-
-        modal.style.display = "flex"; // Usa flex para centralizar
-
-        const handleOk = () => {
-          modal.style.display = "none";
-          okBtn.removeEventListener("click", handleOk);
+        // Mapeamento de códigos IBAMA para tipos, ajustado para consistência
+        const ibamaCodeToType = {
+          191213: "NÃO RECICLÁVEL",
+          150202: "CONTAMINADO",
+          "030101": "MADEIRA",
+          "030301": "MADEIRA",
+          "030308": "PAPEL",
+          200139: "PLÁSTICO",
+          200108: "ORGÂNICO",
+          170503: "SOLO CONTAMINADO",
+          170407: "SUCATA FERROSA",
+          190899: "EFLUENTE SANITÁRIO",
+          130201: "ÓLEO QUEIMADO",
+          130507: "ÁGUA E ÓLEO",
         };
-        okBtn.addEventListener("click", handleOk);
-      }
+        const rccCodes = [
+          "170201",
+          "170202",
+          "170203",
+          "170401",
+          "170402",
+          "170403",
+          "170404",
+          "170405",
+          "170406",
+          "170411",
+          "170412",
+          "170413",
+          "170802",
+        ];
 
-      // Função para extrair dados do texto (usada por processPdfFile)
-      function extractData(text) {
-        const extracted = {};
+        // Função para exibir modais de alerta
+        function showAlertModal(message, isSuccess = false) {
+          const modal = document.getElementById("customAlertModal");
+          const alertMessage = document.getElementById("alertMessage");
+          const okBtn = document.getElementById("alertOkBtn");
 
-        const dataEmissaoMatch = text.match(
-          /Data\s*da\s*emissão:?\s*(\d{2}\/\d{2}\/\d{4})/i
-        );
-        extracted.dataEmissao = dataEmissaoMatch
-          ? dataEmissaoMatch[1]
-          : "Não encontrada";
+          if (alertMessage) alertMessage.textContent = message; 
+          
+          // Remove classes anteriores
+          if (alertMessage) alertMessage.classList.remove("success", "error"); 
+          if (modal) modal.classList.remove("success", "error"); 
 
-        const mtrMatch = text.match(/MTR\s*n[ºo]:?\s*(\d+)/i);
-        extracted.mtr = mtrMatch ? mtrMatch[1] : "Não encontrado";
-        extracted.mtrFormatted = mtrMatch
-          ? `MTR nº: ${mtrMatch[1]}`
-          : "Não encontrado";
+          if (isSuccess) {
+            if (alertMessage) alertMessage.classList.add("success");
+            if (modal) modal.classList.add("success");
+            // Altera a cor do botão OK para verde em caso de sucesso
+            if (okBtn) okBtn.style.backgroundColor = "#4CAF50"; 
+          } else {
+            if (alertMessage) alertMessage.classList.add("error");
+            if (modal) modal.classList.add("error");
+            // Altera a cor do botão OK para vermelho em caso de erro
+            if (okBtn) okBtn.style.backgroundColor = "#f44336"; 
+          }
 
-        const mtrRefMatch = text.match(
-          /Referente\s*ao\s*(?:MTR|Ticket\s*CCO)\s*(\d+)/i
-        );
-        extracted.mtrRef = mtrRefMatch ? mtrRefMatch[1] : "N/A";
+          if (modal) modal.style.display = "flex"; 
 
-        const razaoInicialMatches = text.matchAll(
-          /Raz[ãa]o\s*Social:?\s*([^:]+?)(?=\s*(?:Raz[ãa]o\s*Social|Telefone|Endereço|$))/gi
-        );
-        let razoesIniciais = Array.from(razaoInicialMatches, (match) =>
-          match[1].trim().split("-")[0].trim()
-        );
-
-        const razaoDestinadorMatch = text.match(
-          /Identificação\s*do\s*Destinador.*?Raz[ãa]o\s*Social:?\s*([^:]+?)(?=\s*(?:Estado|Município|$))/is
-        );
-        const razaoDestinador = razaoDestinadorMatch
-          ? razaoDestinadorMatch[1].trim().split("-")[0].trim()
-          : null;
-
-        let razoesSociais = [...razoesIniciais];
-        if (razaoDestinador) razoesSociais.push(razaoDestinador);
-        razoesSociais = razoesSociais.filter(
-          (razao) =>
-            !razao
-              .toUpperCase()
-              .includes("CONSORCIO CONSTRUTOR FERROVIA LUCAS DO RIO VERDE")
-        );
-
-        extracted.razaoSocial1 =
-          razoesSociais.length > 0 ? razoesSociais[0] : "Não encontrada";
-        extracted.razaoSocial2 =
-          razoesSociais.length > 1
-            ? razoesSociais[1]
-            : razoesSociais.length === 1
-            ? razoesSociais[0]
-            : "Não encontrada";
-
-        const estadoFisicoMatch = text.match(/.*?(SÓLIDO|LÍQUIDO)\s*CLASSE/i);
-        extracted.estadoFisico = estadoFisicoMatch
-          ? estadoFisicoMatch[1]
-          : "Não encontrado";
-
-        const quantidadeMatch = text.match(/Qtde.*?(\d+,\d{4})/i);
-        let quantidade = quantidadeMatch
-          ? quantidadeMatch[1]
-          : "Não encontrada";
-
-        const unidadeMatch = text.match(/\s(KG|TON)\s/i);
-        const unidade = unidadeMatch ? unidadeMatch[1].toUpperCase() : "";
-
-        const ibamaMatch = text.match(
-          /Código\s*IBAMA\s*e\s*Denominação.*?(\d{6}(?:\(*\))?)/is
-        );
-        const ibamaCode = ibamaMatch
-          ? ibamaMatch[1].replace(/\(.*\)/, "").trim()
-          : "Não encontrado";
-        if (ibamaCode === "Não encontrado") {
-          extracted.tipo = "Não encontrado";
-        } else if (ibamaCodeToType[ibamaCode]) {
-          extracted.tipo = ibamaCodeToType[ibamaCode];
-        } else if (rccCodes.includes(ibamaCode)) {
-          extracted.tipo = "RCC";
-        } else {
-          extracted.tipo = ibamaCode;
+          const handleOk = () => {
+            if (modal) modal.style.display = "none";
+            if (okBtn) okBtn.removeEventListener("click", handleOk);
+          };
+          if (okBtn) okBtn.addEventListener("click", handleOk);
         }
 
-        extracted.litros =
-          extracted.estadoFisico === "LÍQUIDO" ? quantidade : "";
-        extracted.toneladas =
-          extracted.estadoFisico === "SÓLIDO" ? quantidade : "";
-        if (
-          extracted.toneladas &&
-          unidade === "KG" &&
-          extracted.tipo === "RCC"
-        ) {
-          extracted.toneladas = (
-            parseFloat(quantidade.replace(",", ".")) / 1000
-          )
-            .toFixed(4)
-            .replace(".", ",");
-        }
+        // Função para extrair dados do texto (usada por processPdfFile)
+        function extractData(text) {
+            const extracted = {};
 
-        return extracted;
-      }
-
-      // Função original para processar um único arquivo PDF
-      async function processPdfFile(file) {
-        const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-
-        let fullText = "";
-        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-          const page = await pdf.getPage(pageNum);
-          const textContent = await page.getTextContent();
-          const pageText = textContent.items.map((item) => item.str).join(" ");
-          fullText += pageText + " ";
-        }
-        return extractData(fullText); // Chama a função extractData
-      }
-
-      document
-        .getElementById("pdfInput")
-        .addEventListener("change", async (event) => {
-          const files = event.target.files;
-          if (!files || files.length === 0) return;
-
-          const textOutput = document.getElementById("textOutput");
-          const errorDiv = document.getElementById("error");
-          const messageBox = document.getElementById("messageBox"); // Elemento para exibir mensagens
-
-          textOutput.innerHTML = "Carregando...";
-          errorDiv.style.display = "none";
-          messageBox.style.display = "none"; // Esconde a caixa de mensagem
-          messageBox.classList.remove("success", "error");
-
-          try {
-            // Cria um array de promessas para processar cada PDF
-            const processingPromises = Array.from(files).map((file) =>
-              processPdfFile(file)
+            const dataEmissaoMatch = text.match(
+                /Data\s*da\s*emissão:?\s*(\d{2}\/\d{2}\/\d{4})/i
             );
-            const extractedDataList = await Promise.all(processingPromises);
+            extracted.dataEmissao = dataEmissaoMatch
+                ? dataEmissaoMatch[1]
+                : "Não encontrada";
 
-            let storedData = JSON.parse(
-              localStorage.getItem("residuosData") || "[]"
+            const mtrMatch = text.match(/MTR\s*n[ºo]:?\s*(\d+)/i);
+            extracted.mtr = mtrMatch ? mtrMatch[1] : "Não encontrado";
+            extracted.mtrFormatted = mtrMatch
+                ? `MTR nº: ${mtrMatch[1]}`
+                : "Não encontrado";
+
+            const mtrRefMatch = text.match(
+                /Referente\s*ao\s*(?:MTR|Ticket\s*CCO)\s*(\d+)/i
             );
-            // Filtra dados antes de salvar, removendo aqueles com "Não encontrada" ou "Não encontrado" em colunas críticas
-            const filteredData = extractedDataList.filter(
-              (item) =>
-                item.dataEmissao !== "Não encontrada" &&
-                item.mtrFormatted !== "Não encontrado" &&
-                item.razaoSocial1 !== "Não encontrada" &&
-                item.razaoSocial2 !== "Não encontrada" &&
-                item.tipo !== "Não encontrado"
+            extracted.mtrRef = mtrRefMatch ? mtrRefMatch[1] : "N/A";
+
+            const razaoInicialMatches = text.matchAll(
+                /Raz[ãa]o\s*Social:?\s*([^:]+?)(?=\s*(?:Raz[ãa]o\s*Social|Telefone|Endereço|$))/gi
+            );
+            let razoesIniciais = Array.from(razaoInicialMatches, (match) =>
+                match[1].trim().split("-")[0].trim()
             );
 
-            // Filtra novos dados para evitar duplicatas antes de adicionar ao storedData
-            const newUniqueData = filteredData.filter((newItem) => {
-              // Verifica se o newItem já existe em storedData
-              const isDuplicate = storedData.some(
-                (existingItem) =>
-                  existingItem.mtrFormatted === newItem.mtrFormatted &&
-                  existingItem.dataEmissao === newItem.dataEmissao
-              );
-              return !isDuplicate;
-            });
+            const razaoDestinadorMatch = text.match(
+                /Identificação\s*do\s*Destinador.*?Raz[ãa]o\s*Social:?\s*([^:]+?)(?=\s*(?:Estado|Município|$))/is
+            );
+            const razaoDestinador = razaoDestinadorMatch
+                ? razaoDestinadorMatch[1].trim().split("-")[0].trim()
+                : null;
 
-            // Adiciona apenas os dados únicos ao storedData
-            if (newUniqueData.length > 0) {
-              storedData = storedData.concat(newUniqueData);
-              localStorage.setItem("residuosData", JSON.stringify(storedData));
+            let razoesSociais = [...razoesIniciais];
+            if (razaoDestinador) razoesSociais.push(razaoDestinador);
+            razoesSociais = razoesSociais.filter(
+                (razao) =>
+                    !razao
+                        .toUpperCase()
+                        .includes(
+                            "CONSORCIO CONSTRUTOR FERROVIA LUCAS DO RIO VERDE"
+                        )
+            );
+
+            extracted.razaoSocial1 =
+                razoesSociais.length > 0
+                    ? razoesSociais[0]
+                    : "Não encontrada";
+            extracted.razaoSocial2 =
+                razoesSociais.length > 1
+                    ? razoesSociais[1]
+                    : razoesSociais.length === 1
+                    ? razoesSociais[0]
+                    : "Não encontrada";
+
+            const estadoFisicoMatch = text.match(
+                /.*?(SÓLIDO|LÍQUIDO)\s*CLASSE/i
+            );
+            extracted.estadoFisico = estadoFisicoMatch
+                ? estadoFisicoMatch[1]
+                : "Não encontrado";
+
+            const quantidadeMatch = text.match(/Qtde.*?(\d+,\d{4})/i);
+            let quantidade = quantidadeMatch
+                ? quantidadeMatch[1]
+                : "Não encontrada";
+
+            const unidadeMatch = text.match(/\s(KG|TON)\s/i);
+            const unidade = unidadeMatch
+                ? unidadeMatch[1].toUpperCase()
+                : "";
+
+            const ibamaMatch = text.match(
+                /Código\s*IBAMA\s*e\s*Denominação.*?(\d{6}(?:\(*\))?)/is
+            );
+            const ibamaCode = ibamaMatch
+                ? ibamaMatch[1].replace(/\(.*\)/, "").trim()
+                : "Não encontrado";
+            if (ibamaCode === "Não encontrado") {
+                extracted.tipo = "Não encontrado";
+            } else if (ibamaCodeToType[ibamaCode]) {
+                extracted.tipo = ibamaCodeToType[ibamaCode];
+            } else if (rccCodes.includes(ibamaCode)) {
+                extracted.tipo = "RCC";
+            } else {
+                extracted.tipo = ibamaCode;
             }
 
-            let tableRows = filteredData
-              .map(
-                (data) => `
-          <tr>
-            <td>${data.dataEmissao}</td>
-            <td>${data.mtrFormatted}</td>
-            <td>${data.razaoSocial1}</td>
-            <td>${data.razaoSocial2}</td>
-            <td>${data.tipo}</td>
-            <td>${data.mtrRef}</td>
-            <td>${data.litros}</td>
-            <td>${data.toneladas}</td>
-          </tr>
-        `
-              )
-              .join("");
+            extracted.litros =
+                extracted.estadoFisico === "LÍQUIDO" ? quantidade : "";
+            extracted.toneladas =
+                extracted.estadoFisico === "SÓLIDO" ? quantidade : "";
+            if (
+                extracted.toneladas &&
+                unidade === "KG" &&
+                extracted.tipo === "RCC"
+            ) {
+                extracted.toneladas = (
+                    parseFloat(quantidade.replace(",", ".")) / 1000
+                )
+                    .toFixed(4)
+                    .replace(".", ",");
+            }
 
-            textOutput.innerHTML = `
-          <button id="copyButton"><i class="fas fa-copy"></i> Copiar</button>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>DATA</th>
-                  <th>MTR</th>
-                  <th>TRANSPORTADOR</th>
-                  <th>DESTINADOR</th>
-                  <th>TIPO</th>
-                  <th>TICKET</th>
-                  <th>LITROS</th>
-                  <th>TONELADAS</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${tableRows}
-              </tbody>
-            </table>
-          </div>
-        `;
+            return extracted;
+        }
 
-            document
-              .getElementById("copyButton")
-              .addEventListener("click", () => {
-                // Nova lógica de cópia: lê diretamente da tabela HTML
-                const tableRowsToCopy = document.querySelectorAll(
-                  "#textOutput table tbody tr"
-                );
-                if (tableRowsToCopy.length > 0) {
-                  const copyText = Array.from(tableRowsToCopy)
-                    .map((row) => {
-                      return Array.from(row.cells)
-                        .map((cell) => cell.textContent)
-                        .join("\t"); // Junta as células com tab
-                    })
-                    .join("\n"); // Junta as linhas com quebra de linha
+        // Função original para processar um único arquivo PDF
+        async function processPdfFile(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
-                  navigator.clipboard
-                    .writeText(copyText)
-                    .then(() => {
-                      showAlertModal(
-                        "Dados copiados para a área de transferência!",
-                        true
-                      ); // Mensagem de sucesso
-                    })
-                    .catch((err) => {
-                      console.error("Erro ao copiar:", err);
-                      showAlertModal("Erro ao copiar os dados.", false); // Mensagem de erro
-                    });
-                } else {
-                  showAlertModal("Nenhum dado para copiar.", false);
-                }
+            let fullText = "";
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items
+                    .map((item) => item.str)
+                    .join(" ");
+                fullText += pageText + " ";
+            }
+            return extractData(fullText); // Chama a função extractData
+        }
+
+
+        document
+          .getElementById("pdfInput")
+          .addEventListener("change", async (event) => {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            const textOutput = document.getElementById("textOutput");
+            const errorDiv = document.getElementById("error");
+            const messageBox = document.getElementById("messageBox"); 
+            
+            if (textOutput) textOutput.innerHTML = "Carregando..."; 
+            if (errorDiv) errorDiv.style.display = "none"; 
+            if (messageBox) { 
+              messageBox.style.display = "none";
+              messageBox.classList.remove("success", "error");
+            }
+
+            try {
+              // Cria um array de promessas para processar cada PDF
+              const processingPromises = Array.from(files).map(file => processPdfFile(file));
+              const extractedDataList = await Promise.all(processingPromises);
+
+
+              let storedData = JSON.parse(
+                localStorage.getItem("residuosData") || "[]"
+              );
+              // Filtra dados antes de salvar, removendo aqueles com "Não encontrada" ou "Não encontrado" em colunas críticas
+              const filteredData = extractedDataList.filter(
+                (item) =>
+                  item.dataEmissao !== "Não encontrada" &&
+                  item.mtrFormatted !== "Não encontrado" &&
+                  item.razaoSocial1 !== "Não encontrada" &&
+                  item.razaoSocial2 !== "Não encontrada" &&
+                  item.tipo !== "Não encontrado"
+              );
+              
+              // Filtra novos dados para evitar duplicatas antes de adicionar ao storedData
+              const newUniqueData = filteredData.filter(newItem => {
+                  // Verifica se o newItem já existe em storedData
+                  const isDuplicate = storedData.some(existingItem =>
+                      existingItem.mtrFormatted === newItem.mtrFormatted &&
+                      existingItem.dataEmissao === newItem.dataEmissao
+                  );
+                  return !isDuplicate;
               });
 
-            if (newUniqueData.length > 0) {
-              // Verifica se novos dados únicos foram adicionados
-              showAlertModal("Dados extraídos e salvos com sucesso!", true); // Mensagem de sucesso após extração
-            } else if (filteredData.length > 0) {
-              // Se houver dados filtrados mas nenhum novo único
-              showAlertModal(
-                "Os PDFs contêm dados já existentes no histórico. Nenhum novo dado foi adicionado.",
-                false
-              );
-            } else {
-              // Se não houver dados válidos em geral
-              showAlertModal(
-                "Nenhum dado válido foi extraído dos PDFs.",
-                false
-              ); // Mensagem de aviso se não houver dados válidos
+              // Adiciona apenas os dados únicos ao storedData
+              if (newUniqueData.length > 0) {
+                  storedData = storedData.concat(newUniqueData);
+                  localStorage.setItem("residuosData", JSON.stringify(storedData));
+              }
+
+
+              let tableRows = filteredData
+                .map(
+                  (data) => `
+            <tr>
+              <td>${data.dataEmissao}</td>
+              <td>${data.mtrFormatted}</td>
+              <td>${data.razaoSocial1}</td>
+              <td>${data.razaoSocial2}</td>
+              <td>${data.tipo}</td>
+              <td>${data.mtrRef}</td>
+              <td>${data.litros}</td>
+              <td>${data.toneladas}</td>
+            </tr>
+          `
+                )
+                .join("");
+
+              if (textOutput) { 
+                textOutput.innerHTML = `
+                  <button id="copyButton"><i class="fas fa-copy"></i> Copiar</button>
+                  <div class="table-container">
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>DATA</th>
+                          <th>MTR</th>
+                          <th>TRANSPORTADOR</th>
+                          <th>DESTINADOR</th>
+                          <th>TIPO</th>
+                          <th>TICKET</th>
+                          <th>LITROS</th>
+                          <th>TONELADAS</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${tableRows}
+                      </tbody>
+                    </table>
+                  </div>
+                `;
+              }
+
+              const copyButton = document.getElementById("copyButton");
+              if (copyButton) { 
+                copyButton.addEventListener("click", () => {
+                  // Nova lógica de cópia: lê diretamente da tabela HTML
+                  const tableRowsToCopy = document.querySelectorAll(
+                    "#textOutput table tbody tr"
+                  );
+                  if (tableRowsToCopy.length > 0) {
+                    const copyText = Array.from(tableRowsToCopy)
+                      .map((row) => {
+                        return Array.from(row.cells)
+                          .map((cell) => cell.textContent)
+                          .join("\t"); // Junta as células com tab
+                      })
+                      .join("\n"); // Junta as linhas com quebra de linha
+
+                    navigator.clipboard
+                      .writeText(copyText)
+                      .then(() => {
+                        showAlertModal("Dados copiados para a área de transferência!", true); // Mensagem de sucesso
+                      })
+                      .catch((err) => {
+                        console.error("Erro ao copiar:", err);
+                        showAlertModal("Erro ao copiar os dados.", false); // Mensagem de erro
+                      });
+                  } else {
+                    showAlertModal("Nenhum dado para copiar.", false);
+                  }
+                });
+              }
+                
+              if (newUniqueData.length > 0) { 
+                showAlertModal("Dados extraídos e salvos com sucesso!", true); 
+              } else if (filteredData.length > 0) { 
+                  showAlertModal("Os PDFs contêm dados já existentes no histórico. Nenhum novo dado foi adicionado.", false);
+              }
+              else { 
+                showAlertModal("Nenhum dado válido foi extraído dos PDFs.", false); 
+              }
+
+            } catch (error) {
+              console.error("Erro ao processar os PDFs:", error);
+              if (errorDiv) { 
+                errorDiv.textContent = "Erro ao extrair texto dos PDFs. Verifique se os arquivos são válidos.";
+                errorDiv.style.display = "block";
+              }
+              if (textOutput) textOutput.innerHTML = ""; 
+              showAlertModal("Erro ao processar os PDFs. Verifique se os arquivos são válidos.", false); 
+            } finally {
+              // Garante que o botão de histórico seja atualizado após o processamento
+              updateHistoryButtonVisibility();
             }
-          } catch (error) {
-            console.error("Erro ao processar os PDFs:", error);
-            errorDiv.textContent =
-              "Erro ao extrair texto dos PDFs. Verifique se os arquivos são válidos.";
-            errorDiv.style.display = "block";
-            textOutput.innerHTML = "";
-            showAlertModal(
-              "Erro ao processar os PDFs. Verifique se os arquivos são válidos.",
-              false
-            ); // Mensagem de erro
+          });
+
+      // Função para atualizar a visibilidade do botão de histórico
+      function updateHistoryButtonVisibility() {
+          const historyButton = document.getElementById("historyButton");
+          const storedData = JSON.parse(localStorage.getItem("residuosData") || "[]");
+          if (historyButton) {
+              if (storedData.length > 0) {
+                  historyButton.style.display = "inline-block";
+              } else {
+                  historyButton.style.display = "none";
+              }
           }
-        });
+      }
+
+      // Chamada inicial para garantir que o botão esteja no estado correto ao carregar a página
+      updateHistoryButtonVisibility();
+
+      }); // Fechamento do DOMContentLoaded
     </script>
   </body>
 </html>
