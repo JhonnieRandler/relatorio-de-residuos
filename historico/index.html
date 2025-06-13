@@ -4,11 +4,57 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Histórico de Resíduos - Sua Ferramenta de Gestão</title>
+    <!-- Metadados para SEO e Descrição da Página -->
     <meta
       name="description"
       content="Acompanhe o histórico dos seus relatórios de resíduos, visualize dados e gráficos de forma eficiente."
     />
     <meta name="author" content="Jhon Randler" />
+    <meta
+      name="keywords"
+      content="histórico de resíduos, gestão de resíduos, relatórios, gráficos, análise de dados, MTR, ferramenta gratuita"
+    />
+
+    <!-- Open Graph Metadados para Redes Sociais (Facebook, WhatsApp, LinkedIn) -->
+    <meta
+      property="og:title"
+      content="Histórico de Resíduos - Sua Ferramenta de Gestão"
+    />
+    <meta
+      property="og:description"
+      content="Acompanhe o histórico dos seus relatórios de resíduos, visualize dados e gráficos de forma eficiente."
+    />
+    <meta property="og:type" content="website" />
+    <!-- IMPORTANTE: A URL deve ser a URL final da página do histórico publicada -->
+    <meta
+      property="og:url"
+      content="https://jhonnierandler.github.io/relatorio-de-residuos/historico/"
+    />
+    <!-- IMPORTANTE: Usar URL absoluta para a imagem para funcionar no WhatsApp e outras plataformas -->
+    <meta
+      property="og:image"
+      content="https://jhonnierandler.github.io/relatorio-de-residuos/footer.png"
+    />
+    <meta property="og:image:width" content="408" />
+    <!-- Ajustado para 408 -->
+    <meta property="og:image:height" content="408" />
+    <!-- Ajustado para 408 -->
+    <meta property="og:locale" content="pt_BR" />
+
+    <!-- Twitter Card Metadados -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Histórico de Resíduos - Sua Ferramenta de Gestão"
+    />
+    <meta
+      name="twitter:description"
+      content="Acompanhe o histórico dos seus relatórios de resíduos, visualize dados e gráficos de forma eficiente."
+    />
+    <meta
+      name="twitter:image"
+      content="https://jhonnierandler.github.io/relatorio-de-residuos/footer.png"
+    />
     <meta name="twitter:creator" content="@JhonnieRandler" />
 
     <link rel="icon" type="image/png" href="../footer.png" />
@@ -26,8 +72,10 @@
         height: 100%;
       }
       /* Adiciona box-sizing universal para um modelo de caixa consistente */
-      *, *::before, *::after {
-          box-sizing: border-box;
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
       }
       body {
         font-family: Arial, sans-serif;
@@ -86,9 +134,12 @@
         align-items: center;
         justify-content: center;
         flex: 0 0 auto; /* Não cresce nem encolhe por padrão, baseia-se no conteúdo */
-        min-width: calc(180px + 150px + 5px); /* Largura mínima combinada dos filhos + gap */
+        min-width: calc(
+          180px + 150px + 5px
+        ); /* Largura mínima combinada dos filhos + gap */
       }
-      .filter-input-wrapper { /* Contêiner para o input de filtro e botão de limpar */
+      .filter-input-wrapper {
+        /* Contêiner para o input de filtro e botão de limpar */
         position: relative;
         display: flex; /* Usa flex para alinhar input e botão */
         align-items: center;
@@ -289,7 +340,7 @@
         margin: 10px 5px 0;
         border-radius: 5px;
         cursor: pointer;
-        background-color: #4CAF50;
+        background-color: #4caf50;
         color: white;
         border: none;
         transition: background-color 0.3s ease;
@@ -377,20 +428,21 @@
 
     <script>
       let sortDirection = {};
-      let storedData = JSON.parse(
-        localStorage.getItem("residuosData") || "[]"
-      );
+      let storedData = JSON.parse(localStorage.getItem("residuosData") || "[]");
 
       // Função para redirecionar para a página principal, adaptando-se ao ambiente
       function redirectToMainPage() {
-        const isLocal = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
-        
+        const isLocal =
+          window.location.hostname === "127.0.0.1" ||
+          window.location.hostname === "localhost";
+
         if (isLocal) {
-            // Para desenvolvimento local, assume que a página principal está na raiz do servidor
-            window.location.href = window.location.origin + '/';
+          // Para desenvolvimento local, assume que a página principal está na raiz do servidor
+          window.location.href = window.location.origin + "/";
         } else {
-            // Para GitHub Pages, usa o caminho absoluto do projeto
-            window.location.href = 'https://jhonnierandler.github.io/relatorio-de-residuos/';
+          // Para GitHub Pages, usa o caminho absoluto do projeto
+          window.location.href =
+            "https://jhonnierandler.github.io/relatorio-de-residuos/";
         }
       }
 
@@ -427,21 +479,21 @@
         const okBtn = document.getElementById("alertOkBtn");
 
         alertMessage.textContent = message;
-        
+
         // Remove classes anteriores
-        alertMessage.classList.remove("success", "error"); 
+        alertMessage.classList.remove("success", "error");
         modal.classList.remove("success", "error");
 
         if (isSuccess) {
           alertMessage.classList.add("success");
           modal.classList.add("success");
           // Altera a cor do botão OK para verde em caso de sucesso
-          okBtn.style.backgroundColor = "#4CAF50"; 
+          okBtn.style.backgroundColor = "#4CAF50";
         } else {
           alertMessage.classList.add("error");
           modal.classList.add("error");
           // Altera a cor do botão OK para vermelho em caso de erro
-          okBtn.style.backgroundColor = "#f44336"; 
+          okBtn.style.backgroundColor = "#f44336";
         }
 
         modal.style.display = "flex"; // Usa flex para centralizar
@@ -452,7 +504,6 @@
         };
         okBtn.addEventListener("click", handleOk);
       }
-
 
       function renderTable(data) {
         if (data.length > 0) {
@@ -541,7 +592,9 @@
             if (confirmed) {
               localStorage.removeItem("residuosData");
               // Reatribui storedData para refletir o armazenamento local limpo
-              storedData = JSON.parse(localStorage.getItem("residuosData") || "[]");
+              storedData = JSON.parse(
+                localStorage.getItem("residuosData") || "[]"
+              );
               renderTable([]);
               updateChart([]);
               toggleButtons();
@@ -636,8 +689,8 @@
                 top: 40, // Aumentado para dar mais espaço no topo
                 right: 20, // Adiciona 20px de padding à direita
                 bottom: 0,
-                left: 0
-              }
+                left: 0,
+              },
             },
             scales: {
               x: {},
@@ -677,7 +730,7 @@
       // Função de throttling
       function throttle(func, delay) {
         let timeoutId;
-        return function(...args) {
+        return function (...args) {
           if (!timeoutId) {
             timeoutId = setTimeout(() => {
               func.apply(this, args);
@@ -688,15 +741,19 @@
       }
 
       // Listener para redimensionamento da janela, agora com throttling
-      window.addEventListener("resize", throttle(() => {
-        if (
-          window.myChart &&
-          document.getElementById("chartContainer").style.display !== "none"
-        ) {
-          updateChart(JSON.parse(localStorage.getItem("residuosData") || "[]"));
-        }
-      }, 200)); // Atraso de 200ms
-
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          if (
+            window.myChart &&
+            document.getElementById("chartContainer").style.display !== "none"
+          ) {
+            updateChart(
+              JSON.parse(localStorage.getItem("residuosData") || "[]")
+            );
+          }
+        }, 200)
+      ); // Atraso de 200ms
 
       // Atualizar gráfico ao mudar o filtro de mês
       document.getElementById("monthFilter").addEventListener("change", (e) => {
@@ -715,11 +772,13 @@
         const clearButton = document.getElementById("clearHistory");
         const downloadButton = document.getElementById("downloadChart");
         const copyButton = document.getElementById("copyButton");
-        const filterControlsGroup = document.getElementById("filterControlsGroup");
-        const monthSelect = document.getElementById("monthFilter"); 
+        const filterControlsGroup = document.getElementById(
+          "filterControlsGroup"
+        );
+        const monthSelect = document.getElementById("monthFilter");
         const chartContainer = document.getElementById("chartContainer");
         const clearFilter = document.getElementById("clearFilter");
-        const backButton = document.getElementById("backButton"); 
+        const backButton = document.getElementById("backButton");
 
         if (storedData.length > 0) {
           clearButton.style.display = "inline-block";
@@ -729,25 +788,27 @@
           monthSelect.style.display = "inline-block";
           chartContainer.style.display = "block";
           clearFilter.style.display = document.getElementById("filterInput")
-            .value ? "inline-block" : "none";
+            .value
+            ? "inline-block"
+            : "none";
           buttonsContainer.style.justifyContent = "center";
           if (backButton) {
-              backButton.style.margin = "5px"; 
+            backButton.style.margin = "5px";
           }
         } else {
           clearButton.style.display = "none";
           downloadButton.style.display = "none";
           copyButton.style.display = "none";
-          filterControlsGroup.style.display = "none"; 
-          monthSelect.style.display = "none"; 
+          filterControlsGroup.style.display = "none";
+          monthSelect.style.display = "none";
           chartContainer.style.display = "none";
           clearFilter.style.display = "none";
-          
+
           if (backButton) {
-              backButton.style.display = "inline-block";
-              backButton.style.margin = "0 auto"; 
+            backButton.style.display = "inline-block";
+            backButton.style.margin = "0 auto";
           }
-          buttonsContainer.style.justifyContent = "center"; 
+          buttonsContainer.style.justifyContent = "center";
         }
       }
 
@@ -801,7 +862,9 @@
           const option = document.createElement("option");
           option.value = month;
           // Alterado para exibir apenas o nome do mês capitalizado
-          const monthName = new Date(2025, month - 1).toLocaleString("pt-BR", { month: "long" });
+          const monthName = new Date(2025, month - 1).toLocaleString("pt-BR", {
+            month: "long",
+          });
           option.text = monthName.charAt(0).toUpperCase() + monthName.slice(1);
           monthSelect.appendChild(option);
         });
