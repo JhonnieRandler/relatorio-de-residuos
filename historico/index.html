@@ -31,6 +31,7 @@
       content="https://jhonnierandler.github.io/relatorio-de-residuos/historico/"
     />
     <!-- IMPORTANTE: Usar URL absoluta para a imagem para funcionar no WhatsApp e outras plataformas -->
+    <!-- Ajustado para o tamanho real da imagem (408x408) -->
     <meta
       property="og:image"
       content="https://jhonnierandler.github.io/relatorio-de-residuos/footer.png"
@@ -204,6 +205,7 @@
         border: 1px solid #ccc;
         border-radius: 8px;
         background-color: #ffffff; /* Garante fundo branco para o contêiner */
+        min-height: 400px; /* Adicionado altura mínima para depuração */
       }
       canvas {
         max-width: 100%;
@@ -253,6 +255,7 @@
       footer img {
         max-width: 100px;
         height: auto;
+        cursor: pointer; /* Adicionado cursor para indicar interatividade */
       }
       footer p {
         color: #333;
@@ -356,6 +359,13 @@
       #modalCancelBtn:hover {
         background-color: #d32f2f;
       }
+      .modal-image {
+        max-width: 80px; /* Ajuste o tamanho conforme necessário */
+        height: auto;
+        margin-bottom: 15px;
+        display: none; /* Escondido por padrão, será exibido via JS */
+        margin: 0 auto 15px auto; /* CENTRALIZAÇÃO HORIZONTAL AQUI */
+      }
     </style>
   </head>
   <body>
@@ -397,7 +407,7 @@
       </div>
     </main>
     <footer>
-      <img src="../footer.png" alt="Footer Image" />
+      <img id="footerImage" src="../footer.png" alt="Footer Image" />
       <p>
         Este site foi desenvolvido para facilitar a gestão de resíduos gerados,
         oferecendo uma ferramenta prática e acessível. É livre para uso por
@@ -408,6 +418,12 @@
     <!-- Modal de Confirmação Customizado -->
     <div id="customConfirmModal" class="modal-overlay">
       <div class="modal-content">
+        <img
+          id="confirmModalImage"
+          src=""
+          alt="Ícone de Confirmação"
+          class="modal-image"
+        />
         <p id="modalMessage"></p>
         <div class="modal-buttons">
           <button id="modalConfirmBtn">Sim</button>
@@ -419,6 +435,12 @@
     <!-- Modal de Alerta Customizado -->
     <div id="customAlertModal" class="modal-overlay">
       <div class="modal-content">
+        <img
+          id="alertModalImage"
+          src=""
+          alt="Ícone de Status"
+          class="modal-image"
+        />
         <p id="alertMessage"></p>
         <div class="modal-buttons">
           <button id="alertOkBtn">OK</button>
@@ -428,7 +450,7 @@
 
     <script>
       let sortDirection = {};
-      let storedData = JSON.parse(localStorage.getItem("residuosData") || "[]");
+      let storedData = []; // Declarado aqui, será inicializado em DOMContentLoaded
 
       // Função para redirecionar para a página principal, adaptando-se ao ambiente
       function redirectToMainPage() {
@@ -449,60 +471,81 @@
       // Funções para Modais Customizados
       function showConfirmModal(message, onConfirm) {
         const modal = document.getElementById("customConfirmModal");
-        document.getElementById("modalMessage").textContent = message;
-        modal.style.display = "flex"; // Usa flex para centralizar
-
+        const modalMessage = document.getElementById("modalMessage");
+        const confirmModalImage = document.getElementById("confirmModalImage");
         const confirmBtn = document.getElementById("modalConfirmBtn");
         const cancelBtn = document.getElementById("modalCancelBtn");
 
+        if (modalMessage) modalMessage.textContent = message;
+
+        if (confirmModalImage) {
+          confirmModalImage.src = "../sure.png"; // Caminho relativo da imagem
+          confirmModalImage.style.display = "block";
+        }
+
+        if (modal) modal.style.display = "flex";
+
         const handleConfirm = () => {
           onConfirm(true);
-          modal.style.display = "none";
-          confirmBtn.removeEventListener("click", handleConfirm);
-          cancelBtn.removeEventListener("click", handleCancel);
+          if (modal) modal.style.display = "none";
+          if (confirmBtn)
+            confirmBtn.removeEventListener("click", handleConfirm);
+          if (cancelBtn) cancelBtn.removeEventListener("click", handleCancel);
+          if (confirmModalImage) confirmModalImage.style.display = "none"; // Oculta a imagem ao fechar
         };
 
         const handleCancel = () => {
           onConfirm(false);
-          modal.style.display = "none";
-          confirmBtn.removeEventListener("click", handleConfirm);
-          cancelBtn.removeEventListener("click", handleCancel);
+          if (modal) modal.style.display = "none";
+          if (confirmBtn)
+            confirmBtn.removeEventListener("click", handleConfirm);
+          if (cancelBtn) cancelBtn.removeEventListener("click", handleCancel);
+          if (confirmModalImage) confirmModalImage.style.display = "none"; // Oculta a imagem ao fechar
         };
 
-        confirmBtn.addEventListener("click", handleConfirm);
-        cancelBtn.addEventListener("click", handleCancel);
+        if (confirmBtn) confirmBtn.addEventListener("click", handleConfirm);
+        if (cancelBtn) cancelBtn.addEventListener("click", handleCancel);
       }
 
-      function showAlertModal(message, isSuccess = false) {
+      function showAlertModal(message, type) {
+        // type: 'success', 'no_data', 'error'
         const modal = document.getElementById("customAlertModal");
         const alertMessage = document.getElementById("alertMessage");
+        const alertModalImage = document.getElementById("alertModalImage");
         const okBtn = document.getElementById("alertOkBtn");
 
-        alertMessage.textContent = message;
+        if (alertMessage) alertMessage.textContent = message;
+        if (modal) modal.classList.remove("success", "error");
 
-        // Remove classes anteriores
-        alertMessage.classList.remove("success", "error");
-        modal.classList.remove("success", "error");
-
-        if (isSuccess) {
-          alertMessage.classList.add("success");
-          modal.classList.add("success");
-          // Altera a cor do botão OK para verde em caso de sucesso
-          okBtn.style.backgroundColor = "#4CAF50";
-        } else {
-          alertMessage.classList.add("error");
-          modal.classList.add("error");
-          // Altera a cor do botão OK para vermelho em caso de erro
-          okBtn.style.backgroundColor = "#f44336";
+        let imagePath = "";
+        if (type === "success") {
+          imagePath = "../like.png"; // Caminho relativo da imagem
+          if (okBtn) okBtn.style.backgroundColor = "#4CAF50";
+        } else if (type === "no_data") {
+          imagePath = "../doubt.png"; // Caminho relativo da imagem
+          if (okBtn) okBtn.style.backgroundColor = "#f44336";
+        } else if (type === "error") {
+          imagePath = "../doubt.png"; // Caminho relativo da imagem
+          if (okBtn) okBtn.style.backgroundColor = "#f44336";
+        } else if (type === "exists") {
+          // Adicionado tipo 'exists'
+          imagePath = "../point.png"; // Caminho relativo da imagem
+          if (okBtn) okBtn.style.backgroundColor = "#FFA000"; // Laranja para "já existente"
         }
 
-        modal.style.display = "flex"; // Usa flex para centralizar
+        if (alertModalImage) {
+          alertModalImage.src = imagePath;
+          alertModalImage.style.display = "block";
+        }
+
+        if (modal) modal.style.display = "flex";
 
         const handleOk = () => {
-          modal.style.display = "none";
-          okBtn.removeEventListener("click", handleOk);
+          if (modal) modal.style.display = "none";
+          if (okBtn) okBtn.removeEventListener("click", handleOk);
+          if (alertModalImage) alertModalImage.style.display = "none"; // Oculta a imagem ao fechar
         };
-        okBtn.addEventListener("click", handleOk);
+        if (okBtn) okBtn.addEventListener("click", handleOk);
       }
 
       function renderTable(data) {
@@ -604,13 +647,19 @@
       }
 
       function updateChart(data) {
+        // console.log("updateChart called with data:", data); // Log para depuração
         const dataToUse = data.length > 0 ? data : storedData;
+        const chartContainer = document.getElementById("chartContainer");
+
         if (dataToUse.length === 0) {
-          document.getElementById("chartContainer").style.display = "none";
+          if (chartContainer) chartContainer.style.display = "none";
+          // console.log("No data for chart, hiding chartContainer."); // Log para depuração
           return;
         } else {
-          document.getElementById("chartContainer").style.display = "block";
+          if (chartContainer) chartContainer.style.display = "block";
+          // console.log("Data present for chart, showing chartContainer."); // Log para depuração
         }
+
         const tipos = [
           ...new Set(
             dataToUse
@@ -646,12 +695,15 @@
         // Aumenta o multiplicador para dar mais espaço acima das barras.
         const yMax = maxValue ? maxValue * 1.35 : 10; // Alterado de 1.25 para 1.35 para mais espaço
 
-        const chartContainer = document.getElementById("chartContainer");
         const canvas = document.getElementById("residuosChart");
-        // Atualizar tamanho do canvas dinamicamente
-        canvas.width = chartContainer.clientWidth - 20; // Subtrair padding e margens
-        canvas.height = chartContainer.clientHeight - 20;
         const ctx = canvas.getContext("2d");
+        // Atualizar tamanho do canvas dinamicamente
+        if (chartContainer) {
+          // Garante que chartContainer exista
+          canvas.width = chartContainer.clientWidth - 20; // Subtrair padding e margens
+          canvas.height = chartContainer.clientHeight - 20;
+        }
+
         // Já define o fundo do canvas como branco.
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -768,6 +820,7 @@
       });
 
       function toggleButtons() {
+        // console.log("toggleButtons called. storedData.length:", storedData.length); // Log para depuração
         const buttonsContainer = document.getElementById("buttonsContainer");
         const clearButton = document.getElementById("clearHistory");
         const downloadButton = document.getElementById("downloadChart");
@@ -781,34 +834,37 @@
         const backButton = document.getElementById("backButton");
 
         if (storedData.length > 0) {
-          clearButton.style.display = "inline-block";
-          downloadButton.style.display = "inline-block";
-          copyButton.style.display = "inline-block";
-          filterControlsGroup.style.display = "flex";
-          monthSelect.style.display = "inline-block";
-          chartContainer.style.display = "block";
-          clearFilter.style.display = document.getElementById("filterInput")
-            .value
-            ? "inline-block"
-            : "none";
-          buttonsContainer.style.justifyContent = "center";
+          if (clearButton) clearButton.style.display = "inline-block";
+          if (downloadButton) downloadButton.style.display = "inline-block";
+          if (copyButton) copyButton.style.display = "inline-block";
+          if (filterControlsGroup) filterControlsGroup.style.display = "flex";
+          if (monthSelect) monthSelect.style.display = "inline-block";
+          if (chartContainer) chartContainer.style.display = "block";
+          if (clearFilter)
+            clearFilter.style.display = document.getElementById("filterInput")
+              .value
+              ? "inline-block"
+              : "none";
+          if (buttonsContainer)
+            buttonsContainer.style.justifyContent = "center";
           if (backButton) {
             backButton.style.margin = "5px";
           }
         } else {
-          clearButton.style.display = "none";
-          downloadButton.style.display = "none";
-          copyButton.style.display = "none";
-          filterControlsGroup.style.display = "none";
-          monthSelect.style.display = "none";
-          chartContainer.style.display = "none";
-          clearFilter.style.display = "none";
+          if (clearButton) clearButton.style.display = "none";
+          if (downloadButton) downloadButton.style.display = "none";
+          if (copyButton) copyButton.style.display = "none";
+          if (filterControlsGroup) filterControlsGroup.style.display = "none";
+          if (monthSelect) monthSelect.style.display = "none";
+          if (chartContainer) chartContainer.style.display = "none";
+          if (clearFilter) clearFilter.style.display = "none";
 
           if (backButton) {
             backButton.style.display = "inline-block";
             backButton.style.margin = "0 auto";
           }
-          buttonsContainer.style.justifyContent = "center";
+          if (buttonsContainer)
+            buttonsContainer.style.justifyContent = "center";
         }
       }
 
@@ -834,9 +890,12 @@
                 .join("\t");
             })
             .join("\n");
-          showAlertModal("Dados copiados para a área de transferência!", true);
+          showAlertModal(
+            "Dados copiados para a área de transferência!",
+            "success"
+          );
         } else {
-          showAlertModal("Nenhum dado para copiar.", false);
+          showAlertModal("Nenhum dado para copiar.", "no_data");
         }
       });
 
@@ -848,30 +907,64 @@
         document.getElementById("filterInput").focus();
       });
 
-      const monthSelect = document.getElementById("monthFilter");
-      const months = [
-        ...new Set(
-          storedData
-            .map((item) => item.dataEmissao.split("/")[1])
-            .filter((month) => month !== "Não encontrada")
-        ),
-      ];
-      months
-        .sort((a, b) => a - b)
-        .forEach((month) => {
-          const option = document.createElement("option");
-          option.value = month;
-          // Alterado para exibir apenas o nome do mês capitalizado
-          const monthName = new Date(2025, month - 1).toLocaleString("pt-BR", {
-            month: "long",
-          });
-          option.text = monthName.charAt(0).toUpperCase() + monthName.slice(1);
-          monthSelect.appendChild(option);
-        });
+      // Função para trocar a imagem do rodapé
+      function swapFooterImage(imgElement) {
+        const originalSrc = imgElement.src;
+        // Adapta o caminho da imagem de blink para a página de histórico
+        const blinkSrc = originalSrc.includes("footer.png")
+          ? originalSrc.replace("footer.png", "blink.png")
+          : "../blink.png";
 
-      renderTable(storedData);
-      updateChart(storedData);
-      toggleButtons();
+        imgElement.src = blinkSrc;
+        setTimeout(() => {
+          imgElement.src = originalSrc;
+        }, 400); // Alterado para 400 milissegundos
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        // Inicializa storedData e as variáveis globais aqui
+        storedData = JSON.parse(localStorage.getItem("residuosData") || "[]");
+        // console.log("Stored data on DOMContentLoaded:", storedData); // Log para depuração inicial
+
+        const monthSelect = document.getElementById("monthFilter");
+        // Limpar opções existentes antes de adicionar novas
+        if (monthSelect) {
+          monthSelect.innerHTML = '<option value="">Todos os Meses</option>';
+        }
+
+        const months = [
+          ...new Set(
+            storedData
+              .map((item) => item.dataEmissao.split("/")[1])
+              .filter((month) => month !== "Não encontrada")
+          ),
+        ];
+        months
+          .sort((a, b) => a - b)
+          .forEach((month) => {
+            const option = document.createElement("option");
+            option.value = month;
+            const monthName = new Date(2025, month - 1).toLocaleString(
+              "pt-BR",
+              { month: "long" }
+            );
+            option.text =
+              monthName.charAt(0).toUpperCase() + monthName.slice(1);
+            if (monthSelect) monthSelect.appendChild(option);
+          });
+
+        renderTable(storedData);
+        updateChart(storedData);
+        toggleButtons();
+
+        // Adiciona listener para a imagem do rodapé APÓS o DOM estar pronto
+        const footerImage = document.getElementById("footerImage");
+        if (footerImage) {
+          footerImage.addEventListener("click", () =>
+            swapFooterImage(footerImage)
+          );
+        }
+      }); // Fechamento do DOMContentLoaded
     </script>
   </body>
 </html>
