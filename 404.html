@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>404 - Página Não Encontrada</title>
+    <meta
+      name="description"
+      content="Página de erro 404 divertida para o Relatório de Resíduos Gerados."
+    />
+    <link rel="icon" type="image/png" href="footer.png" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
+      /* Adiciona box-sizing universal para um modelo de caixa consistente */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between; /* Para empurrar o footer para o final */
+        align-items: center;
+        text-align: center;
+        overflow-x: hidden; /* Evita rolagem horizontal */
+      }
+      main {
+        flex: 1; /* Ocupa o espaço restante */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        width: 100%;
+        max-width: 95%; /* Adapta-se à largura da tela */
+        margin: 0 auto;
+      }
+      h1 {
+        color: #333;
+        margin-bottom: 20px;
+        font-size: 3em; /* Tamanho maior para destaque */
+      }
+      p {
+        color: #555;
+        font-size: 1.2em;
+        margin-bottom: 20px;
+        max-width: 600px; /* Limita a largura do texto para melhor leitura */
+      }
+      .error-image {
+        max-width: 150px; /* Tamanho adequado para a imagem central */
+        height: auto;
+        margin-bottom: 30px;
+      }
+      button {
+        padding: 12px 25px;
+        background-color: #ffffff;
+        color: #333;
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        font-size: 18px;
+        transition: background-color 0.3s, transform 0.2s;
+        margin-top: 20px;
+      }
+      button:hover {
+        background-color: #4caf50;
+        color: white;
+        transform: translateY(-2px);
+      }
+      footer {
+        flex-shrink: 0; /* Impede o rodapé de encolher */
+        width: 100%;
+        background-color: #ffcead;
+        padding: 15px;
+        text-align: center;
+        box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        box-sizing: border-box;
+      }
+      footer img {
+        max-width: 100px;
+        height: auto;
+        cursor: pointer;
+      }
+      footer p {
+        color: #333;
+        font-size: 14px;
+        margin: 0;
+        flex: 1;
+        overflow-wrap: break-word;
+      }
+      @media screen and (max-width: 600px) {
+        h1 {
+          font-size: 2em;
+        }
+        p {
+          font-size: 1em;
+        }
+        .error-image {
+          max-width: 100px;
+        }
+        button {
+          padding: 10px 20px;
+          font-size: 16px;
+        }
+        footer {
+          flex-direction: column;
+          padding: 10px 15px;
+        }
+        footer img {
+          max-width: 80px;
+          margin-bottom: 10px;
+        }
+        footer p {
+          font-size: 12px;
+          max-width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>404 - Página Não Encontrada!</h1>
+      <img src="doubt.png" alt="Capivara Confusa" class="error-image" />
+      <p>
+        Parece que a capivara do nosso servidor pegou o jacaré errado e não
+        conseguiu encontrar a página que você procura. Não se preocupe, isso
+        acontece com os melhores!
+      </p>
+      <button onclick="goHome()">
+        <i class="fas fa-arrow-left"></i> Voltar para a Página Inicial
+      </button>
+    </main>
+    <footer>
+      <img id="footerImage" src="footer.png" alt="Footer Image" />
+      <p>
+        Este site foi desenvolvido para facilitar a gestão de resíduos gerados,
+        oferecendo uma ferramenta prática e acessível. É livre para uso por
+        todos!
+      </p>
+    </footer>
+
+    <script>
+      function goHome() {
+        const isLocal =
+          window.location.hostname === "127.0.0.1" ||
+          window.location.hostname === "localhost";
+        if (isLocal) {
+          window.location.href = window.location.origin + "/";
+        } else {
+          window.location.href =
+            "https://jhonnierandler.github.io/relatorio-de-residuos/";
+        }
+      }
+
+      // Função para trocar a imagem do rodapé
+      function swapFooterImage(imgElement) {
+        const originalSrc = imgElement.src;
+        const blinkSrc = originalSrc.replace("footer.png", "blink.png");
+
+        imgElement.src = blinkSrc;
+        setTimeout(() => {
+          imgElement.src = originalSrc;
+        }, 400); // 400 milissegundos
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const footerImage = document.getElementById("footerImage");
+        if (footerImage) {
+          footerImage.addEventListener("click", () =>
+            swapFooterImage(footerImage)
+          );
+        }
+      });
+    </script>
+  </body>
+</html>
