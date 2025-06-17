@@ -27,15 +27,13 @@
       content="https://jhonnierandler.github.io/relatorio-de-residuos"
     />
     <!-- IMPORTANTE: Usar URL absoluta para a imagem para funcionar no WhatsApp e outras plataformas -->
-    <!-- Recomenda-se que a imagem tenha pelo menos 1200x630 pixels para melhor exibição -->
+    <!-- Ajustado para o tamanho real da imagem (408x408) -->
     <meta
       property="og:image"
       content="https://jhonnierandler.github.io/relatorio-de-residuos/footer.png"
     />
     <meta property="og:image:width" content="408" />
-    <!-- Ajustado para 408 -->
     <meta property="og:image:height" content="408" />
-    <!-- Ajustado para 408 -->
     <meta property="og:locale" content="pt_BR" />
 
     <!-- Twitter Card Metadados -->
@@ -208,6 +206,7 @@
       footer img {
         max-width: 100px;
         height: auto;
+        cursor: pointer; /* Adicionado cursor para indicar interatividade */
       }
       footer p {
         color: #333;
@@ -295,6 +294,13 @@
       .modal-buttons button:hover {
         opacity: 0.9;
       }
+      .modal-image {
+        max-width: 80px; /* Ajuste o tamanho conforme necessário */
+        height: auto;
+        margin-bottom: 15px;
+        display: none; /* Escondido por padrão, será exibido via JS */
+        margin: 0 auto 15px auto; /* CENTRALIZAÇÃO HORIZONTAL AQUI */
+      }
     </style>
   </head>
   <body>
@@ -319,7 +325,7 @@
       <!-- Adicionado para mensagens de sucesso/erro -->
     </main>
     <footer>
-      <img src="footer.png" alt="Footer Image" />
+      <img id="footerImage" src="footer.png" alt="Footer Image" />
       <p>
         Este site foi desenvolvido para facilitar a gestão de resíduos gerados,
         oferecendo uma ferramenta prática e acessível. É livre para uso por
@@ -330,6 +336,12 @@
     <!-- Modal de Alerta Customizado -->
     <div id="customAlertModal" class="modal-overlay">
       <div class="modal-content">
+        <img
+          id="alertModalImage"
+          src=""
+          alt="Ícone de Status"
+          class="modal-image"
+        />
         <p id="alertMessage"></p>
         <div class="modal-buttons">
           <button id="alertOkBtn">OK</button>
@@ -376,28 +388,32 @@
           "170802",
         ];
 
-        // Função para exibir modais de alerta
-        function showAlertModal(message, isSuccess = false) {
+        // Função para exibir modais de alerta com imagem
+        function showAlertModal(message, type) {
+          // type: 'success', 'exists', 'no_data', 'error'
           const modal = document.getElementById("customAlertModal");
           const alertMessage = document.getElementById("alertMessage");
+          const alertModalImage = document.getElementById("alertModalImage");
           const okBtn = document.getElementById("alertOkBtn");
 
           if (alertMessage) alertMessage.textContent = message;
+          if (modal) modal.classList.remove("success", "error"); // Limpa classes anteriores para evitar conflitos
 
-          // Remove classes anteriores
-          if (alertMessage) alertMessage.classList.remove("success", "error");
-          if (modal) modal.classList.remove("success", "error");
+          let imagePath = "";
+          if (type === "success") {
+            imagePath = "like.png";
+            if (okBtn) okBtn.style.backgroundColor = "#4CAF50"; // Verde para sucesso
+          } else if (type === "exists") {
+            imagePath = "point.png";
+            if (okBtn) okBtn.style.backgroundColor = "#FFA000"; // Laranja para "já existente"
+          } else if (type === "no_data" || type === "error") {
+            imagePath = "doubt.png";
+            if (okBtn) okBtn.style.backgroundColor = "#f44336"; // Vermelho para erro/falha
+          }
 
-          if (isSuccess) {
-            if (alertMessage) alertMessage.classList.add("success");
-            if (modal) modal.classList.add("success");
-            // Altera a cor do botão OK para verde em caso de sucesso
-            if (okBtn) okBtn.style.backgroundColor = "#4CAF50";
-          } else {
-            if (alertMessage) alertMessage.classList.add("error");
-            if (modal) modal.classList.add("error");
-            // Altera a cor do botão OK para vermelho em caso de erro
-            if (okBtn) okBtn.style.backgroundColor = "#f44336";
+          if (alertModalImage) {
+            alertModalImage.src = imagePath;
+            alertModalImage.style.display = "block";
           }
 
           if (modal) modal.style.display = "flex";
@@ -405,6 +421,7 @@
           const handleOk = () => {
             if (modal) modal.style.display = "none";
             if (okBtn) okBtn.removeEventListener("click", handleOk);
+            if (alertModalImage) alertModalImage.style.display = "none"; // Oculta a imagem ao fechar
           };
           if (okBtn) okBtn.addEventListener("click", handleOk);
         }
@@ -528,6 +545,17 @@
           return extractData(fullText); // Chama a função extractData
         }
 
+        // Função para trocar a imagem do rodapé
+        function swapFooterImage(imgElement) {
+          const originalSrc = imgElement.src;
+          const blinkSrc = originalSrc.replace("footer.png", "blink.png");
+
+          imgElement.src = blinkSrc;
+          setTimeout(() => {
+            imgElement.src = originalSrc;
+          }, 400); // Alterado para 400 milissegundos
+        }
+
         document
           .getElementById("pdfInput")
           .addEventListener("change", async (event) => {
@@ -630,7 +658,6 @@
               const copyButton = document.getElementById("copyButton");
               if (copyButton) {
                 copyButton.addEventListener("click", () => {
-                  // Nova lógica de cópia: lê diretamente da tabela HTML
                   const tableRowsToCopy = document.querySelectorAll(
                     "#textOutput table tbody tr"
                   );
@@ -639,39 +666,42 @@
                       .map((row) => {
                         return Array.from(row.cells)
                           .map((cell) => cell.textContent)
-                          .join("\t"); // Junta as células com tab
+                          .join("\t");
                       })
-                      .join("\n"); // Junta as linhas com quebra de linha
+                      .join("\n");
 
                     navigator.clipboard
                       .writeText(copyText)
                       .then(() => {
                         showAlertModal(
                           "Dados copiados para a área de transferência!",
-                          true
-                        ); // Mensagem de sucesso
+                          "success"
+                        );
                       })
                       .catch((err) => {
                         console.error("Erro ao copiar:", err);
-                        showAlertModal("Erro ao copiar os dados.", false); // Mensagem de erro
+                        showAlertModal("Erro ao copiar os dados.", "error");
                       });
                   } else {
-                    showAlertModal("Nenhum dado para copiar.", false);
+                    showAlertModal("Nenhum dado para copiar.", "no_data");
                   }
                 });
               }
 
               if (newUniqueData.length > 0) {
-                showAlertModal("Dados extraídos e salvos com sucesso!", true);
+                showAlertModal(
+                  "Dados extraídos e salvos com sucesso!",
+                  "success"
+                );
               } else if (filteredData.length > 0) {
                 showAlertModal(
                   "Os PDFs contêm dados já existentes no histórico. Nenhum novo dado foi adicionado.",
-                  false
+                  "exists"
                 );
               } else {
                 showAlertModal(
                   "Nenhum dado válido foi extraído dos PDFs.",
-                  false
+                  "no_data"
                 );
               }
             } catch (error) {
@@ -684,10 +714,9 @@
               if (textOutput) textOutput.innerHTML = "";
               showAlertModal(
                 "Erro ao processar os PDFs. Verifique se os arquivos são válidos.",
-                false
+                "error"
               );
             } finally {
-              // Garante que o botão de histórico seja atualizado após o processamento
               updateHistoryButtonVisibility();
             }
           });
@@ -705,6 +734,14 @@
               historyButton.style.display = "none";
             }
           }
+        }
+
+        // Adiciona listener para a imagem do rodapé
+        const footerImage = document.getElementById("footerImage");
+        if (footerImage) {
+          footerImage.addEventListener("click", () =>
+            swapFooterImage(footerImage)
+          );
         }
 
         // Chamada inicial para garantir que o botão esteja no estado correto ao carregar a página
