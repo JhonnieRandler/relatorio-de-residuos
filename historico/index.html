@@ -72,6 +72,8 @@
     <link rel="preload" as="image" href="../like.png" />
     <link rel="preload" as="image" href="../point.png" />
     <link rel="preload" as="image" href="../sure.png" />
+    <!-- Preload do áudio -->
+    <link rel="preload" as="audio" href="../blink.mp3" />
     <style>
       :root {
         /* Cores do tema claro */
@@ -346,19 +348,19 @@
         background-color: var(--theme-toggle-normal-bg);
         color: var(--theme-toggle-normal-color);
         border: none;
-        width: 40px; /* Torna o botão quadrado */
-        height: 40px; /* Torna o botão quadrado */
-        border-radius: 50%; /* Torna o botão redondo */
-        display: flex; /* Para centralizar o ícone */
-        justify-content: center; /* Centraliza horizontalmente */
-        align-items: center; /* Centraliza verticalmente */
-        padding: 0; /* Remove padding padrão */
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0;
         cursor: pointer;
-        font-size: 18px; /* Tamanho do ícone */
+        font-size: 18px;
         box-shadow: 0 2px 4px var(--box-shadow-color);
         transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s,
           box-shadow 0.3s ease;
-        margin-left: 10px; /* Espaçamento do botão */
+        margin-left: 10px;
       }
 
       .theme-toggle-button:hover {
@@ -538,6 +540,11 @@
         oferecendo uma ferramenta prática e acessível. É livre para uso por
         todos!
       </p>
+      <!-- Elemento de áudio para o som de blink -->
+      <audio id="blinkAudio" preload="auto">
+        <source src="../blink.mp3" type="audio/mpeg" />
+        Seu navegador não suporta o elemento de áudio.
+      </audio>
     </footer>
 
     <!-- Modal de Confirmação Customizado -->
@@ -590,7 +597,7 @@
           if (themeToggleBtn) {
             themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
           }
-          // Atualiza o gráfico se ele estiver visível, para redesenhar com as novas cores de texto, etc.
+          // Atualiza o gráfico se ele estiver visible, para redesenhar com as novas cores de texto, etc.
           if (
             window.myChart &&
             document.getElementById("chartContainer").style.display !== "none"
@@ -603,7 +610,7 @@
           if (themeToggleBtn) {
             themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
           }
-          // Atualiza o gráfico se ele estiver visível
+          // Atualiza o gráfico se ele estiver visible
           if (
             window.myChart &&
             document.getElementById("chartContainer").style.display !== "none"
@@ -1185,15 +1192,22 @@
         .getElementById("toggleTableVisibility")
         .addEventListener("click", () => toggleTableVisibility());
 
-      // Função para trocar a imagem do rodapé
+      // Função para trocar a imagem do rodapé e reproduzir áudio
       function swapFooterImage(imgElement) {
         const originalSrc = imgElement.src;
         // Adapta o caminho da imagem de blink para a página de histórico
         const blinkSrc = originalSrc.includes("footer.png")
           ? originalSrc.replace("footer.png", "blink.png")
           : "../blink.png";
+        const audio = document.getElementById("blinkAudio");
 
         imgElement.src = blinkSrc;
+        if (audio) {
+          audio.currentTime = 0; // Reinicia o áudio se já estiver tocando
+          audio
+            .play()
+            .catch((e) => console.error("Erro ao reproduzir áudio:", e));
+        }
         setTimeout(() => {
           imgElement.src = originalSrc;
         }, 400); // 400 milissegundos
