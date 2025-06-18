@@ -707,6 +707,34 @@
           }, 400); // Alterado para 400 milissegundos
         }
 
+        // Função para copiar texto para a área de transferência
+        function copyToClipboard(text) {
+          const textarea = document.createElement("textarea");
+          textarea.value = text;
+          // Torna o textarea invisível
+          textarea.style.position = "fixed";
+          textarea.style.top = "0";
+          textarea.style.left = "0";
+          textarea.style.width = "1em";
+          textarea.style.height = "1em";
+          textarea.style.border = "none";
+          textarea.style.outline = "none";
+          textarea.style.boxShadow = "none";
+          textarea.style.background = "transparent";
+          document.body.appendChild(textarea);
+          textarea.focus();
+          textarea.select();
+          try {
+            const successful = document.execCommand("copy");
+            return successful;
+          } catch (err) {
+            console.error("Erro ao copiar:", err);
+            return false;
+          } finally {
+            document.body.removeChild(textarea);
+          }
+        }
+
         document
           .getElementById("pdfInput")
           .addEventListener("change", async (event) => {
@@ -821,11 +849,14 @@
                       })
                       .join("\n");
 
-                    document.execCommand("copy"); // Usar document.execCommand para compatibilidade com iframe
-                    showAlertModal(
-                      "Dados copiados para a área de transferência!",
-                      "success"
-                    );
+                    if (copyToClipboard(copyText)) {
+                      showAlertModal(
+                        "Dados copiados para a área de transferência!",
+                        "success"
+                      );
+                    } else {
+                      showAlertModal("Erro ao copiar os dados.", "error");
+                    }
                   } else {
                     showAlertModal("Nenhum dado para copiar.", "no_data");
                   }
