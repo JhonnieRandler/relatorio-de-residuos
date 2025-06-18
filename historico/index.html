@@ -73,6 +73,54 @@
     <link rel="preload" as="image" href="../point.png" />
     <link rel="preload" as="image" href="../sure.png" />
     <style>
+      :root {
+        /* Cores do tema claro */
+        --background-color: #f5f5f5;
+        --text-color: #333;
+        --header-color: #333;
+        --button-bg-color: #ffffff;
+        --button-text-color: #333;
+        --button-hover-bg-color: #4caf50;
+        --button-hover-text-color: white;
+        --table-header-bg: #e0e0e0;
+        --table-border-color: #ccc;
+        --table-row-bg: #ffffff;
+        --modal-bg-color: #fefefe;
+        --footer-bg-color: #ffcead;
+        --box-shadow-color: rgba(0, 0, 0, 0.1);
+        --input-border-color: #ccc;
+
+        /* Cores específicas para o botão de tema no modo claro */
+        --theme-toggle-normal-bg: #ffffff;
+        --theme-toggle-normal-color: #333;
+        --theme-toggle-hover-bg: #000000;
+        --theme-toggle-hover-color: #ffffff;
+      }
+
+      [data-theme="dark"] {
+        /* Cores do tema noturno */
+        --background-color: #1a1a1a;
+        --text-color: #e0e0e0;
+        --header-color: #f5f5f5;
+        --button-bg-color: #333333;
+        --button-text-color: #e0e0e0;
+        --button-hover-bg-color: #367d39;
+        --button-hover-text-color: white;
+        --table-header-bg: #444444;
+        --table-border-color: #555;
+        --table-row-bg: #2b2b2b;
+        --modal-bg-color: #333333;
+        --footer-bg-color: #3d2a21; /* Um marrom mais escuro para o rodapé */
+        --box-shadow-color: rgba(255, 255, 255, 0.1);
+        --input-border-color: #666; /* Bordas dos inputs no tema escuro */
+
+        /* Cores específicas para o botão de tema no modo noturno */
+        --theme-toggle-normal-bg: #333333;
+        --theme-toggle-normal-color: #e0e0e0;
+        --theme-toggle-hover-bg: #ffffff;
+        --theme-toggle-hover-color: #ffa500; /* Laranja/Amarelo */
+      }
+
       html,
       body {
         margin: 0;
@@ -87,12 +135,14 @@
       }
       body {
         font-family: Arial, sans-serif;
-        background-color: #f5f5f5;
+        background-color: var(--background-color);
+        color: var(--text-color);
         min-height: 100vh;
         display: flex;
         flex-direction: column;
         /* Impede a rolagem horizontal da página principal */
         overflow-x: hidden;
+        transition: background-color 0.3s ease, color 0.3s ease; /* Transição suave para o tema */
       }
       main {
         flex: 1 0 auto;
@@ -104,33 +154,41 @@
         text-align: center;
       }
       h1 {
-        color: #333;
+        color: var(--header-color);
         margin-bottom: 20px;
       }
       .table-container {
         overflow-x: auto;
         width: 100%; /* Ocupa 100% da largura do main, que agora é 95% da tela */
         margin: 0 auto 20px;
+        transition: opacity 0.3s ease; /* Adiciona transição para ocultar/exibir */
       }
       table {
         width: 100%;
         border-collapse: collapse;
-        background-color: #ffffff;
+        background-color: var(--table-row-bg);
         border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 4px var(--box-shadow-color);
+        color: var(--text-color);
       }
       th {
-        background-color: #e0e0e0;
+        background-color: var(--table-header-bg);
         font-weight: bold;
         cursor: pointer;
         padding: 8px;
         text-align: left;
+        color: var(--text-color);
+        transition: background-color 0.3s ease, color 0.3s ease; /* Transição para o hover */
       }
       th:hover {
-        background-color: #d0d0d0;
+        background-color: #d0d0d0; /* Manter um hover mais claro ou ajustar para o tema */
+      }
+      [data-theme="dark"] th:hover {
+        color: black; /* Fonte preta no hover em modo noturno */
+        background-color: #cccccc; /* Fundo mais claro para contrastar com texto preto */
       }
       td {
-        border: 1px solid #ccc;
+        border: 1px solid var(--table-border-color);
         padding: 8px;
         text-align: left;
       }
@@ -159,11 +217,18 @@
         margin: 0; /* Remove margem para não interferir com flex */
         padding: 8px;
         width: 100%; /* Preenche o contêiner */
-        background-color: #ffffff;
-        border: none;
+        background-color: var(
+          --button-bg-color
+        ); /* Usar cor de botão para inputs */
+        color: var(
+          --button-text-color
+        ); /* Usar cor de texto de botão para inputs */
+        border: 1px solid var(--input-border-color); /* Adicionar borda para visibilidade no dark mode */
         border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 4px var(--box-shadow-color);
         outline: none;
+        transition: background-color 0.3s ease, color 0.3s ease,
+          border-color 0.3s ease, box-shadow 0.3s ease;
       }
       .filter-input {
         padding-right: 30px; /* Espaço para o ícone de limpar */
@@ -189,8 +254,9 @@
         margin: 0; /* REMOVIDA MARGEM AQUI */
       }
       .clear-filter i {
-        color: #000; /* X preto por padrão */
+        color: var(--text-color); /* X segue a cor do texto do tema */
         font-size: 14px;
+        transition: color 0.3s ease;
       }
       .clear-filter:hover {
         background: transparent; /* Sem fundo no hover */
@@ -199,7 +265,7 @@
         transform: translateY(-50%); /* Mantém o botão centralizado no hover */
       }
       .clear-filter:hover i {
-        color: #ff4444; /* X vermelho no hover */
+        color: #ff4444; /* X vermelho no hover, mantendo contraste */
       }
       #chartContainer {
         width: 100%;
@@ -209,10 +275,13 @@
         box-sizing: border-box;
         display: block;
         /* Adicionado para a borda do gráfico */
-        border: 1px solid #ccc;
+        border: 1px solid var(--table-border-color);
         border-radius: 8px;
-        background-color: #ffffff; /* Garante fundo branco para o contêiner */
+        background-color: var(
+          --table-row-bg
+        ); /* Fundo do contêiner do gráfico segue o tema */
         min-height: 400px; /* Adicionado altura mínima para depuração */
+        transition: background-color 0.3s ease, border-color 0.3s ease;
       }
       canvas {
         max-width: 100%;
@@ -232,32 +301,34 @@
       button {
         padding: 10px 20px;
         margin: 5px; /* Ajuste a margem para melhor espaçamento com flex-wrap */
-        background-color: #ffffff;
-        color: #333;
+        background-color: var(--button-bg-color);
+        color: var(--button-text-color);
         border: none;
         border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 4px var(--box-shadow-color);
         cursor: pointer;
         font-size: 16px;
-        transition: background-color 0.3s, transform 0.2s;
+        transition: background-color 0.3s, transform 0.2s, color 0.3s ease,
+          box-shadow 0.3s ease;
       }
       button:hover {
-        background-color: #4caf50;
-        color: white;
+        background-color: var(--button-hover-bg-color);
+        color: var(--button-hover-text-color);
         transform: translateY(-2px);
       }
       footer {
         flex: 0 0 auto;
         width: 100%; /* Ajustado para 100% e confiar no overflow-x: hidden do body */
-        background-color: #ffcead;
+        background-color: var(--footer-bg-color);
         padding: 15px;
         text-align: center;
-        box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 -2px 4px var(--box-shadow-color);
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 15px;
         box-sizing: border-box;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
       }
       footer img {
         max-width: 100px;
@@ -265,11 +336,41 @@
         cursor: pointer; /* Adicionado cursor para indicar interatividade */
       }
       footer p {
-        color: #333;
+        color: var(--text-color);
         font-size: 14px;
         margin: 0;
         flex: 1;
         overflow-wrap: break-word;
+      }
+      .theme-toggle-button {
+        background-color: var(--theme-toggle-normal-bg);
+        color: var(--theme-toggle-normal-color);
+        border: none;
+        width: 40px; /* Torna o botão quadrado */
+        height: 40px; /* Torna o botão quadrado */
+        border-radius: 50%; /* Torna o botão redondo */
+        display: flex; /* Para centralizar o ícone */
+        justify-content: center; /* Centraliza horizontalmente */
+        align-items: center; /* Centraliza verticalmente */
+        padding: 0; /* Remove padding padrão */
+        cursor: pointer;
+        font-size: 18px; /* Tamanho do ícone */
+        box-shadow: 0 2px 4px var(--box-shadow-color);
+        transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s,
+          box-shadow 0.3s ease;
+        margin-left: 10px; /* Espaçamento do botão */
+      }
+
+      .theme-toggle-button:hover {
+        background-color: var(--theme-toggle-hover-bg);
+        color: var(--theme-toggle-hover-color);
+        transform: translateY(-2px);
+      }
+      .header-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 20px;
       }
       @media screen and (max-width: 600px) {
         main {
@@ -280,16 +381,16 @@
         }
         /* Ajustes para inputs e select em telas pequenas */
         .filter-controls-group {
-          flex-direction: column;
-          width: 100%;
+          flex-direction: column; /* Empilha os itens verticalmente */
+          width: 100%; /* Ocupa largura total */
           gap: 10px;
-          flex-wrap: wrap;
-          min-width: auto;
+          flex-wrap: wrap; /* Permite o wrap interno em telas pequenas */
+          min-width: auto; /* Reseta o min-width para permitir o empilhamento */
         }
         .filter-input-wrapper,
         .month-select {
-          width: 100%;
-          flex-basis: auto;
+          width: 100%; /* Faz com que ocupem a largura total do grupo */
+          flex-basis: auto; /* Reseta a base flexível para ocupar 100% */
         }
         #chartContainer {
           height: 500px;
@@ -316,6 +417,10 @@
           font-size: 12px;
           max-width: 100%;
         }
+        .header-controls {
+          flex-direction: column;
+          gap: 10px;
+        }
       }
 
       /* Estilos para o Modal de Confirmação e Alerta */
@@ -334,15 +439,18 @@
       }
 
       .modal-content {
-        background-color: #fefefe;
+        background-color: var(--modal-bg-color);
         margin: auto;
         padding: 20px;
-        border: 1px solid #888;
+        border: 1px solid var(--table-border-color);
         width: 80%;
         max-width: 400px;
         border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 8px var(--box-shadow-color);
         text-align: center;
+        color: var(--text-color);
+        transition: background-color 0.3s ease, border-color 0.3s ease,
+          box-shadow 0.3s ease, color 0.3s ease;
       }
 
       .modal-buttons button {
@@ -350,10 +458,12 @@
         margin: 10px 5px 0;
         border-radius: 5px;
         cursor: pointer;
-        background-color: #4caf50;
-        color: white;
+        background-color: var(
+          --button-hover-bg-color
+        ); /* Botões do modal com cor de hover padrão */
+        color: var(--button-hover-text-color);
         border: none;
-        transition: background-color 0.3s ease;
+        transition: background-color 0.3s ease, opacity 0.3s ease;
       }
 
       .modal-buttons button:hover {
@@ -361,7 +471,7 @@
       }
 
       #modalCancelBtn {
-        background-color: #f44336;
+        background-color: #f44336; /* Manter vermelho para o cancelar */
       }
       #modalCancelBtn:hover {
         background-color: #d32f2f;
@@ -377,7 +487,12 @@
   </head>
   <body>
     <main>
-      <h1>Histórico de Resíduos</h1>
+      <div class="header-controls">
+        <h1>Histórico de Resíduos</h1>
+        <button id="themeToggle" class="theme-toggle-button">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
       <div class="buttons" id="buttonsContainer">
         <div class="filter-controls-group" id="filterControlsGroup">
           <div class="filter-input-wrapper">
@@ -403,6 +518,9 @@
         </button>
         <button id="copyButton" style="display: none">
           <i class="fas fa-copy"></i> Copiar
+        </button>
+        <button id="toggleTableVisibility" style="display: none">
+          <i class="fas fa-eye-slash"></i> Ocultar Tabela
         </button>
         <button id="backButton" onclick="redirectToMainPage()">
           <i class="fas fa-arrow-left"></i> Voltar
@@ -458,6 +576,61 @@
     <script>
       let sortDirection = {};
       let storedData = []; // Declarado aqui, será inicializado em DOMContentLoaded
+      let isTableVisible = true; // Estado para a visibilidade da tabela
+
+      // Função para alternar o tema
+      function toggleTheme() {
+        const htmlElement = document.documentElement;
+        const currentTheme = htmlElement.getAttribute("data-theme");
+        const themeToggleBtn = document.getElementById("themeToggle");
+
+        if (currentTheme === "dark") {
+          htmlElement.removeAttribute("data-theme");
+          localStorage.setItem("theme", "light");
+          if (themeToggleBtn) {
+            themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+          }
+          // Atualiza o gráfico se ele estiver visível, para redesenhar com as novas cores de texto, etc.
+          if (
+            window.myChart &&
+            document.getElementById("chartContainer").style.display !== "none"
+          ) {
+            updateChart(storedData);
+          }
+        } else {
+          htmlElement.setAttribute("data-theme", "dark");
+          localStorage.setItem("theme", "dark");
+          if (themeToggleBtn) {
+            themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+          }
+          // Atualiza o gráfico se ele estiver visível
+          if (
+            window.myChart &&
+            document.getElementById("chartContainer").style.display !== "none"
+          ) {
+            updateChart(storedData);
+          }
+        }
+      }
+
+      // Função para aplicar o tema salvo
+      function applySavedTheme() {
+        const savedTheme = localStorage.getItem("theme");
+        const htmlElement = document.documentElement;
+        const themeToggleBtn = document.getElementById("themeToggle");
+
+        if (savedTheme === "dark") {
+          htmlElement.setAttribute("data-theme", "dark");
+          if (themeToggleBtn) {
+            themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+          }
+        } else {
+          htmlElement.removeAttribute("data-theme");
+          if (themeToggleBtn) {
+            themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+          }
+        }
+      }
 
       // Função para redirecionar para a página principal, adaptando-se ao ambiente
       function redirectToMainPage() {
@@ -648,23 +821,29 @@
               renderTable([]);
               updateChart([]);
               toggleButtons();
+              toggleTableVisibility(false); // Esconde a tabela ao limpar o histórico
+              const toggleTableBtn = document.getElementById(
+                "toggleTableVisibility"
+              );
+              if (toggleTableBtn) {
+                toggleTableBtn.innerHTML =
+                  '<i class="fas fa-eye"></i> Exibir Tabela';
+                isTableVisible = false; // Atualiza o estado
+              }
             }
           }
         );
       }
 
       function updateChart(data) {
-        // console.log("updateChart called with data:", data); // Log para depuração
         const dataToUse = data.length > 0 ? data : storedData;
         const chartContainer = document.getElementById("chartContainer");
 
         if (dataToUse.length === 0) {
           if (chartContainer) chartContainer.style.display = "none";
-          // console.log("No data for chart, hiding chartContainer."); // Log para depuração
           return;
         } else {
           if (chartContainer) chartContainer.style.display = "block";
-          // console.log("Data present for chart, showing chartContainer."); // Log para depuração
         }
 
         const tipos = [
@@ -714,6 +893,14 @@
         // Já define o fundo do canvas como branco.
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Obter as cores do tema atual para o texto e as grades do gráfico
+        const computedStyle = getComputedStyle(document.documentElement);
+        const textColor = computedStyle.getPropertyValue("--text-color").trim();
+        const gridColor = computedStyle
+          .getPropertyValue("--table-border-color")
+          .trim();
+
         if (window.myChart) window.myChart.destroy();
         window.myChart = new Chart(ctx, {
           type: "bar",
@@ -752,17 +939,35 @@
               },
             },
             scales: {
-              x: {},
+              x: {
+                ticks: {
+                  color: textColor, // Cor dos rótulos do eixo X
+                },
+                grid: {
+                  color: gridColor, // Cor das linhas de grade do eixo X
+                },
+              },
               y: {
                 beginAtZero: true,
                 max: yMax,
                 stacked: true,
-                grid: { display: false },
-                ticks: { display: false },
+                grid: {
+                  display: false,
+                  color: gridColor, // Cor das linhas de grade do eixo Y
+                },
+                ticks: {
+                  display: false,
+                  color: textColor, // Cor dos rótulos do eixo Y
+                },
               },
             },
             plugins: {
-              legend: { position: "bottom" },
+              legend: {
+                position: "bottom",
+                labels: {
+                  color: textColor, // Cor do texto da legenda
+                },
+              },
               datalabels: {
                 anchor: "end",
                 align: "top",
@@ -775,7 +980,7 @@
                   }
                   return "";
                 },
-                color: "#333",
+                color: textColor, // Cor dos rótulos de dados
                 font: { weight: "bold" },
                 offset: 5,
               },
@@ -827,7 +1032,6 @@
       });
 
       function toggleButtons() {
-        // console.log("toggleButtons called. storedData.length:", storedData.length); // Log para depuração
         const buttonsContainer = document.getElementById("buttonsContainer");
         const clearButton = document.getElementById("clearHistory");
         const downloadButton = document.getElementById("downloadChart");
@@ -839,6 +1043,7 @@
         const chartContainer = document.getElementById("chartContainer");
         const clearFilter = document.getElementById("clearFilter");
         const backButton = document.getElementById("backButton");
+        const toggleTableBtn = document.getElementById("toggleTableVisibility");
 
         if (storedData.length > 0) {
           if (clearButton) clearButton.style.display = "inline-block";
@@ -857,6 +1062,7 @@
           if (backButton) {
             backButton.style.margin = "5px";
           }
+          if (toggleTableBtn) toggleTableBtn.style.display = "inline-block";
         } else {
           if (clearButton) clearButton.style.display = "none";
           if (downloadButton) downloadButton.style.display = "none";
@@ -865,6 +1071,7 @@
           if (monthSelect) monthSelect.style.display = "none";
           if (chartContainer) chartContainer.style.display = "none";
           if (clearFilter) clearFilter.style.display = "none";
+          if (toggleTableBtn) toggleTableBtn.style.display = "none";
 
           if (backButton) {
             backButton.style.display = "inline-block";
@@ -897,6 +1104,7 @@
                 .join("\t");
             })
             .join("\n");
+          document.execCommand("copy"); // Usar document.execCommand para compatibilidade com iframe
           showAlertModal(
             "Dados copiados para a área de transferência!",
             "success"
@@ -914,6 +1122,38 @@
         document.getElementById("filterInput").focus();
       });
 
+      // Nova função para ocultar/exibir a tabela
+      function toggleTableVisibility(forceState = null) {
+        const tableContainer = document.getElementById("historyTable");
+        const toggleTableBtn = document.getElementById("toggleTableVisibility");
+
+        if (!tableContainer || !toggleTableBtn) return;
+
+        if (forceState !== null) {
+          isTableVisible = forceState;
+        } else {
+          isTableVisible = !isTableVisible;
+        }
+
+        if (isTableVisible) {
+          tableContainer.style.opacity = "1";
+          tableContainer.style.height = "auto"; // Reverte para altura automática
+          tableContainer.style.overflow = "auto"; // Reverte para overflow automático
+          toggleTableBtn.innerHTML =
+            '<i class="fas fa-eye-slash"></i> Ocultar Tabela';
+        } else {
+          tableContainer.style.opacity = "0";
+          tableContainer.style.height = "0"; // Define altura para 0
+          tableContainer.style.overflow = "hidden"; // Oculta o overflow
+          toggleTableBtn.innerHTML = '<i class="fas fa-eye"></i> Exibir Tabela';
+        }
+      }
+
+      // Adiciona listener para o botão de toggle da tabela
+      document
+        .getElementById("toggleTableVisibility")
+        .addEventListener("click", () => toggleTableVisibility());
+
       // Função para trocar a imagem do rodapé
       function swapFooterImage(imgElement) {
         const originalSrc = imgElement.src;
@@ -929,6 +1169,13 @@
       }
 
       document.addEventListener("DOMContentLoaded", () => {
+        applySavedTheme(); // Aplica o tema salvo ao carregar a página
+
+        const themeToggleBtn = document.getElementById("themeToggle");
+        if (themeToggleBtn) {
+          themeToggleBtn.addEventListener("click", toggleTheme);
+        }
+
         // Inicializa storedData e as variáveis globais aqui
         storedData = JSON.parse(localStorage.getItem("residuosData") || "[]");
         // console.log("Stored data on DOMContentLoaded:", storedData); // Log para depuração inicial
