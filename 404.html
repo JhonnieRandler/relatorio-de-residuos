@@ -17,7 +17,48 @@
     <link rel="preload" as="image" href="doubt.png" />
     <link rel="preload" as="image" href="footer.png" />
     <link rel="preload" as="image" href="blink.png" />
+    <link rel="preload" as="image" href="like.png" />
+    <link rel="preload" as="image" href="point.png" />
+    <link rel="preload" as="image" href="sure.png" />
     <style>
+      :root {
+        /* Cores do tema claro */
+        --background-color: #f5f5f5;
+        --text-color: #333;
+        --header-color: #333;
+        --button-bg-color: #ffffff;
+        --button-text-color: #333;
+        --button-hover-bg-color: #4caf50;
+        --button-hover-text-color: white;
+        --footer-bg-color: #ffcead;
+        --box-shadow-color: rgba(0, 0, 0, 0.1);
+
+        /* Cores específicas para o botão de tema no modo claro */
+        --theme-toggle-normal-bg: #ffffff;
+        --theme-toggle-normal-color: #333;
+        --theme-toggle-hover-bg: #000000;
+        --theme-toggle-hover-color: #ffffff;
+      }
+
+      [data-theme="dark"] {
+        /* Cores do tema noturno */
+        --background-color: #1a1a1a;
+        --text-color: #e0e0e0;
+        --header-color: #f5f5f5;
+        --button-bg-color: #333333;
+        --button-text-color: #e0e0e0;
+        --button-hover-bg-color: #367d39;
+        --button-hover-text-color: white;
+        --footer-bg-color: #3d2a21; /* Um marrom mais escuro para o rodapé */
+        --box-shadow-color: rgba(255, 255, 255, 0.1);
+
+        /* Cores específicas para o botão de tema no modo noturno */
+        --theme-toggle-normal-bg: #333333;
+        --theme-toggle-normal-color: #e0e0e0;
+        --theme-toggle-hover-bg: #ffffff;
+        --theme-toggle-hover-color: #ffa500; /* Laranja/Amarelo */
+      }
+
       html,
       body {
         margin: 0;
@@ -32,7 +73,8 @@
       }
       body {
         font-family: Arial, sans-serif;
-        background-color: #f5f5f5;
+        background-color: var(--background-color);
+        color: var(--text-color);
         min-height: 100vh;
         display: flex;
         flex-direction: column;
@@ -40,6 +82,7 @@
         align-items: center;
         text-align: center;
         overflow-x: hidden; /* Evita rolagem horizontal */
+        transition: background-color 0.3s ease, color 0.3s ease; /* Transição suave para o tema */
       }
       main {
         flex: 1; /* Ocupa o espaço restante */
@@ -53,12 +96,12 @@
         margin: 0 auto;
       }
       h1 {
-        color: #333;
+        color: var(--header-color);
         margin-bottom: 20px;
         font-size: 3em; /* Tamanho maior para destaque */
       }
       p {
-        color: #555;
+        color: var(--text-color);
         font-size: 1.2em;
         margin-bottom: 20px;
         max-width: 600px; /* Limita a largura do texto para melhor leitura */
@@ -70,33 +113,35 @@
       }
       button {
         padding: 12px 25px;
-        background-color: #ffffff;
-        color: #333;
+        background-color: var(--button-bg-color);
+        color: var(--button-text-color);
         border: none;
         border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 4px var(--box-shadow-color);
         cursor: pointer;
         font-size: 18px;
-        transition: background-color 0.3s, transform 0.2s;
+        transition: background-color 0.3s, transform 0.2s, color 0.3s ease,
+          box-shadow 0.3s ease;
         margin-top: 20px;
       }
       button:hover {
-        background-color: #4caf50;
-        color: white;
+        background-color: var(--button-hover-bg-color);
+        color: var(--button-hover-text-color);
         transform: translateY(-2px);
       }
       footer {
         flex-shrink: 0; /* Impede o rodapé de encolher */
         width: 100%;
-        background-color: #ffcead;
+        background-color: var(--footer-bg-color);
         padding: 15px;
         text-align: center;
-        box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 -2px 4px var(--box-shadow-color);
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 15px;
         box-sizing: border-box;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
       }
       footer img {
         max-width: 100px;
@@ -104,11 +149,41 @@
         cursor: pointer;
       }
       footer p {
-        color: #333;
+        color: var(--text-color);
         font-size: 14px;
         margin: 0;
         flex: 1;
         overflow-wrap: break-word;
+      }
+      .theme-toggle-button {
+        background-color: var(--theme-toggle-normal-bg);
+        color: var(--theme-toggle-normal-color);
+        border: none;
+        width: 40px; /* Torna o botão quadrado */
+        height: 40px; /* Torna o botão quadrado */
+        border-radius: 50%; /* Torna o botão redondo */
+        display: flex; /* Para centralizar o ícone */
+        justify-content: center; /* Centraliza horizontalmente */
+        align-items: center; /* Centraliza verticalmente */
+        padding: 0; /* Remove padding padrão */
+        cursor: pointer;
+        font-size: 18px; /* Tamanho do ícone */
+        box-shadow: 0 2px 4px var(--box-shadow-color);
+        transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s,
+          box-shadow 0.3s ease;
+        margin-left: 10px; /* Espaçamento do botão */
+      }
+
+      .theme-toggle-button:hover {
+        background-color: var(--theme-toggle-hover-bg);
+        color: var(--theme-toggle-hover-color);
+        transform: translateY(-2px);
+      }
+      .header-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 20px;
       }
       @media screen and (max-width: 600px) {
         h1 {
@@ -136,12 +211,21 @@
           font-size: 12px;
           max-width: 100%;
         }
+        .header-controls {
+          flex-direction: column;
+          gap: 10px;
+        }
       }
     </style>
   </head>
   <body>
     <main>
-      <h1>404 - Página Não Encontrada!</h1>
+      <div class="header-controls">
+        <h1>404 - Página Não Encontrada!</h1>
+        <button id="themeToggle" class="theme-toggle-button">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
       <img src="doubt.png" alt="Capivara Confusa" class="error-image" />
       <p>
         Parece que a capivara do nosso servidor pegou o jacaré errado e não
@@ -162,6 +246,46 @@
     </footer>
 
     <script>
+      // Função para alternar o tema
+      function toggleTheme() {
+        const htmlElement = document.documentElement;
+        const currentTheme = htmlElement.getAttribute("data-theme");
+        const themeToggleBtn = document.getElementById("themeToggle");
+
+        if (currentTheme === "dark") {
+          htmlElement.removeAttribute("data-theme");
+          localStorage.setItem("theme", "light");
+          if (themeToggleBtn) {
+            themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+          }
+        } else {
+          htmlElement.setAttribute("data-theme", "dark");
+          localStorage.setItem("theme", "dark");
+          if (themeToggleBtn) {
+            themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+          }
+        }
+      }
+
+      // Função para aplicar o tema salvo
+      function applySavedTheme() {
+        const savedTheme = localStorage.getItem("theme");
+        const htmlElement = document.documentElement;
+        const themeToggleBtn = document.getElementById("themeToggle");
+
+        if (savedTheme === "dark") {
+          htmlElement.setAttribute("data-theme", "dark");
+          if (themeToggleBtn) {
+            themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+          }
+        } else {
+          htmlElement.removeAttribute("data-theme");
+          if (themeToggleBtn) {
+            themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+          }
+        }
+      }
+
       function goHome() {
         const isLocal =
           window.location.hostname === "127.0.0.1" ||
@@ -186,6 +310,13 @@
       }
 
       document.addEventListener("DOMContentLoaded", () => {
+        applySavedTheme(); // Aplica o tema salvo ao carregar a página
+
+        const themeToggleBtn = document.getElementById("themeToggle");
+        if (themeToggleBtn) {
+          themeToggleBtn.addEventListener("click", toggleTheme);
+        }
+
         const footerImage = document.getElementById("footerImage");
         if (footerImage) {
           footerImage.addEventListener("click", () =>
