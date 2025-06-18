@@ -4,10 +4,49 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>404 - Página Não Encontrada</title>
+    <!-- Metadados para SEO e Descrição da Página -->
     <meta
       name="description"
-      content="Página de erro 404 divertida para o Relatório de Resíduos Gerados."
+      content="Página não encontrada para a ferramenta de gestão de resíduos."
     />
+    <meta name="author" content="Jhon Randler" />
+    <meta
+      name="keywords"
+      content="404, página não encontrada, erro, gestão de resíduos, MTR"
+    />
+
+    <!-- Open Graph Metadados para Redes Sociais -->
+    <meta property="og:title" content="404 - Página Não Encontrada" />
+    <meta
+      property="og:description"
+      content="Página não encontrada para a ferramenta de gestão de resíduos."
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://jhonnierandler.github.io/relatorio-de-residuos/404.html"
+    />
+    <meta
+      property="og:image"
+      content="https://jhonnierandler.github.io/relatorio-de-residuos/footer.png"
+    />
+    <meta property="og:image:width" content="408" />
+    <meta property="og:image:height" content="408" />
+    <meta property="og:locale" content="pt_BR" />
+
+    <!-- Twitter Card Metadados -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="404 - Página Não Encontrada" />
+    <meta
+      name="twitter:description"
+      content="Página não encontrada para a ferramenta de gestão de resíduos."
+    />
+    <meta
+      name="twitter:image"
+      content="https://jhonnierandler.github.io/relatorio-de-residuos/footer.png"
+    />
+    <meta name="twitter:creator" content="@JhonnieRandler" />
+
     <link rel="icon" type="image/png" href="footer.png" />
     <link
       rel="stylesheet"
@@ -20,6 +59,8 @@
     <link rel="preload" as="image" href="like.png" />
     <link rel="preload" as="image" href="point.png" />
     <link rel="preload" as="image" href="sure.png" />
+    <!-- Preload do áudio -->
+    <link rel="preload" as="audio" href="blink.mp3" />
     <style>
       :root {
         /* Cores do tema claro */
@@ -30,6 +71,7 @@
         --button-text-color: #333;
         --button-hover-bg-color: #4caf50;
         --button-hover-text-color: white;
+        --modal-bg-color: #fefefe;
         --footer-bg-color: #ffcead;
         --box-shadow-color: rgba(0, 0, 0, 0.1);
 
@@ -49,6 +91,7 @@
         --button-text-color: #e0e0e0;
         --button-hover-bg-color: #367d39;
         --button-hover-text-color: white;
+        --modal-bg-color: #333333;
         --footer-bg-color: #3d2a21; /* Um marrom mais escuro para o rodapé */
         --box-shadow-color: rgba(255, 255, 255, 0.1);
 
@@ -64,65 +107,54 @@
         margin: 0;
         padding: 0;
         height: 100%;
+        width: 100%;
+        overflow-x: hidden;
       }
-      /* Adiciona box-sizing universal para um modelo de caixa consistente */
-      *,
-      *::before,
-      *::after {
+      * {
         box-sizing: border-box;
       }
       body {
         font-family: Arial, sans-serif;
         background-color: var(--background-color);
         color: var(--text-color);
-        min-height: 100vh;
         display: flex;
         flex-direction: column;
-        justify-content: space-between; /* Para empurrar o footer para o final */
-        align-items: center;
-        text-align: center;
-        overflow-x: hidden; /* Evita rolagem horizontal */
-        transition: background-color 0.3s ease, color 0.3s ease; /* Transição suave para o tema */
+        min-height: 100vh;
+        transition: background-color 0.3s ease, color 0.3s ease;
       }
       main {
-        flex: 1; /* Ocupa o espaço restante */
-        display: flex;
+        flex: 1 0 auto;
+        width: 100%;
+        max-width: 95%;
+        margin: 20px auto;
+        padding: 0 20px;
+        text-align: center;
+        display: flex; /* Adicionado para centralizar conteúdo */
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        padding: 20px;
-        width: 100%;
-        max-width: 95%; /* Adapta-se à largura da tela */
-        margin: 0 auto;
       }
       h1 {
         color: var(--header-color);
         margin-bottom: 20px;
-        font-size: 3em; /* Tamanho maior para destaque */
+        font-size: 3em;
       }
       p {
-        color: var(--text-color);
         font-size: 1.2em;
         margin-bottom: 20px;
-        max-width: 600px; /* Limita a largura do texto para melhor leitura */
-      }
-      .error-image {
-        max-width: 150px; /* Tamanho adequado para a imagem central */
-        height: auto;
-        margin-bottom: 30px;
       }
       button {
-        padding: 12px 25px;
+        padding: 10px 20px;
+        margin: 10px 0;
         background-color: var(--button-bg-color);
         color: var(--button-text-color);
         border: none;
         border-radius: 8px;
         box-shadow: 0 2px 4px var(--box-shadow-color);
         cursor: pointer;
-        font-size: 18px;
+        font-size: 16px;
         transition: background-color 0.3s, transform 0.2s, color 0.3s ease,
           box-shadow 0.3s ease;
-        margin-top: 20px;
       }
       button:hover {
         background-color: var(--button-hover-bg-color);
@@ -130,7 +162,7 @@
         transform: translateY(-2px);
       }
       footer {
-        flex-shrink: 0; /* Impede o rodapé de encolher */
+        flex: 0 0 auto;
         width: 100%;
         background-color: var(--footer-bg-color);
         padding: 15px;
@@ -159,19 +191,19 @@
         background-color: var(--theme-toggle-normal-bg);
         color: var(--theme-toggle-normal-color);
         border: none;
-        width: 40px; /* Torna o botão quadrado */
-        height: 40px; /* Torna o botão quadrado */
-        border-radius: 50%; /* Torna o botão redondo */
-        display: flex; /* Para centralizar o ícone */
-        justify-content: center; /* Centraliza horizontalmente */
-        align-items: center; /* Centraliza verticalmente */
-        padding: 0; /* Remove padding padrão */
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0;
         cursor: pointer;
-        font-size: 18px; /* Tamanho do ícone */
+        font-size: 18px;
         box-shadow: 0 2px 4px var(--box-shadow-color);
         transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s,
           box-shadow 0.3s ease;
-        margin-left: 10px; /* Espaçamento do botão */
+        margin-left: 10px;
       }
 
       .theme-toggle-button:hover {
@@ -186,18 +218,18 @@
         margin-bottom: 20px;
       }
       @media screen and (max-width: 600px) {
+        main {
+          padding: 10px;
+        }
         h1 {
-          font-size: 2em;
+          font-size: 24px;
         }
         p {
           font-size: 1em;
         }
-        .error-image {
-          max-width: 100px;
-        }
         button {
-          padding: 10px 20px;
-          font-size: 16px;
+          padding: 8px 16px;
+          font-size: 14px;
         }
         footer {
           flex-direction: column;
@@ -221,19 +253,14 @@
   <body>
     <main>
       <div class="header-controls">
-        <h1>404 - Página Não Encontrada!</h1>
+        <h1>404 - Página Não Encontrada</h1>
         <button id="themeToggle" class="theme-toggle-button">
           <i class="fas fa-moon"></i>
         </button>
       </div>
-      <img src="doubt.png" alt="Capivara Confusa" class="error-image" />
-      <p>
-        Parece que a capivara do nosso servidor pegou o jacaré errado e não
-        conseguiu encontrar a página que você procura. Não se preocupe, isso
-        acontece com os melhores!
-      </p>
-      <button onclick="goHome()">
-        <i class="fas fa-arrow-left"></i> Voltar para a Página Inicial
+      <p>A página que você está procurando não existe ou foi movida.</p>
+      <button onclick="redirectToMainPage()">
+        <i class="fas fa-home"></i> Ir para a Página Inicial
       </button>
     </main>
     <footer>
@@ -243,6 +270,11 @@
         oferecendo uma ferramenta prática e acessível. É livre para uso por
         todos!
       </p>
+      <!-- Elemento de áudio para o som de blink -->
+      <audio id="blinkAudio" preload="auto">
+        <source src="blink.mp3" type="audio/mpeg" />
+        Seu navegador não suporta o elemento de áudio.
+      </audio>
     </footer>
 
     <script>
@@ -286,24 +318,38 @@
         }
       }
 
-      function goHome() {
+      // Função para redirecionar para a página principal, adaptando-se ao ambiente
+      function redirectToMainPage() {
         const isLocal =
           window.location.hostname === "127.0.0.1" ||
           window.location.hostname === "localhost";
+
         if (isLocal) {
+          // Para desenvolvimento local, assume que a página principal está na raiz do servidor
           window.location.href = window.location.origin + "/";
         } else {
+          // Para GitHub Pages, usa o caminho absoluto do projeto
+          // Aqui, ajustamos o caminho para subir um nível se a 404.html estiver em um subdiretório.
+          // Se 404.html estiver na raiz, a URL base já será suficiente.
           window.location.href =
             "https://jhonnierandler.github.io/relatorio-de-residuos/";
         }
       }
 
-      // Função para trocar a imagem do rodapé
+      // Função para trocar a imagem do rodapé e reproduzir áudio
       function swapFooterImage(imgElement) {
         const originalSrc = imgElement.src;
+        // Ajusta o caminho do blink.png para a 404.html (assumindo que 404.html está na raiz, assim como footer.png e blink.png)
         const blinkSrc = originalSrc.replace("footer.png", "blink.png");
+        const audio = document.getElementById("blinkAudio");
 
         imgElement.src = blinkSrc;
+        if (audio) {
+          audio.currentTime = 0; // Reinicia o áudio se já estiver tocando
+          audio
+            .play()
+            .catch((e) => console.error("Erro ao reproduzir áudio:", e));
+        }
         setTimeout(() => {
           imgElement.src = originalSrc;
         }, 400); // 400 milissegundos
@@ -317,6 +363,7 @@
           themeToggleBtn.addEventListener("click", toggleTheme);
         }
 
+        // Adiciona listener para a imagem do rodapé APÓS o DOM estar pronto
         const footerImage = document.getElementById("footerImage");
         if (footerImage) {
           footerImage.addEventListener("click", () =>
