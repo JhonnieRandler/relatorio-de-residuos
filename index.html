@@ -63,6 +63,52 @@
     <link rel="preload" as="image" href="point.png" />
     <link rel="preload" as="image" href="sure.png" />
     <style>
+      :root {
+        /* Cores do tema claro */
+        --background-color: #f5f5f5;
+        --text-color: #333;
+        --header-color: #333;
+        --button-bg-color: #ffffff;
+        --button-text-color: #333;
+        --button-hover-bg-color: #4caf50;
+        --button-hover-text-color: white;
+        --table-header-bg: #e0e0e0;
+        --table-border-color: #ccc;
+        --table-row-bg: #ffffff;
+        --modal-bg-color: #fefefe;
+        --footer-bg-color: #ffcead;
+        --box-shadow-color: rgba(0, 0, 0, 0.1);
+
+        /* Cores específicas para o botão de tema no modo claro */
+        --theme-toggle-normal-bg: #ffffff;
+        --theme-toggle-normal-color: #333;
+        --theme-toggle-hover-bg: #000000;
+        --theme-toggle-hover-color: #ffffff;
+      }
+
+      [data-theme="dark"] {
+        /* Cores do tema noturno */
+        --background-color: #1a1a1a;
+        --text-color: #e0e0e0;
+        --header-color: #f5f5f5;
+        --button-bg-color: #333333;
+        --button-text-color: #e0e0e0;
+        --button-hover-bg-color: #367d39;
+        --button-hover-text-color: white;
+        --table-header-bg: #444444;
+        --table-border-color: #555;
+        --table-row-bg: #2b2b2b;
+        --modal-bg-color: #333333;
+        --footer-bg-color: #3d2a21; /* Um marrom mais escuro para o rodapé */
+        --box-shadow-color: rgba(255, 255, 255, 0.1);
+
+        /* Cores específicas para o botão de tema no modo noturno */
+        --theme-toggle-normal-bg: #333333;
+        --theme-toggle-normal-color: #e0e0e0;
+        --theme-toggle-hover-bg: #ffffff;
+        --theme-toggle-hover-color: #ffa500; /* Laranja/Amarelo */
+      }
+
       html,
       body {
         margin: 0;
@@ -77,12 +123,14 @@
       }
       body {
         font-family: Arial, sans-serif;
-        background-color: #f5f5f5;
+        background-color: var(--background-color);
+        color: var(--text-color);
         display: flex;
         flex-direction: column;
         min-height: 100vh;
         /* Impede a rolagem horizontal da página principal */
         overflow-x: hidden;
+        transition: background-color 0.3s ease, color 0.3s ease; /* Transição suave para o tema */
       }
       main {
         flex: 1 0 auto;
@@ -94,7 +142,7 @@
         text-align: center;
       }
       h1 {
-        color: #333;
+        color: var(--header-color);
         margin-bottom: 20px;
       }
       .input-container {
@@ -108,21 +156,19 @@
       .custom-file-upload {
         display: inline-block;
         padding: 12px 20px;
-        background-color: #ffffff;
-        color: #333;
+        background-color: var(--button-bg-color);
+        color: var(--button-text-color);
         border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 4px var(--box-shadow-color);
         cursor: pointer;
         font-size: 16px;
-        transition: background-color 0.3s, transform 0.2s; /* Adiciona transição de transformação */
+        transition: background-color 0.3s, transform 0.2s, color 0.3s ease,
+          box-shadow 0.3s ease; /* Adiciona transição de transformação */
       }
       .custom-file-upload:hover {
-        background-color: #4caf50;
-        color: white;
+        background-color: var(--button-hover-bg-color);
+        color: var(--button-hover-text-color);
         transform: translateY(-2px); /* Efeito de elevação no hover */
-      }
-      .custom-file-upload i {
-        margin-right: 8px;
       }
       #textOutput {
         margin-top: 20px;
@@ -136,56 +182,62 @@
         width: 100%;
         border-collapse: collapse;
         margin-top: 10px;
-        background-color: #ffffff;
+        background-color: var(--table-row-bg);
         border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 4px var(--box-shadow-color);
+        color: var(
+          --text-color
+        ); /* Garante que o texto da tabela siga a cor do tema */
       }
       th,
       td {
-        border: 1px solid #ccc;
+        border: 1px solid var(--table-border-color);
         padding: 8px;
         text-align: left;
       }
       th {
-        background-color: #e0e0e0;
+        background-color: var(--table-header-bg);
         font-weight: bold;
       }
       button {
         padding: 10px 20px;
         margin: 10px 0;
-        background-color: #ffffff;
-        color: #333;
+        background-color: var(--button-bg-color);
+        color: var(--button-text-color);
         border: none;
         border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 4px var(--box-shadow-color);
         cursor: pointer;
         font-size: 16px;
-        transition: background-color 0.3s, transform 0.2s; /* Adiciona transição de transformação */
+        transition: background-color 0.3s, transform 0.2s, color 0.3s ease,
+          box-shadow 0.3s ease; /* Adiciona transição de transformação */
       }
       button:hover {
-        background-color: #4caf50;
-        color: white;
+        background-color: var(--button-hover-bg-color);
+        color: var(--button-hover-text-color);
         transform: translateY(-2px); /* Efeito de elevação no hover */
       }
       .history-button {
         margin: 10px 0;
         padding: 10px;
-        background-color: #ffffff;
+        background-color: var(--button-bg-color);
+        color: var(--button-text-color);
         border: none;
         border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 4px var(--box-shadow-color);
         cursor: pointer;
-        transition: background-color 0.3s, transform 0.2s; /* Adiciona transição de transformação */
+        transition: background-color 0.3s, transform 0.2s, color 0.3s ease,
+          box-shadow 0.3s ease; /* Adiciona transição de transformação */
       }
       .history-button:hover {
-        background-color: #4caf50;
-        color: white;
+        background-color: var(--button-hover-bg-color);
+        color: var(--button-hover-text-color);
         transform: translateY(-2px); /* Efeito de elevação no hover */
       }
       #error,
       #messageBox {
-        color: red;
-        background-color: #ffe0e0;
+        color: red; /* Manter vermelho para erros */
+        background-color: #ffe0e0; /* Manter fundo claro para erros */
         border: 1px solid red;
         padding: 10px;
         margin-top: 10px;
@@ -193,22 +245,23 @@
         display: none;
       }
       #messageBox.success {
-        color: green;
-        background-color: #e0ffe0;
+        color: green; /* Manter verde para sucesso */
+        background-color: #e0ffe0; /* Manter fundo claro para sucesso */
         border-color: green;
       }
       footer {
         flex: 0 0 auto;
         width: 100%; /* Ajustado para 100% e confiar no overflow-x: hidden do body */
-        background-color: #ffcead;
+        background-color: var(--footer-bg-color);
         padding: 15px;
         text-align: center;
-        box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 4px var(--box-shadow-color);
         display: flex;
         align-items: center;
         justify-content: center;
         gap: 15px;
         box-sizing: border-box;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
       }
       footer img {
         max-width: 100px;
@@ -216,11 +269,41 @@
         cursor: pointer; /* Adicionado cursor para indicar interatividade */
       }
       footer p {
-        color: #333;
+        color: var(--text-color); /* Texto do rodapé segue o tema */
         font-size: 14px;
         margin: 0;
         flex: 1;
         overflow-wrap: break-word;
+      }
+      .theme-toggle-button {
+        background-color: var(--theme-toggle-normal-bg);
+        color: var(--theme-toggle-normal-color);
+        border: none;
+        width: 40px; /* Torna o botão quadrado */
+        height: 40px; /* Torna o botão quadrado */
+        border-radius: 50%; /* Torna o botão redondo */
+        display: flex; /* Para centralizar o ícone */
+        justify-content: center; /* Centraliza horizontalmente */
+        align-items: center; /* Centraliza verticalmente */
+        padding: 0; /* Remove padding padrão */
+        cursor: pointer;
+        font-size: 18px; /* Tamanho do ícone */
+        box-shadow: 0 2px 4px var(--box-shadow-color);
+        transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s,
+          box-shadow 0.3s ease;
+        margin-left: 10px; /* Espaçamento do botão */
+      }
+
+      .theme-toggle-button:hover {
+        background-color: var(--theme-toggle-hover-bg);
+        color: var(--theme-toggle-hover-color);
+        transform: translateY(-2px);
+      }
+      .header-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 20px;
       }
       @media screen and (max-width: 600px) {
         main {
@@ -258,6 +341,10 @@
           font-size: 12px;
           max-width: 100%;
         }
+        .header-controls {
+          flex-direction: column;
+          gap: 10px;
+        }
       }
 
       /* Estilos para o Modal de Alerta Customizado */
@@ -276,15 +363,18 @@
       }
 
       .modal-content {
-        background-color: #fefefe;
+        background-color: var(--modal-bg-color);
         margin: auto;
         padding: 20px;
-        border: 1px solid #888;
+        border: 1px solid var(--table-border-color);
         width: 80%; /* Largura responsiva */
         max-width: 400px;
         border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        box-shadow: 0 4px 8px var(--box-shadow-color);
         text-align: center;
+        color: var(--text-color); /* Texto do modal segue o tema */
+        transition: background-color 0.3s ease, border-color 0.3s ease,
+          box-shadow 0.3s ease, color 0.3s ease;
       }
 
       .modal-buttons button {
@@ -292,10 +382,12 @@
         margin: 10px 5px 0;
         border-radius: 5px;
         cursor: pointer;
-        background-color: #4caf50;
-        color: white;
+        background-color: var(
+          --button-hover-bg-color
+        ); /* Botões do modal com cor de hover padrão */
+        color: var(--button-hover-text-color);
         border: none;
-        transition: background-color 0.3s ease;
+        transition: background-color 0.3s ease, opacity 0.3s ease;
       }
 
       .modal-buttons button:hover {
@@ -312,7 +404,12 @@
   </head>
   <body>
     <main>
-      <h1>Relatório de Resíduos Gerados</h1>
+      <div class="header-controls">
+        <h1>Relatório de Resíduos Gerados</h1>
+        <button id="themeToggle" class="theme-toggle-button">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
       <div class="input-container">
         <label for="pdfInput" class="custom-file-upload">
           <i class="fas fa-upload"></i> Selecionar PDFs
@@ -362,8 +459,55 @@
       pdfjsLib.GlobalWorkerOptions.workerSrc =
         "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
 
+      // Função para alternar o tema
+      function toggleTheme() {
+        const htmlElement = document.documentElement;
+        const currentTheme = htmlElement.getAttribute("data-theme");
+        const themeToggleBtn = document.getElementById("themeToggle");
+
+        if (currentTheme === "dark") {
+          htmlElement.removeAttribute("data-theme");
+          localStorage.setItem("theme", "light");
+          if (themeToggleBtn) {
+            themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+          }
+        } else {
+          htmlElement.setAttribute("data-theme", "dark");
+          localStorage.setItem("theme", "dark");
+          if (themeToggleBtn) {
+            themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+          }
+        }
+      }
+
+      // Função para aplicar o tema salvo
+      function applySavedTheme() {
+        const savedTheme = localStorage.getItem("theme");
+        const htmlElement = document.documentElement;
+        const themeToggleBtn = document.getElementById("themeToggle");
+
+        if (savedTheme === "dark") {
+          htmlElement.setAttribute("data-theme", "dark");
+          if (themeToggleBtn) {
+            themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+          }
+        } else {
+          htmlElement.removeAttribute("data-theme");
+          if (themeToggleBtn) {
+            themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+          }
+        }
+      }
+
       // Envolve todo o código principal em um listener DOMContentLoaded
       document.addEventListener("DOMContentLoaded", () => {
+        applySavedTheme(); // Aplica o tema salvo ao carregar a página
+
+        const themeToggleBtn = document.getElementById("themeToggle");
+        if (themeToggleBtn) {
+          themeToggleBtn.addEventListener("click", toggleTheme);
+        }
+
         // Mapeamento de códigos IBAMA para tipos, ajustado para consistência
         const ibamaCodeToType = {
           191213: "NÃO RECICLÁVEL",
@@ -677,18 +821,11 @@
                       })
                       .join("\n");
 
-                    navigator.clipboard
-                      .writeText(copyText)
-                      .then(() => {
-                        showAlertModal(
-                          "Dados copiados para a área de transferência!",
-                          "success"
-                        );
-                      })
-                      .catch((err) => {
-                        console.error("Erro ao copiar:", err);
-                        showAlertModal("Erro ao copiar os dados.", "error");
-                      });
+                    document.execCommand("copy"); // Usar document.execCommand para compatibilidade com iframe
+                    showAlertModal(
+                      "Dados copiados para a área de transferência!",
+                      "success"
+                    );
                   } else {
                     showAlertModal("Nenhum dado para copiar.", "no_data");
                   }
