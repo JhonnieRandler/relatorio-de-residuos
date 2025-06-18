@@ -62,6 +62,8 @@
     <link rel="preload" as="image" href="like.png" />
     <link rel="preload" as="image" href="point.png" />
     <link rel="preload" as="image" href="sure.png" />
+    <!-- Preload do áudio -->
+    <link rel="preload" as="audio" href="blink.mp3" />
     <style>
       :root {
         /* Cores do tema claro */
@@ -78,6 +80,21 @@
         --modal-bg-color: #fefefe;
         --footer-bg-color: #ffcead;
         --box-shadow-color: rgba(0, 0, 0, 0.1);
+
+        /* Novas variáveis para o overlay de drag */
+        --overlay-bg-transparent: rgba(
+          255,
+          206,
+          173,
+          0.7
+        ); /* Cor do rodapé com 70% de opacidade */
+        --overlay-border-color: rgba(
+          255,
+          255,
+          255,
+          0.9
+        ); /* Borda clara mais opaca (90%) */
+        --drag-overlay-text: #333; /* Cor do texto no overlay claro */
 
         /* Cores específicas para o botão de tema no modo claro */
         --theme-toggle-normal-bg: #ffffff;
@@ -102,6 +119,21 @@
         --footer-bg-color: #3d2a21; /* Um marrom mais escuro para o rodapé */
         --box-shadow-color: rgba(255, 255, 255, 0.1);
 
+        /* Novas variáveis para o overlay de drag no tema escuro */
+        --overlay-bg-transparent: rgba(
+          61,
+          42,
+          33,
+          0.7
+        ); /* Cor do rodapé escuro com 70% de opacidade */
+        --overlay-border-color: rgba(
+          255,
+          255,
+          255,
+          0.7
+        ); /* Borda clara semi-transparente para tema escuro (70%) */
+        --drag-overlay-text: #e0e0e0; /* Cor do texto no overlay escuro */
+
         /* Cores específicas para o botão de tema no modo noturno */
         --theme-toggle-normal-bg: #333333;
         --theme-toggle-normal-color: #e0e0e0;
@@ -114,6 +146,8 @@
         margin: 0;
         padding: 0;
         height: 100%;
+        width: 100%; /* Garante que body ocupe 100% da largura para o blur */
+        overflow-x: hidden;
       }
       /* Adiciona box-sizing universal para um modelo de caixa consistente */
       *,
@@ -128,17 +162,21 @@
         display: flex;
         flex-direction: column;
         min-height: 100vh;
-        /* Impede a rolagem horizontal da página principal */
-        overflow-x: hidden;
-        transition: background-color 0.3s ease, color 0.3s ease; /* Transição suave para o tema */
+        transition: background-color 0.3s ease, color 0.3s ease,
+          filter 0.3s ease; /* Adiciona transição para o filtro */
+        position: relative; /* Necessário para posicionar o overlay */
+      }
+      body.blur-active > *:not(#dragDropOverlay) {
+        /* Aplica blur a todos os filhos do body, exceto o overlay */
+        filter: blur(5px);
+        pointer-events: none; /* Desabilita interações com elementos borrados */
       }
       main {
         flex: 1 0 auto;
-        /* Usar 100% da largura do corpo, e o padding garantirá o espaçamento */
         width: 100%;
-        max-width: 95%; /* Define uma largura máxima para o conteúdo principal */
-        margin: 20px auto; /* Centraliza o conteúdo principal */
-        padding: 0 20px; /* Adiciona padding nas laterais, agora incluído na largura total devido ao box-sizing */
+        max-width: 95%;
+        margin: 20px auto;
+        padding: 0 20px;
         text-align: center;
       }
       h1 {
@@ -163,20 +201,20 @@
         cursor: pointer;
         font-size: 16px;
         transition: background-color 0.3s, transform 0.2s, color 0.3s ease,
-          box-shadow 0.3s ease; /* Adiciona transição de transformação */
+          box-shadow 0.3s ease;
       }
       .custom-file-upload:hover {
         background-color: var(--button-hover-bg-color);
         color: var(--button-hover-text-color);
-        transform: translateY(-2px); /* Efeito de elevação no hover */
+        transform: translateY(-2px);
       }
       #textOutput {
         margin-top: 20px;
       }
       .table-container {
-        overflow-x: auto; /* Permite que o conteúdo da tabela role horizontalmente dentro do contêiner */
-        width: 100%; /* Garante que o contêiner da tabela ocupe toda a largura disponível do seu pai (main) */
-        margin-bottom: 20px; /* Adicionado margem inferior para separar do botão de copiar */
+        overflow-x: auto;
+        width: 100%;
+        margin-bottom: 20px;
       }
       table {
         width: 100%;
@@ -185,9 +223,7 @@
         background-color: var(--table-row-bg);
         border-radius: 8px;
         box-shadow: 0 2px 4px var(--box-shadow-color);
-        color: var(
-          --text-color
-        ); /* Garante que o texto da tabela siga a cor do tema */
+        color: var(--text-color);
       }
       th,
       td {
@@ -210,12 +246,12 @@
         cursor: pointer;
         font-size: 16px;
         transition: background-color 0.3s, transform 0.2s, color 0.3s ease,
-          box-shadow 0.3s ease; /* Adiciona transição de transformação */
+          box-shadow 0.3s ease;
       }
       button:hover {
         background-color: var(--button-hover-bg-color);
         color: var(--button-hover-text-color);
-        transform: translateY(-2px); /* Efeito de elevação no hover */
+        transform: translateY(-2px);
       }
       .history-button {
         margin: 10px 0;
@@ -227,17 +263,17 @@
         box-shadow: 0 2px 4px var(--box-shadow-color);
         cursor: pointer;
         transition: background-color 0.3s, transform 0.2s, color 0.3s ease,
-          box-shadow 0.3s ease; /* Adiciona transição de transformação */
+          box-shadow 0.3s ease;
       }
       .history-button:hover {
         background-color: var(--button-hover-bg-color);
         color: var(--button-hover-text-color);
-        transform: translateY(-2px); /* Efeito de elevação no hover */
+        transform: translateY(-2px);
       }
       #error,
       #messageBox {
-        color: red; /* Manter vermelho para erros */
-        background-color: #ffe0e0; /* Manter fundo claro para erros */
+        color: red;
+        background-color: #ffe0e0;
         border: 1px solid red;
         padding: 10px;
         margin-top: 10px;
@@ -245,13 +281,13 @@
         display: none;
       }
       #messageBox.success {
-        color: green; /* Manter verde para sucesso */
-        background-color: #e0ffe0; /* Manter fundo claro para sucesso */
+        color: green;
+        background-color: #e0ffe0;
         border-color: green;
       }
       footer {
         flex: 0 0 auto;
-        width: 100%; /* Ajustado para 100% e confiar no overflow-x: hidden do body */
+        width: 100%;
         background-color: var(--footer-bg-color);
         padding: 15px;
         text-align: center;
@@ -266,10 +302,10 @@
       footer img {
         max-width: 100px;
         height: auto;
-        cursor: pointer; /* Adicionado cursor para indicar interatividade */
+        cursor: pointer;
       }
       footer p {
-        color: var(--text-color); /* Texto do rodapé segue o tema */
+        color: var(--text-color);
         font-size: 14px;
         margin: 0;
         flex: 1;
@@ -279,19 +315,19 @@
         background-color: var(--theme-toggle-normal-bg);
         color: var(--theme-toggle-normal-color);
         border: none;
-        width: 40px; /* Torna o botão quadrado */
-        height: 40px; /* Torna o botão quadrado */
-        border-radius: 50%; /* Torna o botão redondo */
-        display: flex; /* Para centralizar o ícone */
-        justify-content: center; /* Centraliza horizontalmente */
-        align-items: center; /* Centraliza verticalmente */
-        padding: 0; /* Remove padding padrão */
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0;
         cursor: pointer;
-        font-size: 18px; /* Tamanho do ícone */
+        font-size: 18px;
         box-shadow: 0 2px 4px var(--box-shadow-color);
         transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s,
           box-shadow 0.3s ease;
-        margin-left: 10px; /* Espaçamento do botão */
+        margin-left: 10px;
       }
 
       .theme-toggle-button:hover {
@@ -349,15 +385,15 @@
 
       /* Estilos para o Modal de Alerta Customizado */
       .modal-overlay {
-        display: none; /* Escondido por padrão */
-        position: fixed; /* Fica no lugar */
-        z-index: 1000; /* Fica acima de tudo */
+        display: none;
+        position: fixed;
+        z-index: 1000;
         left: 0;
         top: 0;
-        width: 100%; /* Largura total */
-        height: 100%; /* Altura total */
-        overflow: auto; /* Habilita rolagem se necessário */
-        background-color: rgba(0, 0, 0, 0.4); /* Fundo preto com opacidade */
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.4);
         justify-content: center;
         align-items: center;
       }
@@ -367,12 +403,12 @@
         margin: auto;
         padding: 20px;
         border: 1px solid var(--table-border-color);
-        width: 80%; /* Largura responsiva */
+        width: 80%;
         max-width: 400px;
         border-radius: 10px;
         box-shadow: 0 4px 8px var(--box-shadow-color);
         text-align: center;
-        color: var(--text-color); /* Texto do modal segue o tema */
+        color: var(--text-color);
         transition: background-color 0.3s ease, border-color 0.3s ease,
           box-shadow 0.3s ease, color 0.3s ease;
       }
@@ -382,9 +418,7 @@
         margin: 10px 5px 0;
         border-radius: 5px;
         cursor: pointer;
-        background-color: var(
-          --button-hover-bg-color
-        ); /* Botões do modal com cor de hover padrão */
+        background-color: var(--button-hover-bg-color);
         color: var(--button-hover-text-color);
         border: none;
         transition: background-color 0.3s ease, opacity 0.3s ease;
@@ -394,16 +428,74 @@
         opacity: 0.9;
       }
       .modal-image {
-        max-width: 80px; /* Ajuste o tamanho conforme necessário */
+        max-width: 80px;
         height: auto;
         margin-bottom: 15px;
-        display: none; /* Escondido por padrão, será exibido via JS */
-        margin: 0 auto 15px auto; /* CENTRALIZAÇÃO HORIZONTAL AQUI */
+        display: none;
+        margin: 0 auto 15px auto;
+      }
+
+      /* Estilos para o overlay de Drag and Drop */
+      #dragDropOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: var(
+          --overlay-bg-transparent
+        ); /* Usando nova variável */
+        padding: 20px; /* Padding para que a borda interna não encoste nas bordas da tela */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 999;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s ease, background-color 0.3s ease; /* Transições para suavidade */
+        box-sizing: border-box; /* Garante que padding e border não aumentem o tamanho total */
+      }
+
+      #dragDropOverlay.active {
+        opacity: 1;
+        pointer-events: all;
+      }
+
+      #dragDropArea {
+        width: 100%; /* Ocupa a largura disponível dentro do padding do overlay */
+        height: 100%; /* Ocupa a altura disponível dentro do padding do overlay */
+        border: 12px dashed var(--overlay-border-color); /* Borda grossa, tracejada e mais opaca */
+        border-radius: 25px; /* Bordas arredondadas */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        transition: border-color 0.3s ease; /* Transição para a cor da borda */
+      }
+
+      #dragDropOverlay p {
+        color: var(--drag-overlay-text);
+        font-size: 3.5em; /* Aumentado para 'bem grande' */
+        font-weight: bold;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Sombra para o texto */
+        padding: 0; /* Removido padding para o texto */
+        margin: 0; /* Garante que não haja margem adicional no texto */
+        text-align: center; /* Centraliza o texto */
+      }
+      @media screen and (max-width: 600px) {
+        #dragDropOverlay p {
+          font-size: 2em; /* Reduz o tamanho da fonte em telas menores */
+        }
       }
     </style>
   </head>
   <body>
-    <main>
+    <div id="dragDropOverlay">
+      <div id="dragDropArea">
+        <p>Solte o MTR em qualquer lugar</p>
+      </div>
+    </div>
+
+    <main id="mainContent">
       <div class="header-controls">
         <h1>Relatório de Resíduos Gerados</h1>
         <button id="themeToggle" class="theme-toggle-button">
@@ -435,6 +527,11 @@
         oferecendo uma ferramenta prática e acessível. É livre para uso por
         todos!
       </p>
+      <!-- Elemento de áudio para o som de blink -->
+      <audio id="blinkAudio" preload="auto">
+        <source src="blink.mp3" type="audio/mpeg" />
+        Seu navegador não suporta o elemento de áudio.
+      </audio>
     </footer>
 
     <!-- Modal de Alerta Customizado -->
@@ -588,14 +685,16 @@
             ? dataEmissaoMatch[1]
             : "Não encontrada";
 
-          const mtrMatch = text.match(/MTR\s*n[ºo]:?\s*(\d+)/i);
+          // Modificação: Ajusta a regex para capturar MTR nº/n° ou MTR sem número
+          const mtrMatch = text.match(/MTR\s*n[ºo°]:?\s*(\d+)/i);
           extracted.mtr = mtrMatch ? mtrMatch[1] : "Não encontrado";
           extracted.mtrFormatted = mtrMatch
             ? `MTR nº: ${mtrMatch[1]}`
             : "Não encontrado";
 
+          // CORREÇÃO AQUI: Torna o "Ticket " opcional e lida com "nº" ou "n°" e espaços
           const mtrRefMatch = text.match(
-            /Referente\s*ao\s*(?:MTR|Ticket\s*CCO)\s*(\d+)/i
+            /Referente\s*ao\s*(?:Ticket\s*)?(?:MTR|CCO)\s*(?:n[ºo°]\s*)?(\d+)/i
           );
           extracted.mtrRef = mtrRefMatch ? mtrRefMatch[1] : "N/A";
 
@@ -660,10 +759,17 @@
             extracted.tipo = ibamaCode;
           }
 
-          extracted.litros =
-            extracted.estadoFisico === "LÍQUIDO" ? quantidade : "";
-          extracted.toneladas =
-            extracted.estadoFisico === "SÓLIDO" ? quantidade : "";
+          // Nova lógica: Se o tipo for "ÓLEO QUEIMADO", sempre use toneladas
+          if (extracted.tipo === "ÓLEO QUEIMADO") {
+            extracted.litros = "";
+            extracted.toneladas = quantidade;
+          } else {
+            extracted.litros =
+              extracted.estadoFisico === "LÍQUIDO" ? quantidade : "";
+            extracted.toneladas =
+              extracted.estadoFisico === "SÓLIDO" ? quantidade : "";
+          }
+
           if (
             extracted.toneladas &&
             unidade === "KG" &&
@@ -696,12 +802,19 @@
           return extractData(fullText); // Chama a função extractData
         }
 
-        // Função para trocar a imagem do rodapé
+        // Função para trocar a imagem do rodapé e reproduzir áudio
         function swapFooterImage(imgElement) {
           const originalSrc = imgElement.src;
           const blinkSrc = originalSrc.replace("footer.png", "blink.png");
+          const audio = document.getElementById("blinkAudio");
 
           imgElement.src = blinkSrc;
+          if (audio) {
+            audio.currentTime = 0; // Reinicia o áudio se já estiver tocando
+            audio
+              .play()
+              .catch((e) => console.error("Erro ao reproduzir áudio:", e));
+          }
           setTimeout(() => {
             imgElement.src = originalSrc;
           }, 400); // Alterado para 400 milissegundos
@@ -735,103 +848,122 @@
           }
         }
 
+        // Event Listener para o input de arquivo existente
         document
           .getElementById("pdfInput")
           .addEventListener("change", async (event) => {
             const files = event.target.files;
-            if (!files || files.length === 0) return;
+            await handleFiles(files);
+          });
 
-            const textOutput = document.getElementById("textOutput");
-            const errorDiv = document.getElementById("error");
-            const messageBox = document.getElementById("messageBox");
+        // Nova função para lidar com os arquivos (seja por input ou drag-and-drop)
+        async function handleFiles(files) {
+          if (!files || files.length === 0) return;
 
-            if (textOutput) textOutput.innerHTML = "Carregando...";
-            if (errorDiv) errorDiv.style.display = "none";
-            if (messageBox) {
-              messageBox.style.display = "none";
-              messageBox.classList.remove("success", "error");
+          const textOutput = document.getElementById("textOutput");
+          const errorDiv = document.getElementById("error");
+          const messageBox = document.getElementById("messageBox");
+
+          if (textOutput) textOutput.innerHTML = "Carregando...";
+          if (errorDiv) errorDiv.style.display = "none";
+          if (messageBox) {
+            messageBox.style.display = "none";
+            messageBox.classList.remove("success", "error");
+          }
+
+          try {
+            // Filtra apenas arquivos PDF
+            const pdfFiles = Array.from(files).filter(
+              (file) => file.type === "application/pdf"
+            );
+
+            if (pdfFiles.length === 0) {
+              showAlertModal(
+                "Nenhum arquivo PDF válido foi solto. Por favor, solte arquivos PDF.",
+                "no_data"
+              );
+              if (textOutput) textOutput.innerHTML = ""; // Limpa "Carregando..."
+              return;
             }
 
-            try {
-              // Cria um array de promessas para processar cada PDF
-              const processingPromises = Array.from(files).map((file) =>
-                processPdfFile(file)
+            // Cria um array de promessas para processar cada PDF
+            const processingPromises = pdfFiles.map((file) =>
+              processPdfFile(file)
+            );
+            const extractedDataList = await Promise.all(processingPromises);
+
+            let storedData = JSON.parse(
+              localStorage.getItem("residuosData") || "[]"
+            );
+            // Filtra dados antes de salvar, removendo aqueles com "Não encontrada" ou "Não encontrado" em colunas críticas
+            const filteredData = extractedDataList.filter(
+              (item) =>
+                item.dataEmissao !== "Não encontrada" &&
+                item.mtrFormatted !== "Não encontrado" &&
+                item.razaoSocial1 !== "Não encontrada" &&
+                item.razaoSocial2 !== "Não encontrada" &&
+                item.tipo !== "Não encontrado"
+            );
+
+            // Filtra novos dados para evitar duplicatas antes de adicionar ao storedData
+            const newUniqueData = filteredData.filter((newItem) => {
+              // Verifica se o newItem já existe em storedData
+              const isDuplicate = storedData.some(
+                (existingItem) =>
+                  existingItem.mtrFormatted === newItem.mtrFormatted &&
+                  existingItem.dataEmissao === newItem.dataEmissao
               );
-              const extractedDataList = await Promise.all(processingPromises);
+              return !isDuplicate;
+            });
 
-              let storedData = JSON.parse(
-                localStorage.getItem("residuosData") || "[]"
-              );
-              // Filtra dados antes de salvar, removendo aqueles com "Não encontrada" ou "Não encontrado" em colunas críticas
-              const filteredData = extractedDataList.filter(
-                (item) =>
-                  item.dataEmissao !== "Não encontrada" &&
-                  item.mtrFormatted !== "Não encontrado" &&
-                  item.razaoSocial1 !== "Não encontrada" &&
-                  item.razaoSocial2 !== "Não encontrada" &&
-                  item.tipo !== "Não encontrado"
-              );
+            // Adiciona apenas os dados únicos ao storedData
+            if (newUniqueData.length > 0) {
+              storedData = storedData.concat(newUniqueData);
+              localStorage.setItem("residuosData", JSON.stringify(storedData));
+            }
 
-              // Filtra novos dados para evitar duplicatas antes de adicionar ao storedData
-              const newUniqueData = filteredData.filter((newItem) => {
-                // Verifica se o newItem já existe em storedData
-                const isDuplicate = storedData.some(
-                  (existingItem) =>
-                    existingItem.mtrFormatted === newItem.mtrFormatted &&
-                    existingItem.dataEmissao === newItem.dataEmissao
-                );
-                return !isDuplicate;
-              });
-
-              // Adiciona apenas os dados únicos ao storedData
-              if (newUniqueData.length > 0) {
-                storedData = storedData.concat(newUniqueData);
-                localStorage.setItem(
-                  "residuosData",
-                  JSON.stringify(storedData)
-                );
-              }
-
+            // Verifica se há dados válidos para renderizar a tabela
+            if (filteredData.length > 0) {
               let tableRows = filteredData
                 .map(
                   (data) => `
-            <tr>
-              <td>${data.dataEmissao}</td>
-              <td>${data.mtrFormatted}</td>
-              <td>${data.razaoSocial1}</td>
-              <td>${data.razaoSocial2}</td>
-              <td>${data.tipo}</td>
-              <td>${data.mtrRef}</td>
-              <td>${data.litros}</td>
-              <td>${data.toneladas}</td>
-            </tr>
-          `
+                <tr>
+                  <td>${data.dataEmissao}</td>
+                  <td>${data.mtrFormatted}</td>
+                  <td>${data.razaoSocial1}</td>
+                  <td>${data.razaoSocial2}</td>
+                  <td>${data.tipo}</td>
+                  <td>${data.mtrRef}</td>
+                  <td>${data.litros}</td>
+                  <td>${data.toneladas}</td>
+                </tr>
+              `
                 )
                 .join("");
 
               if (textOutput) {
                 textOutput.innerHTML = `
-                  <button id="copyButton"><i class="fas fa-copy"></i> Copiar</button>
-                  <div class="table-container">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>DATA</th>
-                          <th>MTR</th>
-                          <th>TRANSPORTADOR</th>
-                          <th>DESTINADOR</th>
-                          <th>TIPO</th>
-                          <th>TICKET</th>
-                          <th>LITROS</th>
-                          <th>TONELADAS</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        ${tableRows}
-                      </tbody>
-                    </table>
-                  </div>
-                `;
+                      <button id="copyButton"><i class="fas fa-copy"></i> Copiar</button>
+                      <div class="table-container">
+                        <table>
+                          <thead>
+                            <tr>
+                              <th>DATA</th>
+                              <th>MTR</th>
+                              <th>TRANSPORTADOR</th>
+                              <th>DESTINADOR</th>
+                              <th>TIPO</th>
+                              <th>TICKET</th>
+                              <th>LITROS</th>
+                              <th>TONELADAS</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            ${tableRows}
+                          </tbody>
+                        </table>
+                      </div>
+                    `;
               }
 
               const copyButton = document.getElementById("copyButton");
@@ -868,33 +1000,36 @@
                   "Dados extraídos e salvos com sucesso!",
                   "success"
                 );
-              } else if (filteredData.length > 0) {
+              } else {
                 showAlertModal(
                   "Os PDFs contêm dados já existentes no histórico. Nenhum novo dado foi adicionado.",
                   "exists"
                 );
-              } else {
-                showAlertModal(
-                  "Nenhum dado válido foi extraído dos PDFs.",
-                  "no_data"
-                );
               }
-            } catch (error) {
-              console.error("Erro ao processar os PDFs:", error);
-              if (errorDiv) {
-                errorDiv.textContent =
-                  "Erro ao extrair texto dos PDFs. Verifique se os arquivos são válidos.";
-                errorDiv.style.display = "block";
-              }
-              if (textOutput) textOutput.innerHTML = "";
+            } else {
+              // Nenhum dado válido foi extraído
+              if (textOutput) textOutput.innerHTML = ""; // Garante que a tabela não seja renderizada
               showAlertModal(
-                "Erro ao processar os PDFs. Verifique se os arquivos são válidos.",
-                "error"
+                "Nenhum dado válido foi extraído dos PDFs.",
+                "no_data"
               );
-            } finally {
-              updateHistoryButtonVisibility();
             }
-          });
+          } catch (error) {
+            console.error("Erro ao processar os PDFs:", error);
+            if (errorDiv) {
+              errorDiv.textContent =
+                "Erro ao extrair texto dos PDFs. Verifique se os arquivos são válidos.";
+              errorDiv.style.display = "block";
+            }
+            if (textOutput) textOutput.innerHTML = "";
+            showAlertModal(
+              "Erro ao processar os PDFs. Verifique se os arquivos são válidos.",
+              "error"
+            );
+          } finally {
+            updateHistoryButtonVisibility();
+          }
+        }
 
         // Função para atualizar a visibilidade do botão de histórico
         function updateHistoryButtonVisibility() {
@@ -918,6 +1053,52 @@
             swapFooterImage(footerImage)
           );
         }
+
+        // --- Funcionalidade de Drag and Drop (Atualizada para o body) ---
+        const bodyElement = document.body;
+        const dragDropOverlay = document.getElementById("dragDropOverlay");
+
+        // Contador para controlar entradas e saídas do drag (para evitar flicker)
+        let dragCounter = 0;
+
+        bodyElement.addEventListener("dragenter", (e) => {
+          e.preventDefault();
+          dragCounter++;
+          if (dragCounter === 1) {
+            // Só ativa quando entra pela primeira vez
+            bodyElement.classList.add("blur-active");
+            dragDropOverlay.classList.add("active");
+          }
+        });
+
+        bodyElement.addEventListener("dragover", (e) => {
+          e.preventDefault(); // Necessário para permitir o drop
+          e.dataTransfer.dropEffect = "copy"; // Indica que os dados serão copiados
+        });
+
+        bodyElement.addEventListener("dragleave", (e) => {
+          // Verifica se o mouse saiu completamente da janela ou de um elemento filho
+          // O target.tagName é o elemento de onde o dragleave aconteceu.
+          // relacionados target é o elemento para onde o mouse está indo.
+          // Se relatedTarget for null (significa que saiu da janela) ou fora de body.
+          // Isso evita que o efeito seja desativado ao passar sobre elementos internos.
+          dragCounter--;
+          if (dragCounter === 0) {
+            bodyElement.classList.remove("blur-active");
+            dragDropOverlay.classList.remove("active");
+          }
+        });
+
+        bodyElement.addEventListener("drop", async (e) => {
+          e.preventDefault();
+          dragCounter = 0; // Reseta o contador
+          bodyElement.classList.remove("blur-active");
+          dragDropOverlay.classList.remove("active");
+
+          const files = e.dataTransfer.files;
+          await handleFiles(files);
+        });
+        // --- Fim da Funcionalidade de Drag and Drop ---
 
         // Chamada inicial para garantir que o botão esteja no estado correto ao carregar a página
         updateHistoryButtonVisibility();
