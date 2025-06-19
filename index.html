@@ -211,6 +211,22 @@
       #textOutput {
         margin-top: 20px;
       }
+      /* Novo estilo para o indicador de progresso */
+      #progressIndicator {
+        margin-top: 10px;
+        font-size: 1.1em;
+        font-weight: bold;
+        color: var(--text-color);
+        min-height: 3em; /* Ajustado para acomodar duas linhas de texto */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+      #progressIndicator span {
+        display: block; /* Garante que cada parte esteja em sua própria linha */
+      }
+
       .table-container {
         overflow-x: auto;
         width: 100%;
@@ -383,7 +399,7 @@
         }
       }
 
-      /* Estilos para o Modal de Alerta Customizado */
+      /* Estilos para Modais de Alerta e Confirmação */
       .modal-overlay {
         display: none;
         position: fixed;
@@ -433,6 +449,13 @@
         margin-bottom: 15px;
         display: none;
         margin: 0 auto 15px auto;
+      }
+      /* Estilo específico para o botão de cancelar no modal de confirmação */
+      #folderModalCancelBtn {
+        background-color: #f44336; /* Vermelho para cancelar */
+      }
+      #folderModalCancelBtn:hover {
+        background-color: #d32f2f;
       }
 
       /* Estilos para o overlay de Drag and Drop */
@@ -516,6 +539,8 @@
         <i class="fas fa-history"></i> Histórico
       </button>
       <div id="textOutput"></div>
+      <div id="progressIndicator"></div>
+      <!-- Novo elemento para o indicador de progresso -->
       <div id="error"></div>
       <div id="messageBox"></div>
       <!-- Adicionado para mensagens de sucesso/erro -->
@@ -534,7 +559,7 @@
       </audio>
     </footer>
 
-    <!-- Modal de Alerta Customizado -->
+    <!-- Modal de Alerta Customizado (para erros e mensagens gerais) -->
     <div id="customAlertModal" class="modal-overlay">
       <div class="modal-content">
         <img
@@ -546,6 +571,23 @@
         <p id="alertMessage"></p>
         <div class="modal-buttons">
           <button id="alertOkBtn">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Novo Modal de Confirmação para Pastas -->
+    <div id="folderConfirmModal" class="modal-overlay">
+      <div class="modal-content">
+        <img
+          id="folderConfirmModalImage"
+          src="point.png"
+          alt="Ícone de Aviso"
+          class="modal-image"
+        />
+        <p id="folderModalMessage"></p>
+        <div class="modal-buttons">
+          <button id="folderModalConfirmBtn">Sim</button>
+          <button id="folderModalCancelBtn">Não</button>
         </div>
       </div>
     </div>
@@ -636,7 +678,7 @@
           "170802",
         ];
 
-        // Função para exibir modais de alerta com imagem
+        // Função para exibir modais de alerta com imagem (para erros e mensagens gerais)
         function showAlertModal(message, type) {
           // type: 'success', 'exists', 'no_data', 'error'
           const modal = document.getElementById("customAlertModal");
@@ -674,8 +716,50 @@
           if (okBtn) okBtn.addEventListener("click", handleOk);
         }
 
+        // Nova função para o modal de confirmação de pasta
+        function showFolderConfirmModal(message) {
+          return new Promise((resolve) => {
+            const modal = document.getElementById("folderConfirmModal");
+            const modalMessage = document.getElementById("folderModalMessage");
+            const confirmModalImage = document.getElementById(
+              "folderConfirmModalImage"
+            );
+            const confirmBtn = document.getElementById("folderModalConfirmBtn");
+            const cancelBtn = document.getElementById("folderModalCancelBtn");
+
+            // Garante que os listeners anteriores sejam removidos para evitar múltiplos disparos
+            // Clonar e substituir o botão é uma forma robusta de remover listeners antigos
+            const newConfirmBtn = confirmBtn.cloneNode(true);
+            const newCancelBtn = cancelBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+            cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+            if (modalMessage) modalMessage.textContent = message;
+            if (confirmModalImage) {
+              confirmModalImage.src = "point.png"; // Ícone de "ponto de atenção"
+              confirmModalImage.style.display = "block";
+            }
+            if (modal) modal.style.display = "flex";
+
+            const handleConfirm = () => {
+              resolve(true);
+              if (modal) modal.style.display = "none";
+              if (confirmModalImage) confirmModalImage.style.display = "none";
+            };
+
+            const handleCancel = () => {
+              resolve(false);
+              if (modal) modal.style.display = "none";
+              if (confirmModalImage) confirmModalImage.style.display = "none";
+            };
+
+            newConfirmBtn.addEventListener("click", handleConfirm);
+            newCancelBtn.addEventListener("click", handleCancel);
+          });
+        }
+
         // Função para extrair dados do texto (usada por processPdfFile)
-        function extractData(text) {
+        async function extractData(text) {
           const extracted = {};
 
           const dataEmissaoMatch = text.match(
@@ -785,20 +869,26 @@
           return extracted;
         }
 
-        // Função original para processar um único arquivo PDF
+        // Função para processar um único arquivo PDF
         async function processPdfFile(file) {
+          // Verifica o tipo de arquivo antes de carregar
+          if (file.type !== "application/pdf") {
+            throw new Error("not-pdf");
+          }
+
           const arrayBuffer = await file.arrayBuffer();
           const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
 
-          let fullText = "";
-          for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-            const page = await pdf.getPage(pageNum);
-            const textContent = await page.getTextContent();
-            const pageText = textContent.items
-              .map((item) => item.str)
-              .join(" ");
-            fullText += pageText + " ";
+          if (pdf.numPages > 1) {
+            throw new Error("multi-page-pdf"); // Erro customizado para PDFs com mais de uma página
           }
+
+          let fullText = "";
+          const page = await pdf.getPage(1); // Processa apenas a primeira página
+          const textContent = await page.getTextContent();
+          const pageText = textContent.items.map((item) => item.str).join(" ");
+          fullText += pageText + " ";
+
           return extractData(fullText); // Chama a função extractData
         }
 
@@ -848,85 +938,288 @@
           }
         }
 
-        // Event Listener para o input de arquivo existente
-        document
-          .getElementById("pdfInput")
-          .addEventListener("change", async (event) => {
-            const files = event.target.files;
-            await handleFiles(files);
+        /**
+         * Recursively reads entries from a directory.
+         * @param {FileSystemDirectoryEntry} directoryEntry The directory entry.
+         * @param {Array<File>} filesArray The array to accumulate files.
+         * @returns {Promise<void>} A promise that resolves when all files are read.
+         */
+        async function readDirectoryEntries(
+          directoryEntry,
+          filesArray,
+          uniqueFileIdentifiers
+        ) {
+          return new Promise((resolve) => {
+            const directoryReader = directoryEntry.createReader();
+            let entries = [];
+
+            const readBatch = () => {
+              directoryReader.readEntries(async (batch) => {
+                if (!batch.length) {
+                  // No more entries, process them
+                  for (const entry of entries) {
+                    if (entry.isFile) {
+                      const file = await new Promise((res) => entry.file(res));
+                      if (file) {
+                        const identifier = `${file.name}-${file.size}`;
+                        if (!uniqueFileIdentifiers.has(identifier)) {
+                          filesArray.push(file);
+                          uniqueFileIdentifiers.add(identifier);
+                        } else {
+                          console.warn(
+                            `Arquivo duplicado (dentro da pasta) ignorado: ${file.name}`
+                          );
+                        }
+                      }
+                    } else if (entry.isDirectory) {
+                      // Chama recursivamente para subdiretórios
+                      await readDirectoryEntries(
+                        entry,
+                        filesArray,
+                        uniqueFileIdentifiers
+                      );
+                    }
+                  }
+                  resolve();
+                } else {
+                  entries = entries.concat(Array.from(batch));
+                  readBatch(); // Continua lendo o próximo lote
+                }
+              });
+            };
+            readBatch();
           });
+        }
 
-        // Nova função para lidar com os arquivos (seja por input ou drag-and-drop)
-        async function handleFiles(files) {
-          if (!files || files.length === 0) return;
-
+        // Nova função para lidar com os arquivos ou itens de dataTransfer
+        async function handleFiles(source) {
           const textOutput = document.getElementById("textOutput");
           const errorDiv = document.getElementById("error");
           const messageBox = document.getElementById("messageBox");
+          const progressIndicator =
+            document.getElementById("progressIndicator");
 
-          if (textOutput) textOutput.innerHTML = "Carregando...";
+          // Limpa mensagens e indicadores anteriores
+          if (textOutput) textOutput.innerHTML = ""; // Limpa a tabela anterior
           if (errorDiv) errorDiv.style.display = "none";
           if (messageBox) {
             messageBox.style.display = "none";
-            messageBox.classList.remove("success", "error");
+            messageBox.classList.remove(
+              "success",
+              "error",
+              "exists",
+              "no_data"
+            );
+          }
+          // Exibe mensagem de carregamento inicial
+          if (progressIndicator) {
+            progressIndicator.innerHTML = `<span>Carregando arquivos para processamento...</span><span>(Isso pode levar alguns instantes para pastas grandes)</span>`;
           }
 
-          try {
-            // Filtra apenas arquivos PDF
-            const pdfFiles = Array.from(files).filter(
-              (file) => file.type === "application/pdf"
-            );
+          let filesToProcess = [];
+          const uniqueFileIdentifiers = new Set(); // Para evitar duplicatas
 
-            if (pdfFiles.length === 0) {
-              showAlertModal(
-                "Nenhum arquivo PDF válido foi solto. Por favor, solte arquivos PDF.",
-                "no_data"
-              );
-              if (textOutput) textOutput.innerHTML = ""; // Limpa "Carregando..."
-              return;
-            }
-
-            // Cria um array de promessas para processar cada PDF
-            const processingPromises = pdfFiles.map((file) =>
-              processPdfFile(file)
-            );
-            const extractedDataList = await Promise.all(processingPromises);
-
-            let storedData = JSON.parse(
-              localStorage.getItem("residuosData") || "[]"
-            );
-            // Filtra dados antes de salvar, removendo aqueles com "Não encontrada" ou "Não encontrado" em colunas críticas
-            const filteredData = extractedDataList.filter(
-              (item) =>
-                item.dataEmissao !== "Não encontrada" &&
-                item.mtrFormatted !== "Não encontrado" &&
-                item.razaoSocial1 !== "Não encontrada" &&
-                item.razaoSocial2 !== "Não encontrada" &&
-                item.tipo !== "Não encontrado"
-            );
-
-            // Filtra novos dados para evitar duplicatas antes de adicionar ao storedData
-            const newUniqueData = filteredData.filter((newItem) => {
-              // Verifica se o newItem já existe em storedData
-              const isDuplicate = storedData.some(
-                (existingItem) =>
-                  existingItem.mtrFormatted === newItem.mtrFormatted &&
-                  existingItem.dataEmissao === newItem.dataEmissao
-              );
-              return !isDuplicate;
+          // Scenario 1: From <input type="file"> (FileList)
+          if (source instanceof FileList) {
+            console.log("Source is FileList (from input type=file).");
+            Array.from(source).forEach((file) => {
+              const identifier = `${file.name}-${file.size}`;
+              if (!uniqueFileIdentifiers.has(identifier)) {
+                filesToProcess.push(file);
+                uniqueFileIdentifiers.add(identifier);
+              }
             });
+          }
+          // Scenario 2: From Drag and Drop (DataTransfer object)
+          else if (source instanceof DataTransfer) {
+            console.log("Source is DataTransfer (from drag and drop).");
 
-            // Adiciona apenas os dados únicos ao storedData
-            if (newUniqueData.length > 0) {
-              storedData = storedData.concat(newUniqueData);
-              localStorage.setItem("residuosData", JSON.stringify(storedData));
+            // Step 1: Collect all files directly available via DataTransfer.files
+            // This typically includes all individual files dropped.
+            if (source.files && source.files.length > 0) {
+              Array.from(source.files).forEach((file) => {
+                const identifier = `${file.name}-${file.size}`;
+                if (!uniqueFileIdentifiers.has(identifier)) {
+                  filesToProcess.push(file);
+                  uniqueFileIdentifiers.add(identifier);
+                }
+              });
+              console.log(
+                `Files initially collected via DataTransfer.files: ${filesToProcess.length}`
+              );
             }
 
-            // Verifica se há dados válidos para renderizar a tabela
-            if (filteredData.length > 0) {
-              let tableRows = filteredData
-                .map(
-                  (data) => `
+            // Step 2: Iterate DataTransfer.items to find and process directories
+            // This is crucial for correctly handling folders and their contents.
+            for (const item of Array.from(source.items)) {
+              if (item.webkitGetAsEntry && item.webkitGetAsEntry()) {
+                const entry = item.webkitGetAsEntry();
+                if (entry.isDirectory) {
+                  console.log(`Detected directory: ${entry.name}`);
+                  const confirmed = await showFolderConfirmModal(
+                    `Uma pasta foi detectada: "${entry.name}". Deseja processar os arquivos MTR dentro dela?`
+                  );
+                  if (confirmed) {
+                    // Pass uniqueFileIdentifiers to readDirectoryEntries to avoid duplicates
+                    await readDirectoryEntries(
+                      entry,
+                      filesToProcess,
+                      uniqueFileIdentifiers
+                    );
+                    console.log(
+                      `Added files from folder "${entry.name}". Current total: ${filesToProcess.length}`
+                    );
+                  } else {
+                    console.log(
+                      `Processing of folder "${entry.name}" cancelled by user.`
+                    );
+                  }
+                }
+              }
+            }
+          } else {
+            showAlertModal(
+              "Nenhum arquivo ou pasta foi selecionado ou solto.",
+              "no_data"
+            );
+            if (progressIndicator) progressIndicator.innerHTML = ""; // Clear progress
+            return;
+          }
+
+          // After gathering all files (from direct selection, individual drops, and confirmed folders),
+          // filesToProcess now contains all unique files.
+
+          if (filesToProcess.length === 0) {
+            showAlertModal(
+              "Nenhum arquivo PDF válido encontrado para processar na seleção (ou o processamento das pastas foi cancelado/estavam vazias/não continham PDFs válidos).",
+              "no_data"
+            );
+            if (progressIndicator) progressIndicator.innerHTML = ""; // Clear progress
+            return;
+          }
+
+          console.log(
+            `Total de arquivos PDF únicos a serem processados: ${filesToProcess.length}`
+          );
+
+          let extractedDataResults = []; // Stores results of all PDF processing attempts
+          let nonPdfCount = 0;
+          let multiPageCount = 0;
+          let noMtrDataCount = 0; // PDFs that were valid but had no MTR data
+          let otherErrorCount = 0; // For errors during PDF loading/parsing
+          let processedFileCount = 0; // Counter of processed files
+
+          // Remove loading message and start detailed progress indicator
+          if (progressIndicator) {
+            progressIndicator.innerHTML = `<span>Processando 0 de ${filesToProcess.length} arquivos...</span><span>(Aguarde...)</span>`;
+          }
+
+          for (const file of filesToProcess) {
+            processedFileCount++;
+            if (progressIndicator) {
+              progressIndicator.innerHTML = `<span>Processando arquivo ${processedFileCount} de ${filesToProcess.length}...</span><span>(${file.name})</span>`;
+            }
+            console.log(`Iniciando processamento de: ${file.name}`);
+
+            try {
+              const pdfData = await processPdfFile(file);
+              // Add a temporary flag to indicate successful PDF.js processing
+              extractedDataResults.push({
+                ...pdfData,
+                _processedSuccessfully: true,
+                _fileName: file.name,
+              });
+            } catch (error) {
+              if (error.message === "multi-page-pdf") {
+                multiPageCount++;
+                // Register that this file failed due to being multi-page
+                extractedDataResults.push({
+                  _processedSuccessfully: false,
+                  _reason: "multi-page",
+                  _fileName: file.name,
+                });
+                console.warn(
+                  `Arquivo ignorado (mais de uma página): ${file.name}`
+                );
+              } else if (error.message === "not-pdf") {
+                nonPdfCount++;
+                // Register that this file failed due to not being a PDF
+                extractedDataResults.push({
+                  _processedSuccessfully: false,
+                  _reason: "not-pdf",
+                  _fileName: file.name,
+                });
+                console.warn(`Arquivo ignorado (não é PDF): ${file.name}`);
+              } else {
+                otherErrorCount++;
+                // Register that this file failed due to another error
+                extractedDataResults.push({
+                  _processedSuccessfully: false,
+                  _reason: "other-error",
+                  _fileName: file.name,
+                  _errorMessage: error.message,
+                });
+                console.error(`Erro ao processar arquivo ${file.name}:`, error);
+              }
+            }
+          }
+
+          // Clear progress indicator after processing
+          if (progressIndicator) {
+            progressIndicator.innerHTML = "";
+          }
+
+          let storedData = JSON.parse(
+            localStorage.getItem("residuosData") || "[]"
+          );
+          let newUniqueDataCount = 0;
+          let existingDuplicatesCount = 0;
+
+          const dataToDisplayInTable = [];
+
+          // Process results to separate valid MTRs, duplicates, and PDFs without MTR data
+          extractedDataResults.forEach((item) => {
+            if (item._processedSuccessfully) {
+              // Remove temporary flags before checking and saving
+              const { _processedSuccessfully, _fileName, ...cleanItem } = item;
+
+              // Check if extracted data meets criteria for a "valid MTR"
+              if (
+                cleanItem.dataEmissao !== "Não encontrada" &&
+                cleanItem.mtrFormatted !== "Não encontrado" &&
+                cleanItem.razaoSocial1 !== "Não encontrada" &&
+                cleanItem.razaoSocial2 !== "Não encontrada" &&
+                cleanItem.tipo !== "Não encontrado"
+              ) {
+                const isDuplicate = storedData.some(
+                  (existingItem) =>
+                    existingItem.mtrFormatted === cleanItem.mtrFormatted &&
+                    existingItem.dataEmissao === cleanItem.dataEmissao
+                );
+
+                if (!isDuplicate) {
+                  storedData.push(cleanItem); // Add to main list
+                  newUniqueDataCount++;
+                  dataToDisplayInTable.push(cleanItem); // Add for current table display
+                } else {
+                  existingDuplicatesCount++;
+                  dataToDisplayInTable.push(cleanItem); // Still display duplicates in current table
+                }
+              } else {
+                noMtrDataCount++; // Count PDFs that did not yield valid MTR data
+              }
+            }
+            // Files that failed in processPdfFile are already counted (nonPdfCount, multiPageCount, otherErrorCount)
+          });
+
+          // Save updated data to localStorage
+          localStorage.setItem("residuosData", JSON.stringify(storedData));
+
+          // Render table ONLY if there is data to display in this execution
+          if (dataToDisplayInTable.length > 0) {
+            let tableRows = dataToDisplayInTable
+              .map(
+                (data) => `
                 <tr>
                   <td>${data.dataEmissao}</td>
                   <td>${data.mtrFormatted}</td>
@@ -938,97 +1231,156 @@
                   <td>${data.toneladas}</td>
                 </tr>
               `
-                )
-                .join("");
+              )
+              .join("");
 
-              if (textOutput) {
-                textOutput.innerHTML = `
-                      <button id="copyButton"><i class="fas fa-copy"></i> Copiar</button>
-                      <div class="table-container">
-                        <table>
-                          <thead>
-                            <tr>
-                              <th>DATA</th>
-                              <th>MTR</th>
-                              <th>TRANSPORTADOR</th>
-                              <th>DESTINADOR</th>
-                              <th>TIPO</th>
-                              <th>TICKET</th>
-                              <th>LITROS</th>
-                              <th>TONELADAS</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            ${tableRows}
-                          </tbody>
-                        </table>
-                      </div>
-                    `;
-              }
+            if (textOutput) {
+              textOutput.innerHTML = `
+                    <button id="copyButton"><i class="fas fa-copy"></i> Copiar</button>
+                    <div class="table-container">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th>DATA</th>
+                            <th>MTR</th>
+                            <th>TRANSPORTADOR</th>
+                            <th>DESTINADOR</th>
+                            <th>TIPO</th>
+                            <th>TICKET</th>
+                            <th>LITROS</th>
+                            <th>TONELADAS</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          ${tableRows}
+                        </tbody>
+                      </table>
+                    </div>
+                  `;
+            }
 
-              const copyButton = document.getElementById("copyButton");
-              if (copyButton) {
-                copyButton.addEventListener("click", () => {
-                  const tableRowsToCopy = document.querySelectorAll(
-                    "#textOutput table tbody tr"
-                  );
-                  if (tableRowsToCopy.length > 0) {
-                    const copyText = Array.from(tableRowsToCopy)
-                      .map((row) => {
-                        return Array.from(row.cells)
-                          .map((cell) => cell.textContent)
-                          .join("\t");
-                      })
-                      .join("\n");
+            const copyButton = document.getElementById("copyButton");
+            if (copyButton) {
+              copyButton.addEventListener("click", () => {
+                const tableRowsToCopy = document.querySelectorAll(
+                  "#textOutput table tbody tr"
+                );
+                if (tableRowsToCopy.length > 0) {
+                  const copyText = Array.from(tableRowsToCopy)
+                    .map((row) => {
+                      return Array.from(row.cells)
+                        .map((cell) => cell.textContent)
+                        .join("\t");
+                    })
+                    .join("\n");
 
-                    if (copyToClipboard(copyText)) {
-                      showAlertModal(
-                        "Dados copiados para a área de transferência!",
-                        "success"
-                      );
-                    } else {
-                      showAlertModal("Erro ao copiar os dados.", "error");
-                    }
+                  if (copyToClipboard(copyText)) {
+                    showAlertModal(
+                      "Dados copiados para a área de transferência!",
+                      "success"
+                    );
                   } else {
-                    showAlertModal("Nenhum dado para copiar.", "no_data");
+                    showAlertModal("Erro ao copiar os dados.", "error");
                   }
-                });
-              }
-
-              if (newUniqueData.length > 0) {
-                showAlertModal(
-                  "Dados extraídos e salvos com sucesso!",
-                  "success"
-                );
-              } else {
-                showAlertModal(
-                  "Os PDFs contêm dados já existentes no histórico. Nenhum novo dado foi adicionado.",
-                  "exists"
-                );
-              }
-            } else {
-              // Nenhum dado válido foi extraído
-              if (textOutput) textOutput.innerHTML = ""; // Garante que a tabela não seja renderizada
-              showAlertModal(
-                "Nenhum dado válido foi extraído dos PDFs.",
-                "no_data"
-              );
+                } else {
+                  showAlertModal("Nenhum dado para copiar.", "no_data");
+                }
+              });
             }
-          } catch (error) {
-            console.error("Erro ao processar os PDFs:", error);
-            if (errorDiv) {
-              errorDiv.textContent =
-                "Erro ao extrair texto dos PDFs. Verifique se os arquivos são válidos.";
-              errorDiv.style.display = "block";
-            }
-            if (textOutput) textOutput.innerHTML = "";
-            showAlertModal(
-              "Erro ao processar os PDFs. Verifique se os arquivos são válidos.",
-              "error"
-            );
-          } finally {
-            updateHistoryButtonVisibility();
+          } else {
+            if (textOutput) textOutput.innerHTML = ""; // Ensures table is not rendered
           }
+
+          // --- Final Feedback Message Logic ---
+          let feedbackMessageParts = [];
+          let feedbackType = "no_data"; // Default: no valid data found
+
+          if (newUniqueDataCount > 0) {
+            feedbackMessageParts.push(
+              `${newUniqueDataCount} novo(s) MTR(s) extraído(s) e salvo(s).`
+            );
+            feedbackType = "success";
+          }
+
+          if (existingDuplicatesCount > 0) {
+            feedbackMessageParts.push(
+              `${existingDuplicatesCount} MTR(s) existente(s) ignorado(s).`
+            );
+            if (feedbackType === "success") {
+              // If there were new data, it's a partial success
+              feedbackType = "exists";
+            } else {
+              // If only duplicates, it's an "existing" state
+              feedbackType = "exists";
+            }
+          }
+
+          if (noMtrDataCount > 0) {
+            feedbackMessageParts.push(
+              `${noMtrDataCount} PDF(s) sem dados MTR válidos.`
+            );
+            if (feedbackType === "success" || feedbackType === "exists") {
+              feedbackType = "exists"; // Mixed result
+            } else {
+              feedbackType = "no_data"; // Only this type of problem
+            }
+          }
+
+          if (multiPageCount > 0) {
+            feedbackMessageParts.push(
+              `${multiPageCount} PDF(s) com múltiplas páginas ignorado(s).`
+            );
+            if (feedbackType === "success" || feedbackType === "exists") {
+              feedbackType = "exists";
+            } else {
+              feedbackType = "no_data";
+            }
+          }
+
+          if (nonPdfCount > 0) {
+            feedbackMessageParts.push(
+              `${nonPdfCount} arquivo(s) não PDF ignorado(s).`
+            );
+            if (feedbackType === "success" || feedbackType === "exists") {
+              feedbackType = "exists";
+            } else {
+              feedbackType = "no_data";
+            }
+          }
+
+          if (otherErrorCount > 0) {
+            feedbackMessageParts.push(
+              `${otherErrorCount} arquivo(s) com outros erros. (Consulte o console para detalhes)`
+            );
+            if (feedbackType === "success" || feedbackType === "exists") {
+              feedbackType = "exists";
+            } else {
+              feedbackType = "error"; // More critical error type
+            }
+          }
+
+          let finalMessage = "";
+          if (feedbackMessageParts.length > 0) {
+            finalMessage = feedbackMessageParts.join(" ");
+          } else {
+            // If no files were processed, show a general message based on whether anything was dropped
+            if (
+              source &&
+              (source instanceof FileList || source instanceof DataTransfer) &&
+              (source.length > 0 || source.items.length > 0)
+            ) {
+              finalMessage =
+                "Nenhum dado válido de MTR foi encontrado nos arquivos processados ou selecionados.";
+              feedbackType = "no_data";
+            } else {
+              finalMessage = "Nenhum arquivo foi selecionado ou solto.";
+              feedbackType = "no_data";
+            }
+          }
+
+          showAlertModal(finalMessage, feedbackType);
+
+          updateHistoryButtonVisibility();
         }
 
         // Função para atualizar a visibilidade do botão de histórico
@@ -1095,10 +1447,19 @@
           bodyElement.classList.remove("blur-active");
           dragDropOverlay.classList.remove("active");
 
-          const files = e.dataTransfer.files;
-          await handleFiles(files);
+          // Passar o objeto DataTransfer completo para handleFiles
+          await handleFiles(e.dataTransfer);
         });
         // --- Fim da Funcionalidade de Drag and Drop ---
+
+        // Adiciona listener para o input de arquivo (botão "Selecionar PDFs")
+        const pdfInput = document.getElementById("pdfInput");
+        if (pdfInput) {
+          pdfInput.addEventListener("change", async (e) => {
+            await handleFiles(e.target.files);
+            e.target.value = ""; // Limpa o input para permitir selecionar os mesmos arquivos novamente
+          });
+        }
 
         // Chamada inicial para garantir que o botão esteja no estado correto ao carregar a página
         updateHistoryButtonVisibility();
