@@ -250,6 +250,11 @@
       th {
         background-color: var(--table-header-bg);
         font-weight: bold;
+        cursor: pointer; /* Indica que o cabeçalho é clicável */
+      }
+      th .sort-arrow {
+        margin-left: 5px;
+        font-size: 0.8em;
       }
       button {
         padding: 10px 20px;
@@ -597,6 +602,23 @@
       // Configura o worker do PDF.js
       pdfjsLib.GlobalWorkerOptions.workerSrc =
         "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
+
+      // Variáveis globais para ordenação
+      let currentTableData = []; // Stores the data currently displayed in the table
+      let currentSortColumn = null;
+      let currentSortDirection = "asc"; // 'asc' for ascending, 'desc' for descending
+
+      // Mapeamento de nomes de colunas para chaves de dados
+      const columnKeys = {
+        DATA: "dataEmissao",
+        MTR: "mtrFormatted",
+        TRANSPORTADOR: "razaoSocial1",
+        DESTINADOR: "razaoSocial2",
+        TIPO: "tipo",
+        TICKET: "mtrRef",
+        LITROS: "litros",
+        TONELADAS: "toneladas",
+      };
 
       // Função para alternar o tema
       function toggleTheme() {
@@ -993,6 +1015,181 @@
           });
         }
 
+        /**
+         * Renders the data in the table.
+         * @param {Array<Object>} dataToRender The array of MTR objects to display.
+         */
+        function renderTable(dataToRender) {
+          const textOutput = document.getElementById("textOutput");
+          if (dataToRender.length === 0) {
+            if (textOutput) textOutput.innerHTML = "";
+            return;
+          }
+
+          let tableRows = dataToRender
+            .map(
+              (data) => `
+                <tr>
+                  <td>${data.dataEmissao}</td>
+                  <td>${data.mtrFormatted}</td>
+                  <td>${data.razaoSocial1}</td>
+                  <td>${data.razaoSocial2}</td>
+                  <td>${data.tipo}</td>
+                  <td>${data.mtrRef}</td>
+                  <td>${data.litros}</td>
+                  <td>${data.toneladas}</td>
+                </tr>
+              `
+            )
+            .join("");
+
+          if (textOutput) {
+            textOutput.innerHTML = `
+                    <button id="copyButton"><i class="fas fa-copy"></i> Copiar</button>
+                    <div class="table-container">
+                      <table>
+                        <thead>
+                          <tr>
+                            <th data-column="dataEmissao">DATA <span class="sort-arrow"></span></th>
+                            <th data-column="mtrFormatted">MTR <span class="sort-arrow"></span></th>
+                            <th data-column="razaoSocial1">TRANSPORTADOR <span class="sort-arrow"></span></th>
+                            <th data-column="razaoSocial2">DESTINADOR <span class="sort-arrow"></span></th>
+                            <th data-column="tipo">TIPO <span class="sort-arrow"></span></th>
+                            <th data-column="mtrRef">TICKET <span class="sort-arrow"></span></th>
+                            <th data-column="litros">LITROS <span class="sort-arrow"></span></th>
+                            <th data-column="toneladas">TONELADAS <span class="sort-arrow"></span></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          ${tableRows}
+                        </tbody>
+                      </table>
+                    </div>
+                `;
+          }
+
+          // Add sorting event listeners to headers
+          const headers = textOutput.querySelectorAll("th");
+          headers.forEach((header) => {
+            header.addEventListener("click", () => {
+              const column = header.dataset.column;
+              sortTable(column);
+            });
+          });
+
+          // Update sort arrows
+          updateSortArrows();
+
+          const copyButton = document.getElementById("copyButton");
+          if (copyButton) {
+            copyButton.addEventListener("click", () => {
+              const tableRowsToCopy = document.querySelectorAll(
+                "#textOutput table tbody tr"
+              );
+              if (tableRowsToCopy.length > 0) {
+                const copyText = Array.from(tableRowsToCopy)
+                  .map((row) => {
+                    return Array.from(row.cells)
+                      .map((cell) => cell.textContent)
+                      .join("\t");
+                  })
+                  .join("\n");
+
+                if (copyToClipboard(copyText)) {
+                  showAlertModal(
+                    "Dados copiados para a área de transferência!",
+                    "success"
+                  );
+                } else {
+                  showAlertModal("Erro ao copiar os dados.", "error");
+                }
+              } else {
+                showAlertModal("Nenhum dado para copiar.", "no_data");
+              }
+            });
+          }
+        }
+
+        /**
+         * Sorts the currentTableData based on the selected column.
+         * @param {string} column The data key to sort by.
+         */
+        function sortTable(column) {
+          // Determine sort direction
+          if (currentSortColumn === column) {
+            currentSortDirection =
+              currentSortDirection === "asc" ? "desc" : "asc";
+          } else {
+            currentSortColumn = column;
+            currentSortDirection = "asc";
+          }
+
+          currentTableData.sort((a, b) => {
+            let valA = a[column];
+            let valB = b[column];
+
+            // Special handling for numeric values (litros, toneladas, MTR, Ticket)
+            if (
+              column === "litros" ||
+              column === "toneladas" ||
+              column === "mtrFormatted" ||
+              column === "mtrRef"
+            ) {
+              // Remove "MTR nº: " prefix for MTR, and handle comma as decimal separator for numbers
+              if (column === "mtrFormatted")
+                valA = valA.replace("MTR nº: ", "");
+              if (column === "mtrFormatted")
+                valB = valB.replace("MTR nº: ", "");
+
+              valA = parseFloat(String(valA).replace(",", ".") || 0);
+              valB = parseFloat(String(valB).replace(",", ".") || 0);
+
+              if (isNaN(valA)) valA = -Infinity; // Treat "Não encontrada" or "N/A" as smallest
+              if (isNaN(valB)) valB = -Infinity;
+
+              return currentSortDirection === "asc" ? valA - valB : valB - valA;
+            }
+
+            // Special handling for date (DD/MM/YYYY)
+            if (column === "dataEmissao") {
+              // Convert DD/MM/YYYY to YYYY-MM-DD for correct comparison
+              const dateA = valA.split("/").reverse().join("-");
+              const dateB = valB.split("/").reverse().join("-");
+              if (dateA < dateB) return currentSortDirection === "asc" ? -1 : 1;
+              if (dateA > dateB) return currentSortDirection === "asc" ? 1 : -1;
+              return 0;
+            }
+
+            // Default string comparison
+            if (typeof valA === "string" && typeof valB === "string") {
+              valA = valA.toLowerCase();
+              valB = valB.toLowerCase();
+              if (valA < valB) return currentSortDirection === "asc" ? -1 : 1;
+              if (valA > valB) return currentSortDirection === "asc" ? 1 : -1;
+            }
+            return 0;
+          });
+
+          renderTable(currentTableData); // Re-render the table with sorted data
+        }
+
+        /**
+         * Updates the sort arrows in the table headers.
+         */
+        function updateSortArrows() {
+          const headers = document.querySelectorAll("#textOutput th");
+          headers.forEach((header) => {
+            const arrowSpan = header.querySelector(".sort-arrow");
+            if (arrowSpan) {
+              arrowSpan.textContent = ""; // Clear previous arrow
+              if (header.dataset.column === currentSortColumn) {
+                arrowSpan.textContent =
+                  currentSortDirection === "asc" ? " ↑" : " ↓";
+              }
+            }
+          });
+        }
+
         // Function to handle files from input or drag-and-drop
         async function handleFiles(source) {
           const textOutput = document.getElementById("textOutput");
@@ -1255,8 +1452,8 @@
           let storedData = JSON.parse(
             localStorage.getItem("residuosData") || "[]"
           );
-          const dataToDisplayInTable = []; // This will only contain unique, new MTRs for the current display
-          const mtrsAddedToCurrentDisplay = new Set(); // To prevent duplicates in current table display
+          const tempDataForTableDisplay = []; // This will only contain unique, new MTRs for the current display
+          const mtrsAddedToTempDisplay = new Set(); // To prevent duplicates in current table display
 
           console.log(
             `[Verificação Duplicatas] Iniciando verificação de duplicatas. Total atual em localStorage: ${storedData.length}`
@@ -1282,7 +1479,7 @@
                 );
 
                 const isDuplicateInCurrentDisplay =
-                  mtrsAddedToCurrentDisplay.has(currentMtrIdentifier);
+                  mtrsAddedToTempDisplay.has(currentMtrIdentifier);
 
                 if (
                   !isDuplicateInLocalStorage &&
@@ -1290,8 +1487,8 @@
                 ) {
                   storedData.push(cleanItem); // Add to main list in localStorage
                   newUniqueDataCount++;
-                  dataToDisplayInTable.push(cleanItem); // Add for current table display
-                  mtrsAddedToCurrentDisplay.add(currentMtrIdentifier); // Mark as added to current display
+                  tempDataForTableDisplay.push(cleanItem); // Add for current table display
+                  mtrsAddedToTempDisplay.add(currentMtrIdentifier); // Mark as added to current display
                   console.log(
                     `[Verificação Duplicatas] NOVO: MTR: ${cleanItem.mtrFormatted} (Data: ${cleanItem.dataEmissao}) - Arquivo: ${_fileName} adicionado ao histórico e exibição.`
                   );
@@ -1330,81 +1527,11 @@
             `[Verificação Duplicatas] Histórico final salvo. Total de MTRs no histórico: ${storedData.length}`
           );
 
+          // Set currentTableData for sorting
+          currentTableData = tempDataForTableDisplay;
+
           // Render table ONLY if there is data to display in this execution
-          if (dataToDisplayInTable.length > 0) {
-            let tableRows = dataToDisplayInTable
-              .map(
-                (data) => `
-                <tr>
-                  <td>${data.dataEmissao}</td>
-                  <td>${data.mtrFormatted}</td>
-                  <td>${data.razaoSocial1}</td>
-                  <td>${data.razaoSocial2}</td>
-                  <td>${data.tipo}</td>
-                  <td>${data.mtrRef}</td>
-                  <td>${data.litros}</td>
-                  <td>${data.toneladas}</td>
-                </tr>
-              `
-              )
-              .join("");
-
-            if (textOutput) {
-              textOutput.innerHTML = `
-                    <button id="copyButton"><i class="fas fa-copy"></i> Copiar</button>
-                    <div class="table-container">
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>DATA</th>
-                            <th>MTR</th>
-                            <th>TRANSPORTADOR</th>
-                            <th>DESTINADOR</th>
-                            <th>TIPO</th>
-                            <th>TICKET</th>
-                            <th>LITROS</th>
-                            <th>TONELADAS</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          ${tableRows}
-                        </tbody>
-                      </table>
-                    </div>
-                  `;
-            }
-
-            const copyButton = document.getElementById("copyButton");
-            if (copyButton) {
-              copyButton.addEventListener("click", () => {
-                const tableRowsToCopy = document.querySelectorAll(
-                  "#textOutput table tbody tr"
-                );
-                if (tableRowsToCopy.length > 0) {
-                  const copyText = Array.from(tableRowsToCopy)
-                    .map((row) => {
-                      return Array.from(row.cells)
-                        .map((cell) => cell.textContent)
-                        .join("\t");
-                    })
-                    .join("\n");
-
-                  if (copyToClipboard(copyText)) {
-                    showAlertModal(
-                      "Dados copiados para a área de transferência!",
-                      "success"
-                    );
-                  } else {
-                    showAlertModal("Erro ao copiar os dados.", "error");
-                  }
-                } else {
-                  showAlertModal("Nenhum dado para copiar.", "no_data");
-                }
-              });
-            }
-          } else {
-            if (textOutput) textOutput.innerHTML = ""; // Ensures table is not rendered
-          }
+          renderTable(currentTableData);
 
           // --- Final Feedback Message Logic ---
           let feedbackMessageParts = [];
