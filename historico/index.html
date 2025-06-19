@@ -1133,10 +1133,10 @@
       ); // Atraso de 200ms
 
       // Aplica filtros e renderiza a tabela e o gráfico
-      function applyFiltersAndRender(filterText, selectedMonth) {
+      function applyFiltersAndRender(filterText, selectedMonthYear) {
         let filteredData = storedData;
 
-        // Apply text filter
+        // Aplica filtro de texto
         if (filterText) {
           const lowerCaseFilter = filterText.toLowerCase();
           filteredData = filteredData.filter((item) =>
@@ -1146,11 +1146,12 @@
           );
         }
 
-        // Apply month filter
-        if (selectedMonth) {
-          filteredData = filteredData.filter(
-            (item) => item.dataEmissao.split("/")[1] === selectedMonth
-          );
+        // Aplica filtro de Mês/Ano
+        if (selectedMonthYear) {
+          filteredData = filteredData.filter((item) => {
+            const [day, month, year] = item.dataEmissao.split("/");
+            return `${month}/${year}` === selectedMonthYear;
+          });
         }
 
         renderTable(filteredData);
@@ -1357,26 +1358,40 @@
           monthSelect.innerHTML = '<option value="">Todos os Meses</option>';
         }
 
-        const months = [
+        // Extrai meses e anos únicos no formato "MM/YYYY"
+        const monthYears = [
           ...new Set(
             storedData
-              .map((item) => item.dataEmissao.split("/")[1])
-              .filter((month) => month !== "Não encontrada")
+              .map((item) => {
+                const parts = item.dataEmissao.split("/");
+                return parts.length === 3 ? `${parts[1]}/${parts[2]}` : null;
+              })
+              .filter((val) => val !== null) // Remove qualquer entrada nula
           ),
         ];
-        months
-          .sort((a, b) => a - b)
-          .forEach((month) => {
-            const option = document.createElement("option");
-            option.value = month;
-            const monthName = new Date(2025, month - 1).toLocaleString(
-              "pt-BR",
-              { month: "long" }
-            );
-            option.text =
-              monthName.charAt(0).toUpperCase() + monthName.slice(1);
-            if (monthSelect) monthSelect.appendChild(option);
-          });
+
+        // Ordena os meses/anos cronologicamente
+        monthYears.sort((a, b) => {
+          const [monthA, yearA] = a.split("/").map(Number);
+          const [monthB, yearB] = b.split("/").map(Number);
+          if (yearA !== yearB) return yearA - yearB;
+          return monthA - monthB;
+        });
+
+        // Preenche o seletor de meses/anos
+        monthYears.forEach((monthYear) => {
+          const option = document.createElement("option");
+          option.value = monthYear;
+          const [monthNum, yearNum] = monthYear.split("/").map(Number);
+          const monthName = new Date(yearNum, monthNum - 1).toLocaleString(
+            "pt-BR",
+            { month: "long" }
+          );
+          option.text = `${
+            monthName.charAt(0).toUpperCase() + monthName.slice(1)
+          }/${yearNum}`;
+          if (monthSelect) monthSelect.appendChild(option);
+        });
 
         renderTable(storedData); // Renderiza a tabela inicialmente com todos os dados
         updateChart(storedData);
