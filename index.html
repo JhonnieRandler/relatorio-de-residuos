@@ -546,7 +546,7 @@
       <!-- Adicionado para mensagens de sucesso/erro -->
     </main>
     <footer>
-      <img id="footerImage" src="footer.png" alt="Footer Image" />
+      <img id="footerImage" src="footer.png" alt="Image of a footer" />
       <p>
         Este site foi desenvolvido para facilitar a gestão de resíduos gerados,
         oferecendo uma ferramenta prática e acessível. É livre para uso por
@@ -800,9 +800,9 @@
           if (razaoDestinador) razoesSociais.push(razaoDestinador);
           razoesSociais = razoesSociais.filter(
             (razao) =>
-              !razao
-                .toUpperCase()
-                .includes("CONSORCIO CONSTRUTOR FERROROVIA LUCAS DO RIO VERDE")
+              !razao.toUpperCase().includes(
+                "CONSORCIO CONSTRUTOR FERROVIA LUCAS DO RIO VERDE" // Corrigido de FERROROVIA para FERROVIA
+              )
           );
 
           extracted.razaoSocial1 =
@@ -1177,7 +1177,10 @@
           let multiPageCount = 0;
           let noMtrDataCount = 0; // PDFs that were valid but had no MTR data
           let otherErrorCount = 0; // For errors during PDF loading/parsing
-          let processedFileCount = 0; // Counter of successfully processed files for progress indicator
+          // These counts will now refer to the final outcomes based on MTR data, not just file types
+          let newUniqueDataCount = 0; // MTRs that are truly new and added to localStorage
+          let existingDuplicatesInLocalStorageCount = 0; // MTRs already present in localStorage
+          let duplicatesInCurrentSelectionCount = 0; // MTRs duplicated within the current drag/select operation
 
           // Update progress indicator before starting the loop
           if (progressIndicator) {
@@ -1185,9 +1188,13 @@
           }
 
           for (const file of filesToProcess) {
-            processedFileCount++;
             if (progressIndicator) {
-              progressIndicator.innerHTML = `<span>Processando arquivo ${processedFileCount} de ${filesToProcess.length}...</span><span>(${file.name})</span>`;
+              // Update progress for each file iteration
+              progressIndicator.innerHTML = `<span>Processando arquivo ${
+                extractedDataResults.length + 1
+              } de ${filesToProcess.length}...</span><span>(${
+                file.name
+              })</span>`;
             }
             console.log(
               `[Processamento] Iniciando processamento de: ${file.name}`
@@ -1248,12 +1255,9 @@
           let storedData = JSON.parse(
             localStorage.getItem("residuosData") || "[]"
           );
-          let newUniqueDataCount = 0;
-          let existingDuplicatesCount = 0;
+          const dataToDisplayInTable = []; // This will only contain unique, new MTRs for the current display
+          const mtrsAddedToCurrentDisplay = new Set(); // To prevent duplicates in current table display
 
-          const dataToDisplayInTable = [];
-
-          // Process results to separate valid MTRs, duplicates, and PDFs without MTR data
           console.log(
             `[Verificação Duplicatas] Iniciando verificação de duplicatas. Total atual em localStorage: ${storedData.length}`
           );
@@ -1269,31 +1273,40 @@
                 cleanItem.razaoSocial2 !== "Não encontrada" &&
                 cleanItem.tipo !== "Não encontrado"
               ) {
-                const isDuplicate = storedData.some((existingItem) => {
-                  const match =
-                    existingItem.mtrFormatted === cleanItem.mtrFormatted &&
-                    existingItem.dataEmissao === cleanItem.dataEmissao;
-                  if (match) {
-                    console.log(
-                      `[Verificação Duplicatas] DETECTADA: MTR: ${cleanItem.mtrFormatted} (Data: ${cleanItem.dataEmissao}) - Arquivo: ${_fileName} JÁ EXISTE NO HISTÓRICO.`
-                    );
-                  }
-                  return match;
-                });
+                const currentMtrIdentifier = `${cleanItem.mtrFormatted}-${cleanItem.dataEmissao}`;
 
-                if (!isDuplicate) {
-                  storedData.push(cleanItem); // Add to main list
+                const isDuplicateInLocalStorage = storedData.some(
+                  (existingItem) =>
+                    `${existingItem.mtrFormatted}-${existingItem.dataEmissao}` ===
+                    currentMtrIdentifier
+                );
+
+                const isDuplicateInCurrentDisplay =
+                  mtrsAddedToCurrentDisplay.has(currentMtrIdentifier);
+
+                if (
+                  !isDuplicateInLocalStorage &&
+                  !isDuplicateInCurrentDisplay
+                ) {
+                  storedData.push(cleanItem); // Add to main list in localStorage
                   newUniqueDataCount++;
                   dataToDisplayInTable.push(cleanItem); // Add for current table display
+                  mtrsAddedToCurrentDisplay.add(currentMtrIdentifier); // Mark as added to current display
                   console.log(
-                    `[Verificação Duplicatas] NOVO: MTR: ${cleanItem.mtrFormatted} (Data: ${cleanItem.dataEmissao}) - Arquivo: ${_fileName} adicionado ao histórico.`
+                    `[Verificação Duplicatas] NOVO: MTR: ${cleanItem.mtrFormatted} (Data: ${cleanItem.dataEmissao}) - Arquivo: ${_fileName} adicionado ao histórico e exibição.`
                   );
-                } else {
-                  existingDuplicatesCount++;
-                  dataToDisplayInTable.push(cleanItem); // Still display duplicates in current table
+                } else if (isDuplicateInLocalStorage) {
+                  existingDuplicatesInLocalStorageCount++;
                   console.log(
-                    `[Verificação Duplicatas] EXISTENTE: MTR: ${cleanItem.mtrFormatted} (Data: ${cleanItem.dataEmissao}) - Arquivo: ${_fileName} já existe, CONTADO COMO DUPLICADO.`
+                    `[Verificação Duplicatas] EXISTENTE (no histórico): MTR: ${cleanItem.mtrFormatted} (Data: ${cleanItem.dataEmissao}) - Arquivo: ${_fileName} já existe no histórico.`
                   );
+                  // We do NOT add to dataToDisplayInTable here, as per requirement
+                } else if (isDuplicateInCurrentDisplay) {
+                  duplicatesInCurrentSelectionCount++;
+                  console.warn(
+                    `[Verificação Duplicatas] DUPLICADO (na seleção atual): MTR: ${cleanItem.mtrFormatted} (Data: ${cleanItem.dataEmissao}) - Arquivo: ${_fileName} é duplicado na seleção atual e não será exibido na tabela.`
+                  );
+                  // We do NOT add to dataToDisplayInTable here, as per requirement
                 }
               } else {
                 noMtrDataCount++; // Count PDFs that did not yield valid MTR data
@@ -1397,32 +1410,85 @@
           let feedbackMessageParts = [];
           let feedbackType = "no_data"; // Default: no valid data found
 
+          // Helper function for pluralization
+          const pluralize = (count, singular, plural) =>
+            count === 1 ? singular : plural;
+
           // Base message about total files attempted to be processed
-          // This is the number of unique files added to filesToProcess array
-          let totalFilesAttemptedForProcessing = filesToProcess.length;
+          let totalFilesAttemptedForProcessing = filesToProcess.length; // Number of unique file objects processed
 
           if (newUniqueDataCount > 0) {
             feedbackMessageParts.push(
-              `${newUniqueDataCount} novo(s) MTR(s) extraído(s) e salvo(s).`
+              `${newUniqueDataCount} ${pluralize(
+                newUniqueDataCount,
+                "novo",
+                "novos"
+              )} MTR${pluralize(newUniqueDataCount, "", "s")} ${pluralize(
+                newUniqueDataCount,
+                "extraído",
+                "extraídos"
+              )} e ${pluralize(newUniqueDataCount, "salvo", "salvos")}.`
             );
             feedbackType = "success";
           }
 
-          if (existingDuplicatesCount > 0) {
+          if (duplicatesInCurrentSelectionCount > 0) {
             feedbackMessageParts.push(
-              `${existingDuplicatesCount} MTR(s) existente(s) ignorado(s).`
+              `${duplicatesInCurrentSelectionCount} MTR${pluralize(
+                duplicatesInCurrentSelectionCount,
+                "",
+                "s"
+              )} ${pluralize(
+                duplicatesInCurrentSelectionCount,
+                "duplicado",
+                "duplicados"
+              )} na seleção atual (não ${pluralize(
+                duplicatesInCurrentSelectionCount,
+                "exibido",
+                "exibidos"
+              )}).`
             );
             if (feedbackType === "success") {
-              // If there were new data, it's a partial success
-              feedbackType = "exists"; // Mixed result, leaning towards "some items were already there"
+              feedbackType = "exists"; // Mixed result
             } else {
-              feedbackType = "exists"; // Only existing duplicates found
+              feedbackType = "exists";
+            }
+          }
+
+          if (existingDuplicatesInLocalStorageCount > 0) {
+            feedbackMessageParts.push(
+              `${existingDuplicatesInLocalStorageCount} MTR${pluralize(
+                existingDuplicatesInLocalStorageCount,
+                "",
+                "s"
+              )} já ${pluralize(
+                existingDuplicatesInLocalStorageCount,
+                "existente",
+                "existentes"
+              )} no histórico (não ${pluralize(
+                existingDuplicatesInLocalStorageCount,
+                "salvo",
+                "salvos"
+              )}).`
+            );
+            if (feedbackType === "success" || feedbackType === "exists") {
+              feedbackType = "exists"; // Mixed result
+            } else {
+              feedbackType = "exists";
             }
           }
 
           if (noMtrDataCount > 0) {
             feedbackMessageParts.push(
-              `${noMtrDataCount} PDF(s) sem dados MTR válidos.`
+              `${noMtrDataCount} PDF${pluralize(
+                noMtrDataCount,
+                "",
+                "s"
+              )} sem ${pluralize(
+                noMtrDataCount,
+                "dado",
+                "dados"
+              )} MTR ${pluralize(noMtrDataCount, "válido", "válidos")}.`
             );
             if (feedbackType === "success" || feedbackType === "exists") {
               feedbackType = "exists"; // Mixed result
@@ -1433,7 +1499,19 @@
 
           if (multiPageCount > 0) {
             feedbackMessageParts.push(
-              `${multiPageCount} PDF(s) com múltiplas páginas ignorado(s).`
+              `${multiPageCount} PDF${pluralize(
+                multiPageCount,
+                "",
+                "s"
+              )} com ${pluralize(
+                multiPageCount,
+                "múltipla",
+                "múltiplas"
+              )} página${pluralize(multiPageCount, "", "s")} ${pluralize(
+                multiPageCount,
+                "ignorado",
+                "ignorados"
+              )}.`
             );
             if (feedbackType === "success" || feedbackType === "exists") {
               feedbackType = "exists";
@@ -1444,7 +1522,11 @@
 
           if (nonPdfCount > 0) {
             feedbackMessageParts.push(
-              `${nonPdfCount} arquivo(s) não PDF ignorado(s).`
+              `${nonPdfCount} ${pluralize(
+                nonPdfCount,
+                "arquivo",
+                "arquivos"
+              )} não PDF ${pluralize(nonPdfCount, "ignorado", "ignorados")}.`
             );
             if (feedbackType === "success" || feedbackType === "exists") {
               feedbackType = "exists";
@@ -1455,7 +1537,19 @@
 
           if (otherErrorCount > 0) {
             feedbackMessageParts.push(
-              `${otherErrorCount} arquivo(s) com outros erros. (Consulte o console para detalhes)`
+              `${otherErrorCount} ${pluralize(
+                otherErrorCount,
+                "arquivo",
+                "arquivos"
+              )} com ${pluralize(
+                otherErrorCount,
+                "outro",
+                "outros"
+              )} ${pluralize(
+                otherErrorCount,
+                "erro",
+                "erros"
+              )}. (Consulte o console para detalhes)`
             );
             if (
               feedbackType === "success" ||
@@ -1471,11 +1565,18 @@
           let finalMessage = "";
           if (feedbackMessageParts.length > 0) {
             finalMessage =
-              `Processamento de ${totalFilesAttemptedForProcessing} arquivo(s) concluído: ` +
-              feedbackMessageParts.join(" ");
+              `Processamento de ${totalFilesAttemptedForProcessing} ${pluralize(
+                totalFilesAttemptedForProcessing,
+                "arquivo",
+                "arquivos"
+              )} concluído: ` + feedbackMessageParts.join(" ");
           } else {
             if (totalFilesAttemptedForProcessing > 0) {
-              finalMessage = `Processamento de ${totalFilesAttemptedForProcessing} arquivo(s) concluído: Nenhum dado válido de MTR foi encontrado.`;
+              finalMessage = `Processamento de ${totalFilesAttemptedForProcessing} ${pluralize(
+                totalFilesAttemptedForProcessing,
+                "arquivo",
+                "arquivos"
+              )} concluído: Nenhum dado válido de MTR foi encontrado.`;
               feedbackType = "no_data";
             } else {
               finalMessage = "Nenhum arquivo foi selecionado ou solto.";
