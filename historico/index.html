@@ -194,6 +194,10 @@
         padding: 8px;
         text-align: left;
       }
+      th .sort-arrow {
+        margin-left: 5px;
+        font-size: 0.8em;
+      }
       /* Novo contêiner para input de filtro e select de meses */
       .filter-controls-group {
         display: flex;
@@ -582,8 +586,22 @@
 
     <script>
       let sortDirection = {};
+      let currentSortColumn = null; // Coluna atualmente ordenada
+      let currentSortDirection = "asc"; // Direção atual da ordenação ('asc' ou 'desc')
       let storedData = []; // Declarado aqui, será inicializado em DOMContentLoaded
       let isTableVisible = true; // Estado para a visibilidade da tabela
+
+      // Mapeamento de nomes de colunas para chaves de dados
+      const columnKeys = {
+        DATA: "dataEmissao",
+        MTR: "mtrFormatted",
+        TRANSPORTADOR: "razaoSocial1",
+        DESTINADOR: "razaoSocial2",
+        TIPO: "tipo",
+        TICKET: "mtrRef",
+        LITROS: "litros",
+        TONELADAS: "toneladas",
+      };
 
       // Função para alternar o tema
       function toggleTheme() {
@@ -735,78 +753,166 @@
         if (okBtn) okBtn.addEventListener("click", handleOk);
       }
 
-      function renderTable(data) {
-        if (data.length > 0) {
-          const tableRows = data
-            .map(
-              (data) => `
-          <tr>
-            <td>${data.dataEmissao}</td>
-            <td>${data.mtrFormatted}</td>
-            <td>${data.razaoSocial1}</td>
-            <td>${data.razaoSocial2}</td>
-            <td>${data.tipo}</td>
-            <td>${data.mtrRef}</td>
-            <td>${data.litros}</td>
-            <td>${data.toneladas}</td>
-          </tr>
-        `
-            )
-            .join("");
-          document.getElementById("historyTable").innerHTML = `
-          <table>
-            <thead>
-              <tr>
-                <th onclick="sortTable('dataEmissao')">DATA</th>
-                <th onclick="sortTable('mtrFormatted')">MTR</th>
-                <th onclick="sortTable('razaoSocial1')">TRANSPORTADOR</th>
-                <th onclick="sortTable('razaoSocial2')">DESTINADOR</th>
-                <th onclick="sortTable('tipo')">TIPO</th>
-                <th onclick="sortTable('mtrRef')">TICKET</th>
-                <th onclick="sortTable('litros')">LITROS</th>
-                <th onclick="sortTable('toneladas')">TONELADAS</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${tableRows}
-            </tbody>
-          </table>
-        `;
-        } else {
-          document.getElementById("historyTable").innerHTML =
-            "<p>Nenhum dado de histórico disponível.</p>";
+      /**
+       * Renders the data in the table.
+       * @param {Array<Object>} dataToRender The array of MTR objects to display.
+       */
+      function renderTable(dataToRender) {
+        const historyTable = document.getElementById("historyTable");
+        if (dataToRender.length === 0) {
+          if (historyTable)
+            historyTable.innerHTML =
+              "<p>Nenhum dado de histórico disponível.</p>";
+          return;
         }
+
+        let tableRows = dataToRender
+          .map(
+            (data) => `
+              <tr>
+                <td>${data.dataEmissao}</td>
+                <td>${data.mtrFormatted}</td>
+                <td>${data.razaoSocial1}</td>
+                <td>${data.razaoSocial2}</td>
+                <td>${data.tipo}</td>
+                <td>${data.mtrRef}</td>
+                <td>${data.litros}</td>
+                <td>${data.toneladas}</td>
+              </tr>
+            `
+          )
+          .join("");
+
+        if (historyTable) {
+          historyTable.innerHTML = `
+              <table>
+                <thead>
+                  <tr>
+                    <th data-column="dataEmissao">DATA <span class="sort-arrow"></span></th>
+                    <th data-column="mtrFormatted">MTR <span class="sort-arrow"></span></th>
+                    <th data-column="razaoSocial1">TRANSPORTADOR <span class="sort-arrow"></span></th>
+                    <th data-column="razaoSocial2">DESTINADOR <span class="sort-arrow"></span></th>
+                    <th data-column="tipo">TIPO <span class="sort-arrow"></span></th>
+                    <th data-column="mtrRef">TICKET <span class="sort-arrow"></span></th>
+                    <th data-column="litros">LITROS <span class="sort-arrow"></span></th>
+                    <th data-column="toneladas">TONELADAS <span class="sort-arrow"></span></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${tableRows}
+                </tbody>
+              </table>
+            `;
+        }
+
+        // Add sorting event listeners to headers
+        const headers = historyTable.querySelectorAll("th");
+        headers.forEach((header) => {
+          header.addEventListener("click", () => {
+            const column = header.dataset.column;
+            sortTable(column);
+          });
+        });
+
+        // Update sort arrows
+        updateSortArrows();
       }
 
+      /**
+       * Sorts the data based on the selected column.
+       * @param {string} column The data key to sort by.
+       */
       function sortTable(column) {
-        sortDirection[column] = !sortDirection[column];
-        const data = [...storedData];
-        data.sort((a, b) => {
-          if (a[column] === b[column]) return 0;
-          if (a[column] === "Não encontrada" || a[column] === "Não encontrado")
-            return sortDirection[column] ? 1 : -1;
-          if (b[column] === "Não encontrada" || b[column] === "Não encontrado")
-            return sortDirection[column] ? -1 : 1;
-          return sortDirection[column]
-            ? a[column].localeCompare(b[column])
-            : b[column].localeCompare(a[column]);
+        // Determine sort direction
+        if (currentSortColumn === column) {
+          currentSortDirection =
+            currentSortDirection === "asc" ? "desc" : "asc";
+        } else {
+          currentSortColumn = column;
+          currentSortDirection = "asc";
+        }
+
+        const dataToSort = storedData; // Always sort the full storedData
+
+        dataToSort.sort((a, b) => {
+          let valA = a[column];
+          let valB = b[column];
+
+          // Special handling for numeric values (litros, toneladas, MTR, Ticket)
+          if (
+            column === "litros" ||
+            column === "toneladas" ||
+            column === "mtrFormatted" ||
+            column === "mtrRef"
+          ) {
+            // Remove "MTR nº: " prefix for MTR, and handle comma as decimal separator for numbers
+            if (column === "mtrFormatted")
+              valA = String(valA).replace("MTR nº: ", "");
+            if (column === "mtrFormatted")
+              valB = String(valB).replace("MTR nº: ", "");
+
+            valA = parseFloat(String(valA).replace(",", ".") || 0);
+            valB = parseFloat(String(valB).replace(",", ".") || 0);
+
+            if (isNaN(valA)) valA = -Infinity; // Treat "Não encontrada" or "N/A" as smallest
+            if (isNaN(valB)) valB = -Infinity;
+
+            return currentSortDirection === "asc" ? valA - valB : valB - valA;
+          }
+
+          // Special handling for date (DD/MM/YYYY)
+          if (column === "dataEmissao") {
+            // Convert DD/MM/YYYY to YYYY-MM-DD for correct comparison
+            const dateA = valA.split("/").reverse().join("-");
+            const dateB = valB.split("/").reverse().join("-");
+            if (dateA < dateB) return currentSortDirection === "asc" ? -1 : 1;
+            if (dateA > dateB) return currentSortDirection === "asc" ? 1 : -1;
+            return 0;
+          }
+
+          // Default string comparison
+          if (typeof valA === "string" && typeof valB === "string") {
+            valA = valA.toLowerCase();
+            valB = valB.toLowerCase();
+            if (valA < valB) return currentSortDirection === "asc" ? -1 : 1;
+            if (valA > valB) return currentSortDirection === "asc" ? 1 : -1;
+          }
+          return 0;
         });
-        renderTable(data);
-        updateChart(data);
+
+        // Re-render the table with sorted data and update chart (if necessary based on current filters)
+        const filterInput = document.getElementById("filterInput");
+        const monthFilter = document.getElementById("monthFilter");
+        applyFiltersAndRender(filterInput.value, monthFilter.value);
+      }
+
+      /**
+       * Updates the sort arrows in the table headers.
+       */
+      function updateSortArrows() {
+        const headers = document.querySelectorAll("#historyTable th");
+        headers.forEach((header) => {
+          let arrowSpan = header.querySelector(".sort-arrow");
+          if (!arrowSpan) {
+            // Create if it doesn't exist
+            arrowSpan = document.createElement("span");
+            arrowSpan.classList.add("sort-arrow");
+            header.appendChild(arrowSpan);
+          }
+          arrowSpan.textContent = ""; // Clear previous arrow
+          if (header.dataset.column === currentSortColumn) {
+            arrowSpan.textContent =
+              currentSortDirection === "asc" ? " ↑" : " ↓";
+          }
+        });
       }
 
       document.getElementById("filterInput").addEventListener("input", (e) => {
-        const filter = e.target.value.toLowerCase();
-        const filteredData = filter
-          ? storedData.filter((item) =>
-              Object.values(item).some((value) =>
-                value.toString().toLowerCase().includes(filter)
-              )
-            )
-          : storedData;
-        renderTable(filteredData);
-        updateChart(filteredData);
-        document.getElementById("clearFilter").style.display = filter
+        applyFiltersAndRender(
+          e.target.value,
+          document.getElementById("monthFilter").value
+        );
+        document.getElementById("clearFilter").style.display = e.target.value
           ? "inline-block"
           : "none";
       });
@@ -1026,16 +1132,36 @@
         }, 200)
       ); // Atraso de 200ms
 
-      // Atualizar gráfico ao mudar o filtro de mês
-      document.getElementById("monthFilter").addEventListener("change", (e) => {
-        const selectedMonth = e.target.value;
-        const filteredData = selectedMonth
-          ? storedData.filter(
-              (item) => item.dataEmissao.split("/")[1] === selectedMonth
+      // Aplica filtros e renderiza a tabela e o gráfico
+      function applyFiltersAndRender(filterText, selectedMonth) {
+        let filteredData = storedData;
+
+        // Apply text filter
+        if (filterText) {
+          const lowerCaseFilter = filterText.toLowerCase();
+          filteredData = filteredData.filter((item) =>
+            Object.values(item).some((value) =>
+              String(value).toLowerCase().includes(lowerCaseFilter)
             )
-          : storedData;
+          );
+        }
+
+        // Apply month filter
+        if (selectedMonth) {
+          filteredData = filteredData.filter(
+            (item) => item.dataEmissao.split("/")[1] === selectedMonth
+          );
+        }
+
         renderTable(filteredData);
         updateChart(filteredData);
+      }
+
+      document.getElementById("monthFilter").addEventListener("change", (e) => {
+        applyFiltersAndRender(
+          document.getElementById("filterInput").value,
+          e.target.value
+        );
       });
 
       function toggleButtons() {
@@ -1154,8 +1280,8 @@
 
       document.getElementById("clearFilter").addEventListener("click", () => {
         document.getElementById("filterInput").value = "";
-        renderTable(storedData);
-        updateChart(storedData);
+        document.getElementById("monthFilter").value = ""; // Clear month filter too
+        applyFiltersAndRender("", ""); // Re-render with no filters
         document.getElementById("clearFilter").style.display = "none";
         document.getElementById("filterInput").focus();
       });
@@ -1252,7 +1378,7 @@
             if (monthSelect) monthSelect.appendChild(option);
           });
 
-        renderTable(storedData);
+        renderTable(storedData); // Renderiza a tabela inicialmente com todos os dados
         updateChart(storedData);
         toggleButtons();
 
