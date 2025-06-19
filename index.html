@@ -802,7 +802,7 @@
             (razao) =>
               !razao
                 .toUpperCase()
-                .includes("CONSORCIO CONSTRUTOR FERROVIA LUCAS DO RIO VERDE")
+                .includes("CONSORCIO CONSTRUTOR FERROROVIA LUCAS DO RIO VERDE")
           );
 
           extracted.razaoSocial1 =
@@ -873,7 +873,7 @@
         async function processPdfFile(file) {
           // Verifica o tipo de arquivo antes de carregar
           if (file.type !== "application/pdf") {
-            throw new new Error("not-pdf")(); // Mudança aqui: new Error("not-pdf")
+            throw new Error("not-pdf");
           }
 
           const arrayBuffer = await file.arrayBuffer();
@@ -939,8 +939,8 @@
         }
 
         /**
-         * Recursively reads entries from a directory.
-         * @param {FileSystemDirectoryEntry} directoryEntry The directory entry.
+         * Reads entries from a directory recursively.
+         * @param {FileSystemDirectoryEntry} directoryEntry The directory entry to read.
          * @param {Array<File>} filesArray The array to accumulate files.
          * @param {Set<string>} uniqueFileIdentifiers Set to track unique files by identifier.
          * @returns {Promise<void>} A promise that resolves when all files are read.
@@ -969,12 +969,12 @@
                           uniqueFileIdentifiers.add(identifier);
                         } else {
                           console.warn(
-                            `Arquivo duplicado (dentro da pasta) ignorado: ${file.name}`
+                            `[Deduplicação] Arquivo duplicado (dentro da pasta) ignorado na coleta: ${file.name}`
                           );
                         }
                       }
                     } else if (entry.isDirectory) {
-                      // Chama recursivamente para subdiretórios
+                      // Recursively call for subdirectories
                       await readDirectoryEntries(
                         entry,
                         filesArray,
@@ -985,7 +985,7 @@
                   resolve();
                 } else {
                   entries = entries.concat(Array.from(batch));
-                  readBatch(); // Continua lendo o próximo lote
+                  readBatch(); // Continue reading the next batch
                 }
               });
             };
@@ -993,7 +993,7 @@
           });
         }
 
-        // Nova função para lidar com os arquivos ou itens de dataTransfer
+        // Function to handle files from input or drag-and-drop
         async function handleFiles(source) {
           const textOutput = document.getElementById("textOutput");
           const errorDiv = document.getElementById("error");
@@ -1001,8 +1001,8 @@
           const progressIndicator =
             document.getElementById("progressIndicator");
 
-          // Limpa mensagens e indicadores anteriores
-          if (textOutput) textOutput.innerHTML = ""; // Limpa a tabela anterior
+          // Clear previous messages and indicators
+          if (textOutput) textOutput.innerHTML = "";
           if (errorDiv) errorDiv.style.display = "none";
           if (messageBox) {
             messageBox.style.display = "none";
@@ -1013,106 +1013,163 @@
               "no_data"
             );
           }
-          // Exibe mensagem de carregamento inicial
+          // Display initial loading message
           if (progressIndicator) {
             progressIndicator.innerHTML = `<span>Carregando arquivos para processamento...</span><span>(Isso pode levar alguns instantes para pastas grandes)</span>`;
           }
 
           let filesToProcess = [];
-          const uniqueFileIdentifiers = new Set(); // Para evitar duplicatas
+          const uniqueFileIdentifiers = new Set(); // For deduplication
 
           // Function to add a file to filesToProcess if it's unique
           function addFileIfUnique(file) {
-            const identifier = `${file.name}-${file.size}-${file.lastModified}`;
+            if (!file || !(file instanceof File)) {
+              console.warn(
+                "[Coleta] Objeto inválido tentado adicionar à fila de processamento (não é um File):",
+                file
+              );
+              return;
+            }
+
+            // Ensure file.size and file.lastModified are valid numbers
+            const fileSize = typeof file.size === "number" ? file.size : 0;
+            const fileLastModified =
+              typeof file.lastModified === "number" ? file.lastModified : 0;
+
+            const identifier = `${file.name}-${fileSize}-${fileLastModified}`;
+
             if (!uniqueFileIdentifiers.has(identifier)) {
               filesToProcess.push(file);
               uniqueFileIdentifiers.add(identifier);
+              console.log(
+                `[Coleta - Adicionado] Arquivo: ${file.name} (ID: ${identifier}). Total na fila: ${filesToProcess.length}`
+              ); // New log
             } else {
-              console.warn(`Arquivo duplicado ignorado: ${file.name}`);
+              console.warn(
+                `[Deduplicação - Ignorado] Arquivo: ${file.name} (ID: ${identifier}) já presente na lista.`
+              ); // Enhanced log
             }
           }
 
           // Scenario 1: From <input type="file"> (FileList)
           if (source instanceof FileList) {
-            console.log("Source is FileList (from input type=file).");
+            console.log(
+              `[Coleta] Fonte: FileList (do input type=file). Total de arquivos na seleção: ${source.length}`
+            ); // New log
             Array.from(source).forEach((file) => addFileIfUnique(file));
           }
           // Scenario 2: From Drag and Drop (DataTransfer object)
           else if (source instanceof DataTransfer) {
-            console.log("Source is DataTransfer (from drag and drop).");
+            console.log("[Coleta] Fonte: DataTransfer (do arrastar e soltar).");
 
-            // Process all dropped items from DataTransfer.items directly
-            // This is the most reliable way to distinguish between files and directories.
-            for (const item of Array.from(source.items)) {
-              // Use webkitGetAsEntry to check if it's a file or directory entry
-              if (item.webkitGetAsEntry && item.webkitGetAsEntry()) {
-                const entry = item.webkitGetAsEntry();
-                if (entry.isFile) {
-                  const file = await new Promise((resolve) =>
-                    item.getAsFile(resolve)
-                  );
-                  if (file) {
-                    addFileIfUnique(file);
-                    console.log(
-                      `Adicionado arquivo direto da entrada: ${file.name}`
-                    );
-                  }
-                } else if (entry.isDirectory) {
-                  console.log(`Detected directory: ${entry.name}`);
-                  const confirmed = await showFolderConfirmModal(
-                    `Uma pasta foi detectada: "${entry.name}". Deseja processar os arquivos MTR dentro dela?`
-                  );
-                  if (confirmed) {
-                    // Recursively read files from the directory and add them to filesToProcess
-                    await readDirectoryEntries(
-                      entry,
-                      filesToProcess,
-                      uniqueFileIdentifiers
-                    );
-                    console.log(
-                      `Adicionado arquivos da pasta "${entry.name}". Total atual: ${filesToProcess.length}`
-                    );
+            // --- PRIORITY: Process files from DataTransfer.files first ---
+            // This is generally the most reliable way to get actual File objects from a drag,
+            // especially for multiple individual files.
+            if (source.files && source.files.length > 0) {
+              console.log(
+                `[Coleta] Tentando coletar ${source.files.length} arquivos diretamente de DataTransfer.files.`
+              );
+              Array.from(source.files).forEach((file) => {
+                addFileIfUnique(file);
+              });
+              console.log(
+                `[Coleta] Arquivos coletados de DataTransfer.files: ${filesToProcess.length} (após deduplicação inicial).`
+              );
+            }
+
+            // --- SECONDARY: Iterate DataTransfer.items to handle directory entries ---
+            // This is primarily for detecting and processing dropped folders, as DataTransfer.files
+            // flattens the hierarchy and doesn't explicitly mark directories.
+            if (source.items) {
+              console.log(
+                `[Coleta] Verificando ${source.items.length} itens de DataTransfer.items para pastas.`
+              );
+              for (const item of Array.from(source.items)) {
+                if (item.webkitGetAsEntry) {
+                  // Check for webkitGetAsEntry support
+                  const entry = item.webkitGetAsEntry();
+                  if (entry) {
+                    // Ensure entry is not null
+                    if (entry.isDirectory) {
+                      console.log(`[Coleta] Pasta detectada: "${entry.name}"`);
+                      const confirmed = await showFolderConfirmModal(
+                        `Uma pasta foi detectada: "${entry.name}". Deseja processar os arquivos MTR dentro dela?`
+                      );
+                      if (confirmed) {
+                        await readDirectoryEntries(
+                          entry,
+                          filesToProcess,
+                          uniqueFileIdentifiers
+                        );
+                        console.log(
+                          `[Coleta] Arquivos adicionados da pasta "${entry.name}". Total atual: ${filesToProcess.length}`
+                        );
+                      } else {
+                        console.log(
+                          `[Coleta] Processamento da pasta "${entry.name}" cancelado pelo usuário.`
+                        );
+                      }
+                    }
+                    // If it's entry.isFile, it should have already been caught by DataTransfer.files above.
+                    // We rely on addFileIfUnique to prevent duplicates if it happens to be processed again.
                   } else {
-                    console.log(
-                      `Processamento da pasta "${entry.name}" cancelado pelo usuário.`
+                    console.warn(
+                      `[Coleta] webkitGetAsEntry retornou nulo para item do tipo: ${
+                        item.kind || "desconhecido"
+                      } - ${item.type || "desconhecido"}.`
                     );
                   }
-                }
-              } else if (item.kind === "file" && item.getAsFile) {
-                // Fallback for direct file items using getAsFile() if webkitGetAsEntry is not available or returns null
-                const file = item.getAsFile();
-                if (file) {
-                  addFileIfUnique(file);
-                  console.log(
-                    `Adicionado arquivo via getAsFile (fallback): ${file.name}`
-                  );
+                } else if (item.kind === "file" && item.getAsFile) {
+                  // Fallback for browsers that don't support webkitGetAsEntry well for files,
+                  // or for simple file drops where getAsFile() might be the primary method.
+                  try {
+                    const file = item.getAsFile();
+                    if (file) {
+                      addFileIfUnique(file);
+                      console.log(
+                        `[Coleta] Arquivo via item.getAsFile (fallback): ${file.name}`
+                      );
+                    } else {
+                      console.warn(
+                        `[Coleta] item.getAsFile: Objeto File não obtido para item ${
+                          item.type || "desconhecido"
+                        }.`
+                      );
+                    }
+                  } catch (e) {
+                    console.error(
+                      `[Coleta] Erro ao obter arquivo via item.getAsFile(): ${e}`
+                    );
+                  }
                 }
               }
-              // Non-file/non-directory items (e.g., text, URL drags) are naturally ignored here.
+            } else {
+              console.warn(
+                "[Coleta] DataTransfer.items não disponível ou vazio."
+              );
             }
           } else {
             showAlertModal(
               "Nenhum arquivo ou pasta foi selecionado ou solto.",
               "no_data"
             );
-            if (progressIndicator) progressIndicator.innerHTML = ""; // Clear progress
+            if (progressIndicator) progressIndicator.innerHTML = "";
             return;
           }
 
-          // At this point, filesToProcess should contain only actual File objects (not directories)
-          // and unique ones, ready for PDF processing.
+          // At this point, filesToProcess should contain only unique File objects, ready for PDF processing.
 
           if (filesToProcess.length === 0) {
             showAlertModal(
               "Nenhum arquivo PDF válido encontrado para processar na seleção (ou o processamento das pastas foi cancelado/estavam vazias/não continham PDFs válidos).",
               "no_data"
             );
-            if (progressIndicator) progressIndicator.innerHTML = ""; // Clear progress
+            if (progressIndicator) progressIndicator.innerHTML = "";
             return;
           }
 
           console.log(
-            `Total de arquivos PDF únicos a serem processados: ${filesToProcess.length}`
+            `[Coleta Final] Total de arquivos PDF únicos a serem processados: ${filesToProcess.length}`
           );
 
           let extractedDataResults = []; // Stores results of all PDF processing attempts
@@ -1120,9 +1177,9 @@
           let multiPageCount = 0;
           let noMtrDataCount = 0; // PDFs that were valid but had no MTR data
           let otherErrorCount = 0; // For errors during PDF loading/parsing
-          let processedFileCount = 0; // Counter of processed files
+          let processedFileCount = 0; // Counter of successfully processed files for progress indicator
 
-          // Remove loading message and start detailed progress indicator
+          // Update progress indicator before starting the loop
           if (progressIndicator) {
             progressIndicator.innerHTML = `<span>Processando 0 de ${filesToProcess.length} arquivos...</span><span>(Aguarde...)</span>`;
           }
@@ -1132,48 +1189,53 @@
             if (progressIndicator) {
               progressIndicator.innerHTML = `<span>Processando arquivo ${processedFileCount} de ${filesToProcess.length}...</span><span>(${file.name})</span>`;
             }
-            console.log(`Iniciando processamento de: ${file.name}`);
+            console.log(
+              `[Processamento] Iniciando processamento de: ${file.name}`
+            );
 
             try {
               const pdfData = await processPdfFile(file);
-              // Add a temporary flag to indicate successful PDF.js processing
               extractedDataResults.push({
                 ...pdfData,
                 _processedSuccessfully: true,
                 _fileName: file.name,
               });
+              console.log(
+                `[Processamento] Sucesso na extração para ${file.name}.`
+              );
             } catch (error) {
               if (error.message === "multi-page-pdf") {
                 multiPageCount++;
-                // Register that this file failed due to being multi-page
                 extractedDataResults.push({
                   _processedSuccessfully: false,
                   _reason: "multi-page",
                   _fileName: file.name,
                 });
                 console.warn(
-                  `Arquivo ignorado (mais de uma página): ${file.name}`
+                  `[Processamento] Arquivo ignorado (mais de uma página): ${file.name}`
                 );
               } else if (error.message === "not-pdf") {
-                // This is the key part: ONLY increment nonPdfCount if it's an actual File that's not a PDF.
-                // Directory entries should never reach this point.
                 nonPdfCount++;
                 extractedDataResults.push({
                   _processedSuccessfully: false,
                   _reason: "not-pdf",
                   _fileName: file.name,
                 });
-                console.warn(`Arquivo ignorado (não é PDF): ${file.name}`);
+                console.warn(
+                  `[Processamento] Arquivo ignorado (não é PDF): ${file.name}`
+                );
               } else {
                 otherErrorCount++;
-                // Register that this file failed due to another error
                 extractedDataResults.push({
                   _processedSuccessfully: false,
                   _reason: "other-error",
                   _fileName: file.name,
                   _errorMessage: error.message,
                 });
-                console.error(`Erro ao processar arquivo ${file.name}:`, error);
+                console.error(
+                  `[Processamento] Erro ao processar arquivo ${file.name}:`,
+                  error
+                );
               }
             }
           }
@@ -1192,9 +1254,11 @@
           const dataToDisplayInTable = [];
 
           // Process results to separate valid MTRs, duplicates, and PDFs without MTR data
+          console.log(
+            `[Verificação Duplicatas] Iniciando verificação de duplicatas. Total atual em localStorage: ${storedData.length}`
+          );
           extractedDataResults.forEach((item) => {
             if (item._processedSuccessfully) {
-              // Remove temporary flags before checking and saving
               const { _processedSuccessfully, _fileName, ...cleanItem } = item;
 
               // Check if extracted data meets criteria for a "valid MTR"
@@ -1205,29 +1269,53 @@
                 cleanItem.razaoSocial2 !== "Não encontrada" &&
                 cleanItem.tipo !== "Não encontrado"
               ) {
-                const isDuplicate = storedData.some(
-                  (existingItem) =>
+                const isDuplicate = storedData.some((existingItem) => {
+                  const match =
                     existingItem.mtrFormatted === cleanItem.mtrFormatted &&
-                    existingItem.dataEmissao === cleanItem.dataEmissao
-                );
+                    existingItem.dataEmissao === cleanItem.dataEmissao;
+                  if (match) {
+                    console.log(
+                      `[Verificação Duplicatas] DETECTADA: MTR: ${cleanItem.mtrFormatted} (Data: ${cleanItem.dataEmissao}) - Arquivo: ${_fileName} JÁ EXISTE NO HISTÓRICO.`
+                    );
+                  }
+                  return match;
+                });
 
                 if (!isDuplicate) {
                   storedData.push(cleanItem); // Add to main list
                   newUniqueDataCount++;
                   dataToDisplayInTable.push(cleanItem); // Add for current table display
+                  console.log(
+                    `[Verificação Duplicatas] NOVO: MTR: ${cleanItem.mtrFormatted} (Data: ${cleanItem.dataEmissao}) - Arquivo: ${_fileName} adicionado ao histórico.`
+                  );
                 } else {
                   existingDuplicatesCount++;
                   dataToDisplayInTable.push(cleanItem); // Still display duplicates in current table
+                  console.log(
+                    `[Verificação Duplicatas] EXISTENTE: MTR: ${cleanItem.mtrFormatted} (Data: ${cleanItem.dataEmissao}) - Arquivo: ${_fileName} já existe, CONTADO COMO DUPLICADO.`
+                  );
                 }
               } else {
                 noMtrDataCount++; // Count PDFs that did not yield valid MTR data
+                console.warn(
+                  `[Verificação Duplicatas] PDF sem dados MTR válidos (MTR não extraído) para arquivo: ${_fileName}`
+                );
               }
+            } else {
+              // Log details for files that failed initial PDF processing (e.g., non-PDF, multi-page)
+              console.warn(
+                `[Verificação Duplicatas] Arquivo não processado com sucesso: ${
+                  item._fileName || "Nome de arquivo desconhecido"
+                } - Razão: ${item._reason || "Desconhecida"}`
+              );
             }
-            // Files that failed in processPdfFile are already counted (nonPdfCount, multiPageCount, otherErrorCount)
           });
 
           // Save updated data to localStorage
           localStorage.setItem("residuosData", JSON.stringify(storedData));
+          console.log(
+            `[Verificação Duplicatas] Histórico final salvo. Total de MTRs no histórico: ${storedData.length}`
+          );
 
           // Render table ONLY if there is data to display in this execution
           if (dataToDisplayInTable.length > 0) {
@@ -1308,13 +1396,10 @@
           // --- Final Feedback Message Logic ---
           let feedbackMessageParts = [];
           let feedbackType = "no_data"; // Default: no valid data found
-          // Determine total number of items initially dropped/selected for accurate messages
-          let totalInitialItemsConsidered = 0;
-          if (source instanceof FileList) {
-            totalInitialItemsConsidered = source.length;
-          } else if (source instanceof DataTransfer) {
-            totalInitialItemsConsidered = source.items.length;
-          }
+
+          // Base message about total files attempted to be processed
+          // This is the number of unique files added to filesToProcess array
+          let totalFilesAttemptedForProcessing = filesToProcess.length;
 
           if (newUniqueDataCount > 0) {
             feedbackMessageParts.push(
@@ -1329,10 +1414,9 @@
             );
             if (feedbackType === "success") {
               // If there were new data, it's a partial success
-              feedbackType = "exists";
+              feedbackType = "exists"; // Mixed result, leaning towards "some items were already there"
             } else {
-              // If only duplicates, it's an "existing" state
-              feedbackType = "exists";
+              feedbackType = "exists"; // Only existing duplicates found
             }
           }
 
@@ -1373,21 +1457,25 @@
             feedbackMessageParts.push(
               `${otherErrorCount} arquivo(s) com outros erros. (Consulte o console para detalhes)`
             );
-            if (feedbackType === "success" || feedbackType === "exists") {
-              feedbackType = "exists";
+            if (
+              feedbackType === "success" ||
+              feedbackType === "exists" ||
+              feedbackType === "no_data"
+            ) {
+              feedbackType = "error"; // Elevate to error if there are parsing errors
             } else {
-              feedbackType = "error"; // More critical error type
+              feedbackType = "error";
             }
           }
 
           let finalMessage = "";
           if (feedbackMessageParts.length > 0) {
-            finalMessage = feedbackMessageParts.join(" ");
+            finalMessage =
+              `Processamento de ${totalFilesAttemptedForProcessing} arquivo(s) concluído: ` +
+              feedbackMessageParts.join(" ");
           } else {
-            // If no files were processed, show a general message based on whether anything was dropped
-            if (totalInitialItemsConsidered > 0) {
-              finalMessage =
-                "Nenhum dado válido de MTR foi encontrado nos arquivos processados ou selecionados.";
+            if (totalFilesAttemptedForProcessing > 0) {
+              finalMessage = `Processamento de ${totalFilesAttemptedForProcessing} arquivo(s) concluído: Nenhum dado válido de MTR foi encontrado.`;
               feedbackType = "no_data";
             } else {
               finalMessage = "Nenhum arquivo foi selecionado ou solto.";
