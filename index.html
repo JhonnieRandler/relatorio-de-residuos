@@ -96,11 +96,11 @@
         ); /* Borda clara mais opaca (90%) */
         --drag-overlay-text: #333; /* Cor do texto no overlay claro */
 
-        /* Cores específicas para o botão de tema no modo claro */
+        /* Cores específicas para o botão de tema no modo claro (ORIGINAIS) */
         --theme-toggle-normal-bg: #ffffff;
         --theme-toggle-normal-color: #333;
-        --theme-toggle-hover-bg: #000000;
-        --theme-toggle-hover-color: #ffffff;
+        --theme-toggle-hover-bg: #000000; /* Deve ficar preto no hover */
+        --theme-toggle-hover-color: #ffffff; /* Icone branco no hover */
       }
 
       [data-theme="dark"] {
@@ -134,11 +134,11 @@
         ); /* Borda clara semi-transparente para tema escuro (70%) */
         --drag-overlay-text: #e0e0e0; /* Cor do texto no overlay escuro */
 
-        /* Cores específicas para o botão de tema no modo noturno */
+        /* Cores específicas para o botão de tema no modo noturno (ORIGINAIS) */
         --theme-toggle-normal-bg: #333333;
         --theme-toggle-normal-color: #e0e0e0;
-        --theme-toggle-hover-bg: #ffffff;
-        --theme-toggle-hover-color: #ffa500; /* Laranja/Amarelo */
+        --theme-toggle-hover-bg: #ffffff; /* Deve ficar branco no hover */
+        --theme-toggle-hover-color: #ffa500; /* Sol amarelo no hover */
       }
 
       html,
@@ -418,6 +418,10 @@
         justify-content: center;
         align-items: center;
       }
+      /* Adiciona display:flex apenas quando o modal está ativo */
+      .modal-overlay.active {
+        display: flex;
+      }
 
       .modal-content {
         background-color: var(--modal-bg-color);
@@ -448,13 +452,6 @@
       .modal-buttons button:hover {
         opacity: 0.9;
       }
-      .modal-image {
-        max-width: 80px;
-        height: auto;
-        margin-bottom: 15px;
-        display: none;
-        margin: 0 auto 15px auto;
-      }
       /* Estilo específico para o botão de cancelar no modal de confirmação */
       #folderModalCancelBtn {
         background-color: #f44336; /* Vermelho para cancelar */
@@ -462,8 +459,15 @@
       #folderModalCancelBtn:hover {
         background-color: #d32f2f;
       }
+      .modal-image {
+        max-width: 80px;
+        height: auto;
+        margin-bottom: 15px;
+        display: none;
+        margin: 0 auto 15px auto;
+      }
 
-      /* Estilos para o overlay de Drag and Drop */
+      /* Drag and Drop Overlay styles (Inclui o padding de 20px) */
       #dragDropOverlay {
         position: fixed;
         top: 0;
@@ -473,15 +477,14 @@
         background-color: var(
           --overlay-bg-transparent
         ); /* Usando nova variável */
-        padding: 20px; /* Padding para que a borda interna não encoste nas bordas da tela */
-        display: flex;
+        z-index: 999;
+        display: flex; /* Keep it flex, but control visibility with opacity/pointer-events */
         justify-content: center;
         align-items: center;
-        z-index: 999;
-        pointer-events: none;
-        opacity: 0;
-        transition: opacity 0.3s ease, background-color 0.3s ease; /* Transições para suavidade */
-        box-sizing: border-box; /* Garante que padding e border não aumentem o tamanho total */
+        opacity: 0; /* Starts invisible */
+        pointer-events: none; /* Prevents interaction when invisible */
+        transition: opacity 0.3s ease; /* Smooth transition */
+        padding: 20px; /* Adicionado padding de 20px aqui */
       }
 
       #dragDropOverlay.active {
@@ -490,10 +493,10 @@
       }
 
       #dragDropArea {
+        border: 12px dashed var(--overlay-border-color); /* Borda mais grossa */
+        border-radius: 25px; /* Raio de borda maior */
         width: 100%; /* Ocupa a largura disponível dentro do padding do overlay */
         height: 100%; /* Ocupa a altura disponível dentro do padding do overlay */
-        border: 12px dashed var(--overlay-border-color); /* Borda grossa, tracejada e mais opaca */
-        border-radius: 25px; /* Bordas arredondadas */
         display: flex;
         justify-content: center;
         align-items: center;
@@ -728,14 +731,34 @@
             alertModalImage.style.display = "block";
           }
 
-          if (modal) modal.style.display = "flex";
+          // Use the 'active' class to control modal display
+          if (modal) modal.classList.add("active"); // Shows the modal
 
           const handleOk = () => {
-            if (modal) modal.style.display = "none";
+            closeAlertModal();
+          };
+
+          const handleKeyDown = (e) => {
+            if (e.key === "Enter" || e.key === "Escape") {
+              e.preventDefault(); // Prevents default behavior (e.g., submitting forms, closing browser search)
+              handleOk();
+            }
+          };
+
+          const closeAlertModal = () => {
+            if (modal) modal.classList.remove("active"); // Hides the modal
             if (okBtn) okBtn.removeEventListener("click", handleOk);
+            document.removeEventListener("keydown", handleKeyDown); // Remove keyboard listener
             if (alertModalImage) alertModalImage.style.display = "none"; // Oculta a imagem ao fechar
           };
-          if (okBtn) okBtn.addEventListener("click", handleOk);
+
+          // Ensure listeners are added only once
+          // Clone and replace to remove old listeners robustly
+          const newOkBtn = okBtn.cloneNode(true);
+          okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+
+          newOkBtn.addEventListener("click", handleOk);
+          document.addEventListener("keydown", handleKeyDown); // Add keyboard listener
         }
 
         // Nova função para o modal de confirmação de pasta
@@ -749,34 +772,54 @@
             const confirmBtn = document.getElementById("folderModalConfirmBtn");
             const cancelBtn = document.getElementById("folderModalCancelBtn");
 
-            // Garante que os listeners anteriores sejam removidos para evitar múltiplos disparos
-            // Clonar e substituir o botão é uma forma robusta de remover listeners antigos
-            const newConfirmBtn = confirmBtn.cloneNode(true);
-            const newCancelBtn = cancelBtn.cloneNode(true);
-            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-            cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-
             if (modalMessage) modalMessage.textContent = message;
             if (confirmModalImage) {
               confirmModalImage.src = "point.png"; // Ícone de "ponto de atenção"
               confirmModalImage.style.display = "block";
             }
-            if (modal) modal.style.display = "flex";
+            // Use the 'active' class to control modal display
+            if (modal) modal.classList.add("active"); // Shows the modal
 
             const handleConfirm = () => {
               resolve(true);
-              if (modal) modal.style.display = "none";
-              if (confirmModalImage) confirmModalImage.style.display = "none";
+              closeFolderConfirmModal();
             };
 
             const handleCancel = () => {
               resolve(false);
-              if (modal) modal.style.display = "none";
-              if (confirmModalImage) confirmModalImage.style.display = "none";
+              closeFolderConfirmModal();
             };
+
+            const handleKeyDown = (e) => {
+              if (e.key === "Enter") {
+                e.preventDefault(); // Prevents default Enter behavior (e.g., submitting forms)
+                handleConfirm();
+              } else if (e.key === "Escape") {
+                e.preventDefault(); // Prevents default Esc behavior
+                handleCancel();
+              }
+            };
+
+            const closeFolderConfirmModal = () => {
+              if (modal) modal.classList.remove("active"); // Hides the modal
+              if (confirmBtn)
+                confirmBtn.removeEventListener("click", handleConfirm);
+              if (cancelBtn)
+                cancelBtn.removeEventListener("click", handleCancel);
+              document.removeEventListener("keydown", handleKeyDown); // Remove keyboard listener
+              if (confirmModalImage) confirmModalImage.style.display = "none"; // Oculta a imagem ao fechar
+            };
+
+            // Ensure listeners are added only once
+            // Clone and replace to remove old listeners robustly
+            const newConfirmBtn = confirmBtn.cloneNode(true);
+            const newCancelBtn = cancelBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+            cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
 
             newConfirmBtn.addEventListener("click", handleConfirm);
             newCancelBtn.addEventListener("click", handleCancel);
+            document.addEventListener("keydown", handleKeyDown); // Add keyboard listener
           });
         }
 
@@ -1028,8 +1071,9 @@
 
           let tableRows = dataToRender
             .map(
-              (data) => `
+              (data, index) => `
                 <tr>
+                  <td>${index + 1}</td> <!-- Índice visual da linha -->
                   <td>${data.dataEmissao}</td>
                   <td>${data.mtrFormatted}</td>
                   <td>${data.razaoSocial1}</td>
@@ -1050,6 +1094,7 @@
                       <table>
                         <thead>
                           <tr>
+                            <th>Nº</th> <!-- Nova coluna para o índice visual -->
                             <th data-column="dataEmissao">DATA <span class="sort-arrow"></span></th>
                             <th data-column="mtrFormatted">MTR <span class="sort-arrow"></span></th>
                             <th data-column="razaoSocial1">TRANSPORTADOR <span class="sort-arrow"></span></th>
@@ -1068,13 +1113,16 @@
                 `;
           }
 
-          // Add sorting event listeners to headers
+          // Add sorting event listeners to headers (excluding the new Nº column)
           const headers = textOutput.querySelectorAll("th");
           headers.forEach((header) => {
-            header.addEventListener("click", () => {
-              const column = header.dataset.column;
-              sortTable(column);
-            });
+            // Only add listener to sortable columns (those with data-column attribute)
+            if (header.dataset.column) {
+              header.addEventListener("click", () => {
+                const column = header.dataset.column;
+                sortTable(column);
+              });
+            }
           });
 
           // Update sort arrows
@@ -1089,7 +1137,9 @@
               if (tableRowsToCopy.length > 0) {
                 const copyText = Array.from(tableRowsToCopy)
                   .map((row) => {
+                    // Mapeia as células da linha, começando da segunda célula (índice 1) para excluir o Nº
                     return Array.from(row.cells)
+                      .slice(1) // Exclui a primeira célula (Nº)
                       .map((cell) => cell.textContent)
                       .join("\t");
                   })
@@ -1137,9 +1187,9 @@
             ) {
               // Remove "MTR nº: " prefix for MTR, and handle comma as decimal separator for numbers
               if (column === "mtrFormatted")
-                valA = valA.replace("MTR nº: ", "");
+                valA = String(valA).replace("MTR nº: ", "");
               if (column === "mtrFormatted")
-                valB = valB.replace("MTR nº: ", "");
+                valB = String(valB).replace("MTR nº: ", "");
 
               valA = parseFloat(String(valA).replace(",", ".") || 0);
               valB = parseFloat(String(valB).replace(",", ".") || 0);
@@ -1152,7 +1202,7 @@
 
             // Special handling for date (DD/MM/YYYY)
             if (column === "dataEmissao") {
-              // Convert DD/MM/YYYY to YYYY-MM-DD for correct comparison
+              // Convert DD/MM/YYYY to ISO నేపథ్యంలో-MM-DD for correct comparison
               const dateA = valA.split("/").reverse().join("-");
               const dateB = valB.split("/").reverse().join("-");
               if (dateA < dateB) return currentSortDirection === "asc" ? -1 : 1;
@@ -1179,13 +1229,18 @@
         function updateSortArrows() {
           const headers = document.querySelectorAll("#textOutput th");
           headers.forEach((header) => {
-            const arrowSpan = header.querySelector(".sort-arrow");
-            if (arrowSpan) {
-              arrowSpan.textContent = ""; // Clear previous arrow
-              if (header.dataset.column === currentSortColumn) {
-                arrowSpan.textContent =
-                  currentSortDirection === "asc" ? " ↑" : " ↓";
-              }
+            let arrowSpan = header.querySelector(".sort-arrow");
+            if (!arrowSpan) {
+              // Create if it doesn't exist
+              arrowSpan = document.createElement("span");
+              arrowSpan.classList.add("sort-arrow");
+              header.appendChild(arrowSpan);
+            }
+            arrowSpan.textContent = ""; // Clear previous arrow
+            // Only add arrow to sortable columns
+            if (header.dataset.column === currentSortColumn) {
+              arrowSpan.textContent =
+                currentSortDirection === "asc" ? " ↑" : " ↓";
             }
           });
         }
@@ -1497,13 +1552,13 @@
                   console.log(
                     `[Verificação Duplicatas] EXISTENTE (no histórico): MTR: ${cleanItem.mtrFormatted} (Data: ${cleanItem.dataEmissao}) - Arquivo: ${_fileName} já existe no histórico.`
                   );
-                  // We do NOT add to dataToDisplayInTable here, as per requirement
+                  // We do NOT add to tempDataForTableDisplay here, as per requirement
                 } else if (isDuplicateInCurrentDisplay) {
                   duplicatesInCurrentSelectionCount++;
                   console.warn(
                     `[Verificação Duplicatas] DUPLICADO (na seleção atual): MTR: ${cleanItem.mtrFormatted} (Data: ${cleanItem.dataEmissao}) - Arquivo: ${_fileName} é duplicado na seleção atual e não será exibido na tabela.`
                   );
-                  // We do NOT add to dataToDisplayInTable here, as per requirement
+                  // We do NOT add to tempDataForTableDisplay here, as per requirement
                 }
               } else {
                 noMtrDataCount++; // Count PDFs that did not yield valid MTR data
