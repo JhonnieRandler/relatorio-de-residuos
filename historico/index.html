@@ -692,24 +692,43 @@
 
         const handleConfirm = () => {
           onConfirm(true);
-          if (modal) modal.style.display = "none";
-          if (confirmBtn)
-            confirmBtn.removeEventListener("click", handleConfirm);
-          if (cancelBtn) cancelBtn.removeEventListener("click", handleCancel);
-          if (confirmModalImage) confirmModalImage.style.display = "none"; // Oculta a imagem ao fechar
+          closeConfirmModal();
         };
 
         const handleCancel = () => {
           onConfirm(false);
+          closeConfirmModal();
+        };
+
+        const handleKeyDown = (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault(); // Prevents default Enter behavior (e.g., submitting forms)
+            handleConfirm();
+          } else if (e.key === "Escape") {
+            e.preventDefault(); // Prevents default Esc behavior
+            handleCancel();
+          }
+        };
+
+        const closeConfirmModal = () => {
           if (modal) modal.style.display = "none";
           if (confirmBtn)
             confirmBtn.removeEventListener("click", handleConfirm);
           if (cancelBtn) cancelBtn.removeEventListener("click", handleCancel);
+          document.removeEventListener("keydown", handleKeyDown); // Remove keyboard listener
           if (confirmModalImage) confirmModalImage.style.display = "none"; // Oculta a imagem ao fechar
         };
 
-        if (confirmBtn) confirmBtn.addEventListener("click", handleConfirm);
-        if (cancelBtn) cancelBtn.addEventListener("click", handleCancel);
+        // Ensure listeners are added only once
+        // Clone and replace to remove old listeners robustly
+        const newConfirmBtn = confirmBtn.cloneNode(true);
+        const newCancelBtn = cancelBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+        cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+        newConfirmBtn.addEventListener("click", handleConfirm);
+        newCancelBtn.addEventListener("click", handleCancel);
+        document.addEventListener("keydown", handleKeyDown); // Add keyboard listener
       }
 
       function showAlertModal(message, type) {
@@ -746,11 +765,30 @@
         if (modal) modal.style.display = "flex";
 
         const handleOk = () => {
+          closeAlertModal();
+        };
+
+        const handleKeyDown = (e) => {
+          if (e.key === "Enter" || e.key === "Escape") {
+            e.preventDefault(); // Prevents default behavior (e.g., submitting forms, closing browser search)
+            handleOk();
+          }
+        };
+
+        const closeAlertModal = () => {
           if (modal) modal.style.display = "none";
           if (okBtn) okBtn.removeEventListener("click", handleOk);
+          document.removeEventListener("keydown", handleKeyDown); // Remove keyboard listener
           if (alertModalImage) alertModalImage.style.display = "none"; // Oculta a imagem ao fechar
         };
-        if (okBtn) okBtn.addEventListener("click", handleOk);
+
+        // Ensure listeners are added only once
+        // Clone and replace to remove old listeners robustly
+        const newOkBtn = okBtn.cloneNode(true);
+        okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+
+        newOkBtn.addEventListener("click", handleOk);
+        document.addEventListener("keydown", handleKeyDown); // Add keyboard listener
       }
 
       /**
@@ -768,8 +806,9 @@
 
         let tableRows = dataToRender
           .map(
-            (data) => `
+            (data, index) => `
               <tr>
+                <td>${index + 1}</td> <!-- Índice visual da linha -->
                 <td>${data.dataEmissao}</td>
                 <td>${data.mtrFormatted}</td>
                 <td>${data.razaoSocial1}</td>
@@ -788,6 +827,7 @@
               <table>
                 <thead>
                   <tr>
+                    <th>Nº</th> <!-- Nova coluna para o índice visual -->
                     <th data-column="dataEmissao">DATA <span class="sort-arrow"></span></th>
                     <th data-column="mtrFormatted">MTR <span class="sort-arrow"></span></th>
                     <th data-column="razaoSocial1">TRANSPORTADOR <span class="sort-arrow"></span></th>
@@ -805,13 +845,16 @@
             `;
         }
 
-        // Add sorting event listeners to headers
+        // Add sorting event listeners to headers (excluding the new Nº column)
         const headers = historyTable.querySelectorAll("th");
         headers.forEach((header) => {
-          header.addEventListener("click", () => {
-            const column = header.dataset.column;
-            sortTable(column);
-          });
+          if (header.dataset.column) {
+            // Only add listener to sortable columns
+            header.addEventListener("click", () => {
+              const column = header.dataset.column;
+              sortTable(column);
+            });
+          }
         });
 
         // Update sort arrows
@@ -862,7 +905,7 @@
 
           // Special handling for date (DD/MM/YYYY)
           if (column === "dataEmissao") {
-            // Convert DD/MM/YYYY to YYYY-MM-DD for correct comparison
+            // Convert DD/MM/YYYY to ISO నేపథ్యంలో-MM-DD for correct comparison
             const dateA = valA.split("/").reverse().join("-");
             const dateB = valB.split("/").reverse().join("-");
             if (dateA < dateB) return currentSortDirection === "asc" ? -1 : 1;
@@ -900,6 +943,7 @@
             header.appendChild(arrowSpan);
           }
           arrowSpan.textContent = ""; // Clear previous arrow
+          // Only add arrow to sortable columns (those with data-column)
           if (header.dataset.column === currentSortColumn) {
             arrowSpan.textContent =
               currentSortDirection === "asc" ? " ↑" : " ↓";
@@ -1149,8 +1193,11 @@
         // Aplica filtro de Mês/Ano
         if (selectedMonthYear) {
           filteredData = filteredData.filter((item) => {
-            const [day, month, year] = item.dataEmissao.split("/");
-            return `${month}/${year}` === selectedMonthYear;
+            const parts = item.dataEmissao.split("/");
+            return (
+              parts.length === 3 &&
+              `${parts[1]}/${parts[2]}` === selectedMonthYear
+            );
           });
         }
 
@@ -1261,7 +1308,9 @@
         if (tableRows.length > 0) {
           const copyText = Array.from(tableRows)
             .map((row) => {
+              // Exclui a primeira célula (Nº) ao copiar
               return Array.from(row.cells)
+                .slice(1)
                 .map((cell) => cell.textContent)
                 .join("\t");
             })
@@ -1393,8 +1442,7 @@
           if (monthSelect) monthSelect.appendChild(option);
         });
 
-        renderTable(storedData); // Renderiza a tabela inicialmente com todos os dados
-        updateChart(storedData);
+        applyFiltersAndRender("", ""); // Aplica filtros e renderiza a tabela e o gráfico
         toggleButtons();
 
         // Adiciona listener para a imagem do rodapé APÓS o DOM estar pronto
