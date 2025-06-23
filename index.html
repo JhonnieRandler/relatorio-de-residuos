@@ -55,6 +55,8 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+    <!-- Link para o CSS centralizado -->
+    <link rel="stylesheet" href="style.css" />
     <!-- Preload das imagens para carregamento mais rápido -->
     <link rel="preload" as="image" href="doubt.png" />
     <link rel="preload" as="image" href="footer.png" />
@@ -65,123 +67,10 @@
     <!-- Preload do áudio -->
     <link rel="preload" as="audio" href="blink.mp3" />
     <style>
-      :root {
-        /* Cores do tema claro */
-        --background-color: #f5f5f5;
-        --text-color: #333;
-        --header-color: #333;
-        --button-bg-color: #ffffff;
-        --button-text-color: #333;
-        --button-hover-bg-color: #4caf50;
-        --button-hover-text-color: white;
-        --table-header-bg: #e0e0e0;
-        --table-border-color: #ccc;
-        --table-row-bg: #ffffff;
-        --modal-bg-color: #fefefe;
-        --footer-bg-color: #ffcead;
-        --box-shadow-color: rgba(0, 0, 0, 0.1);
-
-        /* Novas variáveis para o overlay de drag */
-        --overlay-bg-transparent: rgba(
-          255,
-          206,
-          173,
-          0.7
-        ); /* Cor do rodapé com 70% de opacidade */
-        --overlay-border-color: rgba(
-          255,
-          255,
-          255,
-          0.9
-        ); /* Borda clara mais opaca (90%) */
-        --drag-overlay-text: #333; /* Cor do texto no overlay claro */
-
-        /* Cores específicas para o botão de tema no modo claro (ORIGINAIS) */
-        --theme-toggle-normal-bg: #ffffff;
-        --theme-toggle-normal-color: #333;
-        --theme-toggle-hover-bg: #000000; /* Deve ficar preto no hover */
-        --theme-toggle-hover-color: #ffffff; /* Icone branco no hover */
-      }
-
-      [data-theme="dark"] {
-        /* Cores do tema noturno */
-        --background-color: #1a1a1a;
-        --text-color: #e0e0e0;
-        --header-color: #f5f5f5;
-        --button-bg-color: #333333;
-        --button-text-color: #e0e0e0;
-        --button-hover-bg-color: #367d39;
-        --button-hover-text-color: white;
-        --table-header-bg: #444444;
-        --table-border-color: #555;
-        --table-row-bg: #2b2b2b;
-        --modal-bg-color: #333333;
-        --footer-bg-color: #3d2a21; /* Um marrom mais escuro para o rodapé */
-        --box-shadow-color: rgba(255, 255, 255, 0.1);
-
-        /* Novas variáveis para o overlay de drag no tema escuro */
-        --overlay-bg-transparent: rgba(
-          61,
-          42,
-          33,
-          0.7
-        ); /* Cor do rodapé escuro com 70% de opacidade */
-        --overlay-border-color: rgba(
-          255,
-          255,
-          255,
-          0.7
-        ); /* Borda clara semi-transparente para tema escuro (70%) */
-        --drag-overlay-text: #e0e0e0; /* Cor do texto no overlay escuro */
-
-        /* Cores específicas para o botão de tema no modo noturno (ORIGINAIS) */
-        --theme-toggle-normal-bg: #333333;
-        --theme-toggle-normal-color: #e0e0e0;
-        --theme-toggle-hover-bg: #ffffff; /* Deve ficar branco no hover */
-        --theme-toggle-hover-color: #ffa500; /* Sol amarelo no hover */
-      }
-
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        width: 100%; /* Garante que body ocupe 100% da largura para o blur */
-        overflow-x: hidden;
-      }
-      /* Adiciona box-sizing universal para um modelo de caixa consistente */
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-      }
-      body {
-        font-family: Arial, sans-serif;
-        background-color: var(--background-color);
-        color: var(--text-color);
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-        transition: background-color 0.3s ease, color 0.3s ease,
-          filter 0.3s ease; /* Adiciona transição para o filtro */
-        position: relative; /* Necessário para posicionar o overlay */
-      }
+      /* Estilos específicos da página inicial */
       body.blur-active > *:not(#dragDropOverlay) {
-        /* Aplica blur a todos os filhos do body, exceto o overlay */
         filter: blur(5px);
-        pointer-events: none; /* Desabilita interações com elementos borrados */
-      }
-      main {
-        flex: 1 0 auto;
-        width: 100%;
-        max-width: 95%;
-        margin: 20px auto;
-        padding: 0 20px;
-        text-align: center;
-      }
-      h1 {
-        color: var(--header-color);
-        margin-bottom: 20px;
+        pointer-events: none;
       }
       .input-container {
         display: flex;
@@ -211,68 +100,19 @@
       #textOutput {
         margin-top: 20px;
       }
-      /* Novo estilo para o indicador de progresso */
       #progressIndicator {
         margin-top: 10px;
         font-size: 1.1em;
         font-weight: bold;
         color: var(--text-color);
-        min-height: 3em; /* Ajustado para acomodar duas linhas de texto */
+        min-height: 3em;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
       }
       #progressIndicator span {
-        display: block; /* Garante que cada parte esteja em sua própria linha */
-      }
-
-      .table-container {
-        overflow-x: auto;
-        width: 100%;
-        margin-bottom: 20px;
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-        background-color: var(--table-row-bg);
-        border-radius: 8px;
-        box-shadow: 0 2px 4px var(--box-shadow-color);
-        color: var(--text-color);
-      }
-      th,
-      td {
-        border: 1px solid var(--table-border-color);
-        padding: 8px;
-        text-align: left;
-      }
-      th {
-        background-color: var(--table-header-bg);
-        font-weight: bold;
-        cursor: pointer; /* Indica que o cabeçalho é clicável */
-      }
-      th .sort-arrow {
-        margin-left: 5px;
-        font-size: 0.8em;
-      }
-      button {
-        padding: 10px 20px;
-        margin: 10px 0;
-        background-color: var(--button-bg-color);
-        color: var(--button-text-color);
-        border: none;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px var(--box-shadow-color);
-        cursor: pointer;
-        font-size: 16px;
-        transition: background-color 0.3s, transform 0.2s, color 0.3s ease,
-          box-shadow 0.3s ease;
-      }
-      button:hover {
-        background-color: var(--button-hover-bg-color);
-        color: var(--button-hover-text-color);
-        transform: translateY(-2px);
+        display: block;
       }
       .history-button {
         margin: 10px 0;
@@ -306,215 +146,63 @@
         background-color: #e0ffe0;
         border-color: green;
       }
-      footer {
-        flex: 0 0 auto;
-        width: 100%;
-        background-color: var(--footer-bg-color);
-        padding: 15px;
-        text-align: center;
-        box-shadow: 0 2px 4px var(--box-shadow-color);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 15px;
-        box-sizing: border-box;
-        transition: background-color 0.3s ease, box-shadow 0.3s ease;
-      }
-      footer img {
-        max-width: 100px;
-        height: auto;
-        cursor: pointer;
-      }
-      footer p {
-        color: var(--text-color);
-        font-size: 14px;
-        margin: 0;
-        flex: 1;
-        overflow-wrap: break-word;
-      }
-      .theme-toggle-button {
-        background-color: var(--theme-toggle-normal-bg);
-        color: var(--theme-toggle-normal-color);
-        border: none;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 0;
-        cursor: pointer;
-        font-size: 18px;
-        box-shadow: 0 2px 4px var(--box-shadow-color);
-        transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s,
-          box-shadow 0.3s ease;
-        margin-left: 10px;
-      }
 
-      .theme-toggle-button:hover {
-        background-color: var(--theme-toggle-hover-bg);
-        color: var(--theme-toggle-hover-color);
-        transform: translateY(-2px);
-      }
-      .header-controls {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 20px;
-      }
-      @media screen and (max-width: 600px) {
-        main {
-          padding: 10px;
-        }
-        h1 {
-          font-size: 24px;
-        }
-        .custom-file-upload {
-          padding: 10px 16px;
-          font-size: 14px;
-        }
-        th,
-        td {
-          padding: 5px;
-          font-size: 13px;
-        }
-        button {
-          padding: 8px 16px;
-          font-size: 14px;
-        }
-        .history-button {
-          padding: 8px;
-          font-size: 14px;
-        }
-        footer {
-          flex-direction: column;
-          padding: 10px 15px;
-        }
-        footer img {
-          max-width: 80px;
-          margin-bottom: 10px;
-        }
-        footer p {
-          font-size: 12px;
-          max-width: 100%;
-        }
-        .header-controls {
-          flex-direction: column;
-          gap: 10px;
-        }
-      }
-
-      /* Estilos para Modais de Alerta e Confirmação */
-      .modal-overlay {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.4);
-        justify-content: center;
-        align-items: center;
-      }
-      /* Adiciona display:flex apenas quando o modal está ativo */
-      .modal-overlay.active {
-        display: flex;
-      }
-
-      .modal-content {
-        background-color: var(--modal-bg-color);
-        margin: auto;
-        padding: 20px;
-        border: 1px solid var(--table-border-color);
-        width: 80%;
-        max-width: 400px;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px var(--box-shadow-color);
-        text-align: center;
-        color: var(--text-color);
-        transition: background-color 0.3s ease, border-color 0.3s ease,
-          box-shadow 0.3s ease, color 0.3s ease;
-      }
-
-      .modal-buttons button {
-        padding: 10px 15px;
-        margin: 10px 5px 0;
-        border-radius: 5px;
-        cursor: pointer;
-        background-color: var(--button-hover-bg-color);
-        color: var(--button-hover-text-color);
-        border: none;
-        transition: background-color 0.3s ease, opacity 0.3s ease;
-      }
-
-      .modal-buttons button:hover {
-        opacity: 0.9;
-      }
-      /* Estilo específico para o botão de cancelar no modal de confirmação */
-      #folderModalCancelBtn {
-        background-color: #f44336; /* Vermelho para cancelar */
-      }
-      #folderModalCancelBtn:hover {
-        background-color: #d32f2f;
-      }
-      .modal-image {
-        max-width: 80px;
-        height: auto;
-        margin-bottom: 15px;
-        display: none;
-        margin: 0 auto 15px auto;
-      }
-
-      /* Drag and Drop Overlay styles (Inclui o padding de 20px) */
+      /* Drag and Drop Overlay styles */
       #dragDropOverlay {
         position: fixed;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background-color: var(
-          --overlay-bg-transparent
-        ); /* Usando nova variável */
+        background-color: var(--overlay-bg-transparent);
         z-index: 999;
-        display: flex; /* Keep it flex, but control visibility with opacity/pointer-events */
+        display: flex;
         justify-content: center;
         align-items: center;
-        opacity: 0; /* Starts invisible */
-        pointer-events: none; /* Prevents interaction when invisible */
-        transition: opacity 0.3s ease; /* Smooth transition */
-        padding: 20px; /* Adicionado padding de 20px aqui */
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+        padding: 20px;
       }
-
       #dragDropOverlay.active {
         opacity: 1;
         pointer-events: all;
       }
-
       #dragDropArea {
-        border: 12px dashed var(--overlay-border-color); /* Borda mais grossa */
-        border-radius: 25px; /* Raio de borda maior */
-        width: 100%; /* Ocupa a largura disponível dentro do padding do overlay */
-        height: 100%; /* Ocupa a altura disponível dentro do padding do overlay */
+        border: 12px dashed var(--overlay-border-color);
+        border-radius: 25px;
+        width: 100%;
+        height: 100%;
         display: flex;
         justify-content: center;
         align-items: center;
-        transition: border-color 0.3s ease; /* Transição para a cor da borda */
+        transition: border-color 0.3s ease;
       }
-
       #dragDropOverlay p {
         color: var(--drag-overlay-text);
-        font-size: 3.5em; /* Aumentado para 'bem grande' */
+        font-size: 3.5em;
         font-weight: bold;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Sombra para o texto */
-        padding: 0; /* Removido padding para o texto */
-        margin: 0; /* Garante que não haja margem adicional no texto */
-        text-align: center; /* Centraliza o texto */
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        padding: 0;
+        margin: 0;
+        text-align: center;
       }
+      /* Estilo específico para o botão de cancelar no modal de confirmação */
+      #folderModalCancelBtn {
+        background-color: #f44336;
+      }
+      #folderModalCancelBtn:hover {
+        background-color: #d32f2f;
+      }
+
+      /* Media queries específicas da página inicial */
       @media screen and (max-width: 600px) {
+        .custom-file-upload {
+          padding: 10px 16px;
+          font-size: 14px;
+        }
         #dragDropOverlay p {
-          font-size: 2em; /* Reduz o tamanho da fonte em telas menores */
+          font-size: 2em;
         }
       }
     </style>
@@ -865,9 +553,9 @@
           if (razaoDestinador) razoesSociais.push(razaoDestinador);
           razoesSociais = razoesSociais.filter(
             (razao) =>
-              !razao.toUpperCase().includes(
-                "CONSORCIO CONSTRUTOR FERROVIA LUCAS DO RIO VERDE" // Corrigido de FERROROVIA para FERROVIA
-              )
+              !razao
+                .toUpperCase()
+                .includes("CONSORCIO CONSTRUTOR FERROVIA LUCAS DO RIO VERDE")
           );
 
           extracted.razaoSocial1 =
