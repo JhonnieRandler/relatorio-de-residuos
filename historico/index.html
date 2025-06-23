@@ -3,54 +3,44 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Histórico de Resíduos - Sua Ferramenta de Gestão</title>
+    <title>Histórico de Resíduos</title>
     <!-- Metadados para SEO e Descrição da Página -->
     <meta
       name="description"
-      content="Acompanhe o histórico dos seus relatórios de resíduos, visualize dados e gráficos de forma eficiente."
+      content="Histórico detalhado e visualização de resíduos gerados, com gráficos interativos e opções de filtragem."
     />
     <meta name="author" content="Jhon Randler" />
     <meta
       name="keywords"
-      content="histórico de resíduos, gestão de resíduos, relatórios, gráficos, análise de dados, MTR, ferramenta gratuita"
+      content="histórico de resíduos, gestão de resíduos, relatórios, gráficos de resíduos, MTR, dados de resíduos"
     />
 
     <!-- Open Graph Metadados para Redes Sociais (Facebook, WhatsApp, LinkedIn) -->
-    <meta
-      property="og:title"
-      content="Histórico de Resíduos - Sua Ferramenta de Gestão"
-    />
+    <meta property="og:title" content="Histórico de Resíduos" />
     <meta
       property="og:description"
-      content="Acompanhe o histórico dos seus relatórios de resíduos, visualize dados e gráficos de forma eficiente."
+      content="Histórico detalhado e visualização de resíduos gerados, com gráficos interativos e opções de filtragem."
     />
     <meta property="og:type" content="website" />
-    <!-- IMPORTANTE: A URL deve ser a URL final da página do histórico publicada -->
     <meta
       property="og:url"
       content="https://jhonnierandler.github.io/relatorio-de-residuos/historico/"
     />
     <!-- IMPORTANTE: Usar URL absoluta para a imagem para funcionar no WhatsApp e outras plataformas -->
-    <!-- Ajustado para o tamanho real da imagem (408x408) -->
     <meta
       property="og:image"
       content="https://jhonnierandler.github.io/relatorio-de-residuos/footer.png"
     />
     <meta property="og:image:width" content="408" />
-    <!-- Ajustado para 408 -->
     <meta property="og:image:height" content="408" />
-    <!-- Ajustado para 408 -->
     <meta property="og:locale" content="pt_BR" />
 
     <!-- Twitter Card Metadados -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content="Histórico de Resíduos - Sua Ferramenta de Gestão"
-    />
+    <meta name="twitter:title" content="Histórico de Resíduos" />
     <meta
       name="twitter:description"
-      content="Acompanhe o histórico dos seus relatórios de resíduos, visualize dados e gráficos de forma eficiente."
+      content="Histórico detalhado e visualização de resíduos gerados, com gráficos interativos e opções de filtragem."
     />
     <meta
       name="twitter:image"
@@ -63,6 +53,8 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+    <!-- Link para o CSS centralizado -->
+    <link rel="stylesheet" href="../style.css" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <!-- Preload das imagens para carregamento mais rápido -->
@@ -75,161 +67,42 @@
     <!-- Preload do áudio -->
     <link rel="preload" as="audio" href="../blink.mp3" />
     <style>
-      :root {
-        /* Cores do tema claro */
-        --background-color: #f5f5f5;
-        --text-color: #333;
-        --header-color: #333;
-        --button-bg-color: #ffffff;
-        --button-text-color: #333;
-        --button-hover-bg-color: #4caf50;
-        --button-hover-text-color: white;
-        --table-header-bg: #e0e0e0;
-        --table-border-color: #ccc;
-        --table-row-bg: #ffffff;
-        --modal-bg-color: #fefefe;
-        --footer-bg-color: #ffcead;
-        --box-shadow-color: rgba(0, 0, 0, 0.1);
-        --input-border-color: #ccc;
-
-        /* Cores específicas para o botão de tema no modo claro */
-        --theme-toggle-normal-bg: #ffffff;
-        --theme-toggle-normal-color: #333;
-        --theme-toggle-hover-bg: #000000;
-        --theme-toggle-hover-color: #ffffff;
-      }
-
-      [data-theme="dark"] {
-        /* Cores do tema noturno */
-        --background-color: #1a1a1a;
-        --text-color: #e0e0e0;
-        --header-color: #f5f5f5;
-        --button-bg-color: #333333;
-        --button-text-color: #e0e0e0;
-        --button-hover-bg-color: #367d39;
-        --button-hover-text-color: white;
-        --table-header-bg: #444444;
-        --table-border-color: #555;
-        --table-row-bg: #2b2b2b;
-        --modal-bg-color: #333333;
-        --footer-bg-color: #3d2a21; /* Um marrom mais escuro para o rodapé */
-        --box-shadow-color: rgba(255, 255, 255, 0.1);
-        --input-border-color: #666; /* Bordas dos inputs no tema escuro */
-
-        /* Cores específicas para o botão de tema no modo noturno */
-        --theme-toggle-normal-bg: #333333;
-        --theme-toggle-normal-color: #e0e0e0;
-        --theme-toggle-hover-bg: #ffffff;
-        --theme-toggle-hover-color: #ffa500; /* Laranja/Amarelo */
-      }
-
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-      }
-      /* Adiciona box-sizing universal para um modelo de caixa consistente */
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
-      }
-      body {
-        font-family: Arial, sans-serif;
-        background-color: var(--background-color);
-        color: var(--text-color);
-        min-height: 100vh;
+      /* Estilos específicos da página de histórico */
+      .buttons {
+        margin: 10px 0;
         display: flex;
-        flex-direction: column;
-        /* Impede a rolagem horizontal da página principal */
-        overflow-x: hidden;
-        transition: background-color 0.3s ease, color 0.3s ease; /* Transição suave para o tema */
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
       }
-      main {
-        flex: 1 0 auto;
-        /* Aumentado para 95% da largura da tela */
-        width: 100%; /* Garante que ocupe o máximo possível */
-        max-width: 95%; /* Nova largura máxima */
-        margin: 20px auto; /* Centraliza o conteúdo principal */
-        padding: 0 20px; /* Adiciona padding nas laterais, agora incluído na largura total devido ao box-sizing */
-        text-align: center;
+      .buttons button {
+        margin: 5px; /* Ajuste a margem para melhor espaçamento com flex-wrap */
       }
-      h1 {
-        color: var(--header-color);
-        margin-bottom: 20px;
-      }
-      .table-container {
-        overflow-x: auto;
-        width: 100%; /* Ocupa 100% da largura do main, que agora é 95% da tela */
-        margin: 0 auto 20px;
-        transition: opacity 0.3s ease; /* Adiciona transição para ocultar/exibir */
-      }
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        background-color: var(--table-row-bg);
-        border-radius: 8px;
-        box-shadow: 0 2px 4px var(--box-shadow-color);
-        color: var(--text-color);
-      }
-      th {
-        background-color: var(--table-header-bg);
-        font-weight: bold;
-        cursor: pointer;
-        padding: 8px;
-        text-align: left;
-        color: var(--text-color);
-        transition: background-color 0.3s ease, color 0.3s ease; /* Transição para o hover */
-      }
-      th:hover {
-        background-color: #d0d0d0; /* Manter um hover mais claro ou ajustar para o tema */
-      }
-      [data-theme="dark"] th:hover {
-        color: black; /* Fonte preta no hover em modo noturno */
-        background-color: #cccccc; /* Fundo mais claro para contrastar com texto preto */
-      }
-      td {
-        border: 1px solid var(--table-border-color);
-        padding: 8px;
-        text-align: left;
-      }
-      th .sort-arrow {
-        margin-left: 5px;
-        font-size: 0.8em;
-      }
-      /* Novo contêiner para input de filtro e select de meses */
       .filter-controls-group {
         display: flex;
-        flex-wrap: nowrap; /* Por padrão, não quebra os itens internos */
+        flex-wrap: nowrap;
         gap: 5px;
         align-items: center;
         justify-content: center;
-        flex: 0 0 auto; /* Não cresce nem encolhe por padrão, baseia-se no conteúdo */
-        min-width: calc(
-          180px + 150px + 5px
-        ); /* Largura mínima combinada dos filhos + gap */
+        flex: 0 0 auto;
+        min-width: calc(180px + 150px + 5px);
       }
       .filter-input-wrapper {
-        /* Contêiner para o input de filtro e botão de limpar */
         position: relative;
-        display: flex; /* Usa flex para alinhar input e botão */
+        display: flex;
         align-items: center;
-        flex: 1 1 220px; /* Base de 220px, pode crescer/diminuir */
-        min-width: 180px; /* Largura mínima para o input */
+        flex: 1 1 220px;
+        min-width: 180px;
       }
       .filter-input,
       .month-select {
-        margin: 0; /* Remove margem para não interferir com flex */
+        margin: 0;
         padding: 8px;
-        width: 100%; /* Preenche o contêiner */
-        background-color: var(
-          --button-bg-color
-        ); /* Usar cor de botão para inputs */
-        color: var(
-          --button-text-color
-        ); /* Usar cor de texto de botão para inputs */
-        border: 1px solid var(--input-border-color); /* Adicionar borda para visibilidade no dark mode */
+        width: 100%;
+        background-color: var(--button-bg-color);
+        color: var(--button-text-color);
+        border: 1px solid var(--input-border-color);
         border-radius: 8px;
         box-shadow: 0 2px 4px var(--box-shadow-color);
         outline: none;
@@ -237,17 +110,15 @@
           border-color 0.3s ease, box-shadow 0.3s ease;
       }
       .filter-input {
-        padding-right: 30px; /* Espaço para o ícone de limpar */
+        padding-right: 30px;
       }
       .month-select {
-        flex: 1 1 180px; /* Base de 180px para o select */
+        flex: 1 1 180px;
         min-width: 150px;
       }
       .clear-filter {
-        position: absolute; /* Posição absoluta dentro do wrapper */
-        right: 5px; /* Ajustado para melhor posicionamento */
-        top: 50%;
-        transform: translateY(-50%); /* Centraliza verticalmente */
+        position: absolute;
+        right: 5px;
         padding: 0;
         width: 20px;
         height: 20px;
@@ -256,22 +127,21 @@
         box-shadow: none;
         cursor: pointer;
         display: none;
-        transition: none; /* Remove transição para evitar movimento no hover */
-        margin: 0; /* REMOVIDA MARGEM AQUI */
+        transition: none;
+        margin: 0;
       }
       .clear-filter i {
-        color: var(--text-color); /* X segue a cor do texto do tema */
+        color: var(--text-color);
         font-size: 14px;
         transition: color 0.3s ease;
       }
       .clear-filter:hover {
-        background: transparent; /* Sem fundo no hover */
-        border: none; /* Sem borda no hover */
-        box-shadow: none; /* Sem sombra no hover */
-        transform: translateY(-50%); /* Mantém o botão centralizado no hover */
+        background: transparent;
+        border: none;
+        box-shadow: none;
       }
       .clear-filter:hover i {
-        color: #ff4444; /* X vermelho no hover, mantendo contraste */
+        color: #ff4444;
       }
       #chartContainer {
         width: 100%;
@@ -280,13 +150,10 @@
         padding: 10px;
         box-sizing: border-box;
         display: block;
-        /* Adicionado para a borda do gráfico */
         border: 1px solid var(--table-border-color);
         border-radius: 8px;
-        background-color: var(
-          --table-row-bg
-        ); /* Fundo do contêiner do gráfico segue o tema */
-        min-height: 400px; /* Adicionado altura mínima para depuração */
+        background-color: var(--table-row-bg);
+        min-height: 400px;
         transition: background-color 0.3s ease, border-color 0.3s ease;
       }
       canvas {
@@ -296,198 +163,153 @@
         margin: 0 auto;
         width: 100%;
       }
-      .buttons {
-        margin: 10px 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px; /* Espaçamento entre os itens flex */
-        flex-wrap: wrap; /* Permite que os itens quebrem para a próxima linha */
+      #modalCancelBtn,
+      #bulkEditModalCancelBtn,
+      #batchEditModalCancelBtn {
+        /* Adicionado para o novo modal */
+        background-color: #f44336;
       }
-      button {
-        padding: 10px 20px;
-        margin: 5px; /* Ajuste a margem para melhor espaçamento com flex-wrap */
-        background-color: var(--button-bg-color);
-        color: var(--button-text-color);
-        border: none;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px var(--box-shadow-color);
-        cursor: pointer;
-        font-size: 16px;
-        transition: background-color 0.3s, transform 0.2s, color 0.3s ease,
-          box-shadow 0.3s ease;
-      }
-      button:hover {
-        background-color: var(--button-hover-bg-color);
-        color: var(--button-hover-text-color);
-        transform: translateY(-2px);
-      }
-      footer {
-        flex: 0 0 auto;
-        width: 100%; /* Ajustado para 100% e confiar no overflow-x: hidden do body */
-        background-color: var(--footer-bg-color);
-        padding: 15px;
-        text-align: center;
-        box-shadow: 0 -2px 4px var(--box-shadow-color);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 15px;
-        box-sizing: border-box;
-        transition: background-color 0.3s ease, box-shadow 0.3s ease;
-      }
-      footer img {
-        max-width: 100px;
-        height: auto;
-        cursor: pointer; /* Adicionado cursor para indicar interatividade */
-      }
-      footer p {
-        color: var(--text-color);
-        font-size: 14px;
-        margin: 0;
-        flex: 1;
-        overflow-wrap: break-word;
-      }
-      .theme-toggle-button {
-        background-color: var(--theme-toggle-normal-bg);
-        color: var(--theme-toggle-normal-color);
-        border: none;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 0;
-        cursor: pointer;
-        font-size: 18px;
-        box-shadow: 0 2px 4px var(--box-shadow-color);
-        transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s,
-          box-shadow 0.3s ease;
-        margin-left: 10px;
+      #modalCancelBtn:hover,
+      #bulkEditModalCancelBtn:hover,
+      #batchEditModalCancelBtn:hover {
+        /* Adicionado para o novo modal */
+        background-color: #d32f2f;
       }
 
-      .theme-toggle-button:hover {
-        background-color: var(--theme-toggle-hover-bg);
-        color: var(--theme-toggle-hover-color);
-        transform: translateY(-2px);
+      /* Estilo para o input temporário de edição dentro das células da tabela */
+      .editable-table-input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 4px;
+        border: 1px solid var(--input-border-color);
+        border-radius: 4px;
+        background-color: var(--button-bg-color);
+        color: var(--button-text-color);
       }
-      .header-controls {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 20px;
+
+      /* Estilo para o input e select do modal de edição em massa */
+      .editable-input,
+      .editable-select {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 8px; /* Ajustado para 8px para consistência com filter-input */
+        border: 1px solid var(--input-border-color);
+        border-radius: 8px; /* Ajustado para 8px para consistência com filter-input */
+        background-color: var(--button-bg-color);
+        color: var(--button-text-color);
+        outline: none;
+        margin-top: 10px; /* Adicionado margem superior */
       }
+
+      /* Estilo para o checkbox da tabela (linhas individuais) */
+      .row-checkbox {
+        margin: 0;
+        vertical-align: middle;
+        width: 18px; /* Tamanho fixo */
+        height: 18px; /* Tamanho fixo */
+        appearance: none; /* Remove o estilo padrão do navegador */
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        border: 2px solid var(--input-border-color);
+        border-radius: 4px;
+        background-color: var(--button-bg-color);
+        cursor: pointer;
+        position: relative;
+        display: inline-block; /* Para centralizar com text-align */
+      }
+
+      .row-checkbox:checked {
+        background-color: var(
+          --button-hover-bg-color
+        ); /* Cor de fundo quando marcado */
+        border-color: var(
+          --button-hover-bg-color
+        ); /* Cor da borda quando marcado */
+      }
+
+      .row-checkbox:checked::after {
+        content: "\2713"; /* Sinal de 'check' */
+        color: var(--button-hover-text-color); /* Cor do sinal de check */
+        font-size: 14px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      /* Estilo para o checkbox de "selecionar todos" no cabeçalho */
+      #selectAllCheckbox {
+        margin: 0;
+        vertical-align: middle;
+        width: 18px; /* Tamanho fixo */
+        height: 18px; /* Tamanho fixo */
+        appearance: none; /* Remove o estilo padrão do navegador */
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        border: 2px solid var(--input-border-color);
+        border-radius: 4px;
+        background-color: var(--button-bg-color);
+        cursor: pointer;
+        position: relative;
+        display: inline-block; /* Para centralizar com text-align */
+      }
+
+      #selectAllCheckbox:checked {
+        background-color: var(
+          --button-hover-bg-color
+        ); /* Cor de fundo quando marcado */
+        border-color: var(
+          --button-hover-bg-color
+        ); /* Cor da borda quando marcado */
+      }
+
+      #selectAllCheckbox:checked::after {
+        content: "\2713"; /* Sinal de 'check' */
+        color: var(--button-hover-text-color); /* Cor do sinal de check */
+        font-size: 14px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      /* Centraliza o conteúdo das colunas de checkbox e Nº */
+      .checkbox-column,
+      .number-column {
+        text-align: center;
+      }
+
+      /* Estilos para os botões de ação em massa */
+      .action-button {
+        display: none; /* Escondido por padrão, mostrado com JS */
+      }
+      .action-button.active {
+        display: inline-block;
+      }
+
+      /* Novo estilo para o modal de confirmação para garantir que ele esteja sempre na frente */
+      #customConfirmModal {
+        z-index: 9999; /* Valor alto para garantir que ele esteja sempre na frente */
+      }
+
+      /* Media queries específicas da página de histórico */
       @media screen and (max-width: 600px) {
-        main {
-          padding: 10px;
-        }
-        h1 {
-          font-size: 24px;
-        }
-        /* Ajustes para inputs e select em telas pequenas */
         .filter-controls-group {
-          flex-direction: column; /* Empilha os itens verticalmente */
-          width: 100%; /* Ocupa largura total */
+          flex-direction: column;
+          width: 100%;
           gap: 10px;
-          flex-wrap: wrap; /* Permite o wrap interno em telas pequenas */
-          min-width: auto; /* Reseta o min-width para permitir o empilhamento */
+          flex-wrap: wrap;
+          min-width: auto;
         }
         .filter-input-wrapper,
         .month-select {
-          width: 100%; /* Faz com que ocupem a largura total do grupo */
-          flex-basis: auto; /* Reseta a base flexível para ocupar 100% */
+          width: 100%;
+          flex-basis: auto;
         }
         #chartContainer {
           height: 500px;
           padding: 5px;
         }
-        th,
-        td {
-          padding: 5px;
-          font-size: 13px;
-        }
-        button {
-          padding: 8px 16px;
-          font-size: 14px;
-        }
-        footer {
-          flex-direction: column;
-          padding: 10px 15px;
-        }
-        footer img {
-          max-width: 80px;
-          margin-bottom: 10px;
-        }
-        footer p {
-          font-size: 12px;
-          max-width: 100%;
-        }
-        .header-controls {
-          flex-direction: column;
-          gap: 10px;
-        }
-      }
-
-      /* Estilos para o Modal de Confirmação e Alerta */
-      .modal-overlay {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.4);
-        justify-content: center;
-        align-items: center;
-      }
-
-      .modal-content {
-        background-color: var(--modal-bg-color);
-        margin: auto;
-        padding: 20px;
-        border: 1px solid var(--table-border-color);
-        width: 80%;
-        max-width: 400px;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px var(--box-shadow-color);
-        text-align: center;
-        color: var(--text-color);
-        transition: background-color 0.3s ease, border-color 0.3s ease,
-          box-shadow 0.3s ease, color 0.3s ease;
-      }
-
-      .modal-buttons button {
-        padding: 10px 15px;
-        margin: 10px 5px 0;
-        border-radius: 5px;
-        cursor: pointer;
-        background-color: var(
-          --button-hover-bg-color
-        ); /* Botões do modal com cor de hover padrão */
-        color: var(--button-hover-text-color);
-        border: none;
-        transition: background-color 0.3s ease, opacity 0.3s ease;
-      }
-
-      .modal-buttons button:hover {
-        opacity: 0.9;
-      }
-
-      #modalCancelBtn {
-        background-color: #f44336; /* Manter vermelho para o cancelar */
-      }
-      #modalCancelBtn:hover {
-        background-color: #d32f2f;
-      }
-      .modal-image {
-        max-width: 80px;
-        height: auto;
-        margin-bottom: 15px;
-        display: none;
-        margin: 0 auto 15px auto;
       }
     </style>
   </head>
@@ -527,6 +349,26 @@
         </button>
         <button id="toggleTableVisibility" style="display: none">
           <i class="fas fa-eye-slash"></i> Ocultar Tabela
+        </button>
+        <button id="toggleEditModeBtn">
+          <i class="fas fa-edit"></i> Editar Tabela
+        </button>
+        <button id="batchEditBtn" class="action-button">
+          <i class="fas fa-layer-group"></i> Edição em Lote (<span
+            id="batchEditCount"
+            >0</span
+          >)
+        </button>
+        <button id="editSelectedBtn" class="action-button">
+          <i class="fas fa-edit"></i> Editar Grupo (<span id="selectedCount"
+            >0</span
+          >)
+        </button>
+        <button id="deleteSelectedBtn" class="action-button">
+          <i class="fas fa-trash"></i> Excluir Selecionados (<span
+            id="deleteSelectedCount"
+            >0</span
+          >)
         </button>
         <button id="backButton" onclick="redirectToMainPage()">
           <i class="fas fa-arrow-left"></i> Voltar
@@ -584,14 +426,79 @@
       </div>
     </div>
 
+    <!-- Modal de Edição em Massa de Grupo (antigo) -->
+    <div id="bulkEditModal" class="modal-overlay">
+      <div class="modal-content">
+        <img
+          id="bulkEditModalImage"
+          src="../point.png"
+          alt="Ícone de Edição em Massa"
+          class="modal-image"
+        />
+        <p id="bulkEditModalMessage">
+          Editar Grupo para <span id="bulkEditSelectedCount">0</span> MTR(s):
+        </p>
+        <input
+          type="text"
+          id="bulkEditGroupInput"
+          class="editable-input"
+          placeholder="Nome do Grupo"
+        />
+        <div class="modal-buttons">
+          <button id="bulkEditModalSaveBtn">Salvar</button>
+          <button id="bulkEditModalCancelBtn">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Novo Modal de Edição em Lote (genérico) -->
+    <div id="batchEditBatchModal" class="modal-overlay">
+      <div class="modal-content">
+        <img
+          id="batchEditModalImage"
+          src="../point.png"
+          alt="Ícone de Edição em Lote"
+          class="modal-image"
+        />
+        <p id="batchEditModalMessage">
+          Editar <span id="batchEditCountModal">0</span> MTR(s) selecionado(s):
+        </p>
+        <select id="batchEditFieldSelect" class="editable-select">
+          <option value="">Selecione o campo para editar</option>
+          <option value="razaoSocial1">TRANSPORTADOR</option>
+          <option value="razaoSocial2">DESTINADOR</option>
+          <option value="tipo">TIPO</option>
+          <option value="litros">LITROS</option>
+          <option value="toneladas">TONELADAS</option>
+          <option value="grupo">GRUPO</option>
+        </select>
+        <input
+          type="text"
+          id="batchEditValueInput"
+          class="editable-input"
+          placeholder="Nova informação"
+          style="display: none"
+        />
+        <div class="modal-buttons">
+          <button id="batchEditModalSaveBtn">Salvar</button>
+          <button id="batchEditModalCancelBtn">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <script>
       let sortDirection = {};
       let currentSortColumn = null; // Coluna atualmente ordenada
       let currentSortDirection = "asc"; // Direção atual da ordenação ('asc' ou 'desc')
       let storedData = []; // Declarado aqui, será inicializado em DOMContentLoaded
       let isTableVisible = true; // Estado para a visibilidade da tabela
+      let selectedMTRs = new Set(); // Para armazenar os IDs dos MTRs selecionados
+      let isEditModeActive = false; // Novo: Estado do modo de edição
 
-      // Mapeamento de nomes de colunas para chaves de dados
+      // Mapeamento de nomes de colunas para chaves de dados (não usado diretamente para render, mas para referência)
       const columnKeys = {
         DATA: "dataEmissao",
         MTR: "mtrFormatted",
@@ -601,6 +508,7 @@
         TICKET: "mtrRef",
         LITROS: "litros",
         TONELADAS: "toneladas",
+        GRUPO: "grupo",
       };
 
       // Função para alternar o tema
@@ -732,29 +640,25 @@
       }
 
       function showAlertModal(message, type) {
-        // type: 'success', 'no_data', 'error'
+        // type: 'success', 'no_data', 'error', 'info', 'exists'
         const modal = document.getElementById("customAlertModal");
         const alertMessage = document.getElementById("alertMessage");
         const alertModalImage = document.getElementById("alertModalImage");
         const okBtn = document.getElementById("alertOkBtn");
 
         if (alertMessage) alertMessage.textContent = message;
-        if (modal) modal.classList.remove("success", "error");
+        if (modal) modal.classList.remove("success", "error", "info", "exists"); // Limpa classes anteriores
 
         let imagePath = "";
         if (type === "success") {
-          imagePath = "../like.png"; // Caminho relativo da imagem
-          if (okBtn) okBtn.style.backgroundColor = "#4CAF50";
-        } else if (type === "no_data") {
-          imagePath = "../doubt.png"; // Caminho relativo da imagem
-          if (okBtn) okBtn.style.backgroundColor = "#f44336";
-        } else if (type === "error") {
-          imagePath = "../doubt.png"; // Caminho relativo da imagem
-          if (okBtn) okBtn.style.backgroundColor = "#f44336";
-        } else if (type === "exists") {
-          // Adicionado tipo 'exists'
-          imagePath = "../point.png"; // Caminho relativo da imagem
-          if (okBtn) okBtn.style.backgroundColor = "#FFA000"; // Laranja para "já existente"
+          imagePath = "../like.png";
+          if (okBtn) okBtn.style.backgroundColor = "#4CAF50"; // Verde para sucesso
+        } else if (type === "no_data" || type === "error") {
+          imagePath = "../doubt.png";
+          if (okBtn) okBtn.style.backgroundColor = "#f44336"; // Vermelho para erro
+        } else if (type === "exists" || type === "info") {
+          imagePath = "../point.png"; // Usando point.png para info também
+          if (okBtn) okBtn.style.backgroundColor = "#2196F3"; // Azul para info/existe
         }
 
         if (alertModalImage) {
@@ -791,6 +695,82 @@
         document.addEventListener("keydown", handleKeyDown); // Add keyboard listener
       }
 
+      // Função para salvar alterações de célula individual
+      function saveIndividualCellChange(e) {
+        const input = e.target;
+        const mtrId = input.dataset.mtrId;
+        const dateId = input.dataset.dateId;
+        const columnKey = input.dataset.columnKey;
+        const newValue = input.value.trim();
+
+        const itemIndex = storedData.findIndex(
+          (item) => item.mtrFormatted === mtrId && item.dataEmissao === dateId
+        );
+
+        if (itemIndex > -1) {
+          const originalValue = storedData[itemIndex][columnKey];
+          if (originalValue !== newValue) {
+            // Special handling for numeric fields (convert comma to dot for parsing)
+            if (columnKey === "litros" || columnKey === "toneladas") {
+              const parsedValue = parseFloat(newValue.replace(",", "."));
+              if (isNaN(parsedValue)) {
+                showAlertModal(
+                  `Valor inválido para ${columnKey}. Por favor, insira um número.`,
+                  "error"
+                );
+                // Reverte o valor do input para o original se a validação falhar
+                input.value = originalValue;
+                return;
+              }
+              storedData[itemIndex][columnKey] = newValue; // Save as string with comma
+            } else {
+              storedData[itemIndex][columnKey] = newValue;
+            }
+
+            localStorage.setItem("residuosData", JSON.stringify(storedData));
+            showAlertModal(
+              `Campo '${columnKey}' atualizado para '${newValue}'.`,
+              "success"
+            );
+            // Re-render only if needed (e.g., if sorting or filtering would change due to this edit)
+            // For simplicity and consistency, re-render the whole filtered view.
+            applyFiltersAndRender(
+              document.getElementById("filterInput").value,
+              document.getElementById("monthFilter").value
+            );
+          }
+        }
+      }
+
+      // Função para alternar o modo de edição
+      function toggleEditMode() {
+        isEditModeActive = !isEditModeActive;
+        const toggleEditModeBtn = document.getElementById("toggleEditModeBtn");
+        if (toggleEditModeBtn) {
+          if (isEditModeActive) {
+            toggleEditModeBtn.innerHTML =
+              '<i class="fas fa-check"></i> Encerrar Edição';
+            showAlertModal(
+              "Modo de edição ativado. Clique nas células para editar.",
+              "info"
+            );
+          } else {
+            toggleEditModeBtn.innerHTML =
+              '<i class="fas fa-edit"></i> Editar Tabela';
+            showAlertModal(
+              "Modo de edição desativado. Alterações salvas.",
+              "success"
+            );
+          }
+        }
+        // Re-render a tabela para aplicar/remover inputs editáveis
+        applyFiltersAndRender(
+          document.getElementById("filterInput").value,
+          document.getElementById("monthFilter").value
+        );
+        updateActionButtonsVisibility(); // Ajusta a visibilidade de outros botões
+      }
+
       /**
        * Renders the data in the table.
        * @param {Array<Object>} dataToRender The array of MTR objects to display.
@@ -804,22 +784,56 @@
           return;
         }
 
+        // Define a ordem e as chaves para as colunas da tabela
+        const orderedColumnKeys = [
+          { header: "DATA", key: "dataEmissao" },
+          { header: "MTR", key: "mtrFormatted" },
+          { header: "TRANSPORTADOR", key: "razaoSocial1" },
+          { header: "DESTINADOR", key: "razaoSocial2" },
+          { header: "TIPO", key: "tipo" },
+          { header: "TICKET", key: "mtrRef" },
+          { header: "LITROS", key: "litros" },
+          { header: "TONELADAS", key: "toneladas" },
+          { header: "GRUPO", key: "grupo" },
+        ];
+
+        let tableHeadersHtml = `
+            <th class="checkbox-column"><input type="checkbox" id="selectAllCheckbox"></th>
+            <th class="number-column">Nº</th>
+        `;
+        orderedColumnKeys.forEach((col) => {
+          tableHeadersHtml += `<th data-column="${col.key}">${col.header} <span class="sort-arrow"></span></th>`;
+        });
+
         let tableRows = dataToRender
-          .map(
-            (data, index) => `
-              <tr>
-                <td>${index + 1}</td> <!-- Índice visual da linha -->
-                <td>${data.dataEmissao}</td>
-                <td>${data.mtrFormatted}</td>
-                <td>${data.razaoSocial1}</td>
-                <td>${data.razaoSocial2}</td>
-                <td>${data.tipo}</td>
-                <td>${data.mtrRef}</td>
-                <td>${data.litros}</td>
-                <td>${data.toneladas}</td>
-              </tr>
-            `
-          )
+          .map((data, index) => {
+            let cellsHtml = "";
+            // Coluna do Checkbox
+            cellsHtml += `<td class="checkbox-column"><input type="checkbox" class="row-checkbox" data-mtr-id="${data.mtrFormatted}" data-date-id="${data.dataEmissao}"></td>`;
+            // Coluna do Número
+            cellsHtml += `<td class="number-column">${index + 1}</td>`;
+
+            orderedColumnKeys.forEach((col) => {
+              let cellContent = data[col.key] || "";
+              // let tdClasses = ''; // Não é mais necessário para a lógica de underline do grupo aqui
+
+              if (isEditModeActive) {
+                // Todas as células relevantes se tornam inputs no modo de edição
+                cellHtml = `<td>
+                                        <input type="text" class="editable-table-input" value="${cellContent}"
+                                               data-column-key="${col.key}"
+                                               data-mtr-id="${data.mtrFormatted}"
+                                               data-date-id="${data.dataEmissao}">
+                                    </td>`;
+              } else {
+                // Fora do modo de edição, renderiza como texto simples
+                cellHtml = `<td>${cellContent}</td>`;
+              }
+              cellsHtml += cellHtml;
+            });
+
+            return `<tr data-mtr-id="${data.mtrFormatted}" data-date-id="${data.dataEmissao}">${cellsHtml}</tr>`;
+          })
           .join("");
 
         if (historyTable) {
@@ -827,15 +841,7 @@
               <table>
                 <thead>
                   <tr>
-                    <th>Nº</th> <!-- Nova coluna para o índice visual -->
-                    <th data-column="dataEmissao">DATA <span class="sort-arrow"></span></th>
-                    <th data-column="mtrFormatted">MTR <span class="sort-arrow"></span></th>
-                    <th data-column="razaoSocial1">TRANSPORTADOR <span class="sort-arrow"></span></th>
-                    <th data-column="razaoSocial2">DESTINADOR <span class="sort-arrow"></span></th>
-                    <th data-column="tipo">TIPO <span class="sort-arrow"></span></th>
-                    <th data-column="mtrRef">TICKET <span class="sort-arrow"></span></th>
-                    <th data-column="litros">LITROS <span class="sort-arrow"></span></th>
-                    <th data-column="toneladas">TONELADAS <span class="sort-arrow"></span></th>
+                    ${tableHeadersHtml}
                   </tr>
                 </thead>
                 <tbody>
@@ -845,28 +851,65 @@
             `;
         }
 
-        // Add sorting event listeners to headers (excluding the new Nº column)
-        const headers = historyTable.querySelectorAll("th");
+        // Adiciona listeners de ordenação aos cabeçalhos (excluindo colunas de checkbox e número)
+        const headers = historyTable.querySelectorAll("th[data-column]");
         headers.forEach((header) => {
-          if (header.dataset.column) {
-            // Only add listener to sortable columns
-            header.addEventListener("click", () => {
-              const column = header.dataset.column;
-              sortTable(column);
-            });
+          header.addEventListener("click", () => {
+            const column = header.dataset.column;
+            sortTable(column);
+          });
+        });
+
+        // Atualiza as setas de ordenação
+        updateSortArrows();
+
+        // Re-seleciona os checkboxes que estavam marcados antes da renderização
+        selectedMTRs.forEach((id) => {
+          const [mtrId, dateId] = id.split("_");
+          const checkbox = historyTable.querySelector(
+            `input.row-checkbox[data-mtr-id="${mtrId}"][data-date-id="${dateId}"]`
+          );
+          if (checkbox) {
+            checkbox.checked = true;
           }
         });
 
-        // Update sort arrows
-        updateSortArrows();
+        // Adiciona listeners para os novos inputs (se estiver no modo de edição)
+        if (isEditModeActive) {
+          historyTable
+            .querySelectorAll(".editable-table-input")
+            .forEach((input) => {
+              input.addEventListener("blur", saveIndividualCellChange);
+              input.addEventListener("keydown", (e) => {
+                if (e.key === "Enter") {
+                  input.blur(); // Dispara blur para salvar
+                }
+                if (e.key === "Escape") {
+                  // Reverte para o valor original antes do blur
+                  const mtrId = input.dataset.mtrId;
+                  const dateId = input.dataset.dateId;
+                  const columnKey = input.dataset.columnKey;
+                  const item = storedData.find(
+                    (d) => d.mtrFormatted === mtrId && d.dataEmissao === dateId
+                  );
+                  if (item) {
+                    input.value = item[columnKey] || ""; // Reverte para o valor armazenado
+                  }
+                  input.blur(); // Dispara blur sem salvar
+                }
+              });
+            });
+        }
+
+        updateActionButtonsVisibility(); // Atualiza a visibilidade dos botões de ação após a renderização
       }
 
       /**
-       * Sorts the data based on the selected column.
-       * @param {string} column The data key to sort by.
+       * Ordena os dados com base na coluna selecionada.
+       * @param {string} column A chave de dados para ordenar.
        */
       function sortTable(column) {
-        // Determine sort direction
+        // Determina a direção da ordenação
         if (currentSortColumn === column) {
           currentSortDirection =
             currentSortDirection === "asc" ? "desc" : "asc";
@@ -875,20 +918,20 @@
           currentSortDirection = "asc";
         }
 
-        const dataToSort = storedData; // Always sort the full storedData
+        const dataToSort = storedData; // Sempre ordena todos os dados armazenados
 
         dataToSort.sort((a, b) => {
           let valA = a[column];
           let valB = b[column];
 
-          // Special handling for numeric values (litros, toneladas, MTR, Ticket)
+          // Tratamento especial para valores numéricos (litros, toneladas, MTR, Ticket)
           if (
             column === "litros" ||
             column === "toneladas" ||
             column === "mtrFormatted" ||
             column === "mtrRef"
           ) {
-            // Remove "MTR nº: " prefix for MTR, and handle comma as decimal separator for numbers
+            // Remove o prefixo "MTR nº: " para MTR e trata vírgula como separador decimal para números
             if (column === "mtrFormatted")
               valA = String(valA).replace("MTR nº: ", "");
             if (column === "mtrFormatted")
@@ -897,15 +940,15 @@
             valA = parseFloat(String(valA).replace(",", ".") || 0);
             valB = parseFloat(String(valB).replace(",", ".") || 0);
 
-            if (isNaN(valA)) valA = -Infinity; // Treat "Não encontrada" or "N/A" as smallest
+            if (isNaN(valA)) valA = -Infinity; // Trata "Não encontrada" ou "N/A" como o menor valor
             if (isNaN(valB)) valB = -Infinity;
 
             return currentSortDirection === "asc" ? valA - valB : valB - valA;
           }
 
-          // Special handling for date (DD/MM/YYYY)
+          // Tratamento especial para data (DD/MM/YYYY)
           if (column === "dataEmissao") {
-            // Convert DD/MM/YYYY to ISO నేపథ్యంలో-MM-DD for correct comparison
+            // Converte DD/MM/YYYY para ISO నేపథ్యంలో-MM-DD para comparação correta
             const dateA = valA.split("/").reverse().join("-");
             const dateB = valB.split("/").reverse().join("-");
             if (dateA < dateB) return currentSortDirection === "asc" ? -1 : 1;
@@ -913,37 +956,37 @@
             return 0;
           }
 
-          // Default string comparison
+          // Comparação de string padrão (incluindo o novo campo 'grupo')
           if (typeof valA === "string" && typeof valB === "string") {
-            valA = valA.toLowerCase();
-            valB = valB.toLowerCase();
+            valA = normalizeString(valA); // Normaliza para ordenação sem acentos
+            valB = normalizeString(valB); // Normaliza para ordenação sem acentos
             if (valA < valB) return currentSortDirection === "asc" ? -1 : 1;
             if (valA > valB) return currentSortDirection === "asc" ? 1 : -1;
           }
           return 0;
         });
 
-        // Re-render the table with sorted data and update chart (if necessary based on current filters)
+        // Re-renderiza a tabela com os dados ordenados e atualiza o gráfico (se necessário com base nos filtros atuais)
         const filterInput = document.getElementById("filterInput");
         const monthFilter = document.getElementById("monthFilter");
         applyFiltersAndRender(filterInput.value, monthFilter.value);
       }
 
       /**
-       * Updates the sort arrows in the table headers.
+       * Atualiza as setas de ordenação nos cabeçalhos da tabela.
        */
       function updateSortArrows() {
         const headers = document.querySelectorAll("#historyTable th");
         headers.forEach((header) => {
           let arrowSpan = header.querySelector(".sort-arrow");
           if (!arrowSpan) {
-            // Create if it doesn't exist
+            // Cria se não existir
             arrowSpan = document.createElement("span");
             arrowSpan.classList.add("sort-arrow");
             header.appendChild(arrowSpan);
           }
-          arrowSpan.textContent = ""; // Clear previous arrow
-          // Only add arrow to sortable columns (those with data-column)
+          arrowSpan.textContent = ""; // Limpa a seta anterior
+          // Adiciona a seta apenas às colunas ordenáveis (aquelas com data-column)
           if (header.dataset.column === currentSortColumn) {
             arrowSpan.textContent =
               currentSortDirection === "asc" ? " ↑" : " ↓";
@@ -975,9 +1018,10 @@
               storedData = JSON.parse(
                 localStorage.getItem("residuosData") || "[]"
               );
+              selectedMTRs.clear(); // Limpa seleções
               renderTable([]);
               updateChart([]);
-              toggleButtons();
+              toggleButtons(); // Reajusta botões gerais
               toggleTableVisibility(false); // Esconde a tabela ao limpar o histórico
               const toggleTableBtn = document.getElementById(
                 "toggleTableVisibility"
@@ -987,6 +1031,7 @@
                   '<i class="fas fa-eye"></i> Exibir Tabela';
                 isTableVisible = false; // Atualiza o estado
               }
+              updateActionButtonsVisibility(); // Reajusta botões de ação em massa
             }
           }
         );
@@ -1176,103 +1221,6 @@
         }, 200)
       ); // Atraso de 200ms
 
-      // Aplica filtros e renderiza a tabela e o gráfico
-      function applyFiltersAndRender(filterText, selectedMonthYear) {
-        let filteredData = storedData;
-
-        // Aplica filtro de texto
-        if (filterText) {
-          const lowerCaseFilter = filterText.toLowerCase();
-          filteredData = filteredData.filter((item) =>
-            Object.values(item).some((value) =>
-              String(value).toLowerCase().includes(lowerCaseFilter)
-            )
-          );
-        }
-
-        // Aplica filtro de Mês/Ano
-        if (selectedMonthYear) {
-          filteredData = filteredData.filter((item) => {
-            const parts = item.dataEmissao.split("/");
-            return (
-              parts.length === 3 &&
-              `${parts[1]}/${parts[2]}` === selectedMonthYear
-            );
-          });
-        }
-
-        renderTable(filteredData);
-        updateChart(filteredData);
-      }
-
-      document.getElementById("monthFilter").addEventListener("change", (e) => {
-        applyFiltersAndRender(
-          document.getElementById("filterInput").value,
-          e.target.value
-        );
-      });
-
-      function toggleButtons() {
-        const buttonsContainer = document.getElementById("buttonsContainer");
-        const clearButton = document.getElementById("clearHistory");
-        const downloadButton = document.getElementById("downloadChart");
-        const copyButton = document.getElementById("copyButton");
-        const filterControlsGroup = document.getElementById(
-          "filterControlsGroup"
-        );
-        const monthSelect = document.getElementById("monthFilter");
-        const chartContainer = document.getElementById("chartContainer");
-        const clearFilter = document.getElementById("clearFilter");
-        const backButton = document.getElementById("backButton");
-        const toggleTableBtn = document.getElementById("toggleTableVisibility");
-
-        if (storedData.length > 0) {
-          if (clearButton) clearButton.style.display = "inline-block";
-          if (downloadButton) downloadButton.style.display = "inline-block";
-          if (copyButton) copyButton.style.display = "inline-block";
-          if (filterControlsGroup) filterControlsGroup.style.display = "flex";
-          if (monthSelect) monthSelect.style.display = "inline-block";
-          if (chartContainer) chartContainer.style.display = "block";
-          if (clearFilter)
-            clearFilter.style.display = document.getElementById("filterInput")
-              .value
-              ? "inline-block"
-              : "none";
-          if (buttonsContainer)
-            buttonsContainer.style.justifyContent = "center";
-          if (backButton) {
-            backButton.style.margin = "5px";
-          }
-          if (toggleTableBtn) toggleTableBtn.style.display = "inline-block";
-        } else {
-          if (clearButton) clearButton.style.display = "none";
-          if (downloadButton) downloadButton.style.display = "none";
-          if (copyButton) copyButton.style.display = "none";
-          if (filterControlsGroup) filterControlsGroup.style.display = "none";
-          if (monthSelect) monthSelect.style.display = "none";
-          if (chartContainer) chartContainer.style.display = "none";
-          if (clearFilter) clearFilter.style.display = "none";
-          if (toggleTableBtn) toggleTableBtn.style.display = "none";
-
-          if (backButton) {
-            backButton.style.display = "inline-block";
-            backButton.style.margin = "0 auto";
-          }
-          if (buttonsContainer)
-            buttonsContainer.style.justifyContent = "center";
-        }
-      }
-
-      document.getElementById("downloadChart").addEventListener("click", () => {
-        const link = document.createElement("a");
-        link.download = `grafico_residuos_${
-          new Date().toISOString().split("T")[0]
-        }.png`;
-        const chartImage = window.myChart.toBase64Image();
-        link.href = chartImage;
-        link.click();
-      });
-
       // Função para copiar texto para a área de transferência
       function copyToClipboard(text) {
         const textarea = document.createElement("textarea");
@@ -1302,29 +1250,54 @@
       }
 
       document.getElementById("copyButton").addEventListener("click", () => {
-        const tableRows = document.querySelectorAll(
-          "#historyTable table tbody tr"
-        );
-        if (tableRows.length > 0) {
-          const copyText = Array.from(tableRows)
-            .map((row) => {
-              // Exclui a primeira célula (Nº) ao copiar
-              return Array.from(row.cells)
-                .slice(1)
-                .map((cell) => cell.textContent)
-                .join("\t");
-            })
-            .join("\n");
-          if (copyToClipboard(copyText)) {
-            showAlertModal(
-              "Dados copiados para a área de transferência!",
-              "success"
-            );
-          } else {
-            showAlertModal("Erro ao copiar os dados.", "error");
-          }
-        } else {
+        const table = document.querySelector("#historyTable table");
+        if (!table) {
           showAlertModal("Nenhum dado para copiar.", "no_data");
+          return;
+        }
+
+        const headers = Array.from(table.querySelectorAll("thead th"))
+          .map((th) => th.textContent.trim().toUpperCase())
+          .filter(
+            (headerText) =>
+              headerText !== "Nº" && headerText !== "GRUPO" && headerText !== ""
+          ); // Exclui Nº, GRUPO e a coluna vazia do checkbox
+
+        const headerLine = headers.join("\t");
+
+        const tableRows = table.querySelectorAll("tbody tr");
+        if (tableRows.length === 0) {
+          showAlertModal("Nenhum dado para copiar.", "no_data");
+          return;
+        }
+
+        const fullTextToCopy = Array.from(tableRows)
+          .map((row) => {
+            const cells = Array.from(row.cells);
+            // Collect text only for columns present in 'headers'
+            const lineData = headers.map((headerText) => {
+              // Find the correct cell index for the header, accounting for checkbox and Nº columns
+              const headerElements = Array.from(
+                table.querySelectorAll("thead th")
+              );
+              const colIndex = headerElements.findIndex(
+                (th) => th.textContent.trim().toUpperCase() === headerText
+              );
+              return cells[colIndex] ? cells[colIndex].textContent : "";
+            });
+            return lineData.join("\t");
+          })
+          .join("\n");
+
+        const finalCopyText = `${headerLine}\n${fullTextToCopy}`;
+
+        if (copyToClipboard(finalCopyText)) {
+          showAlertModal(
+            "Dados copiados para a área de transferência!",
+            "success"
+          );
+        } else {
+          showAlertModal("Erro ao copiar os dados.", "error");
         }
       });
 
@@ -1389,6 +1362,171 @@
         }, 400); // 400 milissegundos
       }
 
+      // Função para remover acentos e converter para minúsculas
+      function normalizeString(str) {
+        return String(str) // Garante que str seja string antes de normalizar
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toLowerCase();
+      }
+
+      // Aplica filtros e renderiza a tabela e o gráfico
+      function applyFiltersAndRender(filterText, selectedMonthYear) {
+        let filteredData = storedData;
+
+        // Aplica filtro de texto sem considerar acentos
+        if (filterText) {
+          const normalizedFilter = normalizeString(filterText);
+          filteredData = filteredData.filter((item) =>
+            Object.values(item).some((value) =>
+              normalizeString(String(value)).includes(normalizedFilter)
+            )
+          );
+        }
+
+        // Aplica filtro de Mês/Ano
+        if (selectedMonthYear) {
+          filteredData = filteredData.filter((item) => {
+            const parts = item.dataEmissao.split("/");
+            return (
+              parts.length === 3 &&
+              `${parts[1]}/${parts[2]}` === selectedMonthYear
+            );
+          });
+        }
+
+        renderTable(filteredData);
+        updateChart(filteredData);
+      }
+
+      // Função para alternar a visibilidade dos botões gerais (fora do modo de edição)
+      // Esta função é chamada por updateActionButtonsVisibility.
+      function toggleButtons() {
+        const buttonsContainer = document.getElementById("buttonsContainer");
+        const backButton = document.getElementById("backButton");
+
+        if (buttonsContainer) {
+          buttonsContainer.style.justifyContent = "center"; // Sempre centralizado
+        }
+        // backButton display e margin são controlados por updateActionButtonsVisibility
+      }
+
+      // Função que controla a visibilidade de todos os botões de ação e filtros
+      function updateActionButtonsVisibility() {
+        const editSelectedBtn = document.getElementById("editSelectedBtn");
+        const deleteSelectedBtn = document.getElementById("deleteSelectedBtn");
+        const selectedCountSpan = document.getElementById("selectedCount");
+        const deleteSelectedCountSpan = document.getElementById(
+          "deleteSelectedCount"
+        );
+        const toggleEditModeBtn = document.getElementById("toggleEditModeBtn");
+        const batchEditBtn = document.getElementById("batchEditBtn"); // Novo botão de edição em lote
+
+        // Sempre atualiza as contagens de itens selecionados
+        if (selectedCountSpan)
+          selectedCountSpan.textContent = selectedMTRs.size;
+        if (deleteSelectedCountSpan)
+          deleteSelectedCountSpan.textContent = selectedMTRs.size;
+        if (batchEditBtn) {
+          // Atualiza a contagem no botão de edição em lote
+          const batchEditCountSpan =
+            batchEditBtn.querySelector("#batchEditCount");
+          if (batchEditCountSpan)
+            batchEditCountSpan.textContent = selectedMTRs.size;
+        }
+
+        // Visibilidade do botão "Editar Tabela"
+        if (toggleEditModeBtn) {
+          if (selectedMTRs.size > 0) {
+            // Se algum MTR estiver selecionado, oculta "Editar Tabela"
+            toggleEditModeBtn.style.display = "none";
+          } else {
+            // Caso contrário, mostra-o
+            toggleEditModeBtn.style.display = "inline-block";
+          }
+        }
+
+        // Visibilidade dos botões de ação em massa (Editar Grupo/Excluir Selecionados)
+        // Visíveis apenas se houver itens selecionados E não estiver no modo de edição global
+        if (selectedMTRs.size > 0 && !isEditModeActive) {
+          if (editSelectedBtn) editSelectedBtn.classList.add("active");
+          if (deleteSelectedBtn) deleteSelectedBtn.classList.add("active");
+        } else {
+          if (editSelectedBtn) editSelectedBtn.classList.remove("active");
+          if (deleteSelectedBtn) deleteSelectedBtn.classList.remove("active");
+        }
+
+        // Visibilidade do botão "Edição em Lote"
+        // Visível apenas se estiver no modo de edição global E houver itens selecionados
+        if (batchEditBtn) {
+          if (isEditModeActive && selectedMTRs.size > 0) {
+            batchEditBtn.classList.add("active");
+          } else {
+            batchEditBtn.classList.remove("active");
+          }
+        }
+
+        // Visibilidade dos botões e controles gerais (exceto o botão "Editar Tabela" e os de ação em massa)
+        const clearButton = document.getElementById("clearHistory");
+        const downloadButton = document.getElementById("downloadChart");
+        const copyButton = document.getElementById("copyButton");
+        const filterControlsGroup = document.getElementById(
+          "filterControlsGroup"
+        );
+        const monthSelect = document.getElementById("monthFilter");
+        const chartContainer = document.getElementById("chartContainer");
+        const clearFilter = document.getElementById("clearFilter");
+        const toggleTableBtn = document.getElementById("toggleTableVisibility");
+        const backButton = document.getElementById("backButton"); // Obter o botão de voltar
+
+        if (isEditModeActive) {
+          // Esconde a maioria dos botões e controles quando no modo de edição
+          if (clearButton) clearButton.style.display = "none";
+          if (downloadButton) downloadButton.style.display = "none";
+          if (copyButton) copyButton.style.display = "none";
+          if (filterControlsGroup) filterControlsGroup.style.display = "none";
+          if (monthSelect) monthSelect.style.display = "none";
+          if (chartContainer) chartContainer.style.display = "none";
+          if (clearFilter) clearFilter.style.display = "none";
+          if (toggleTableBtn) toggleTableBtn.style.display = "none";
+          // O botão de "Voltar" e o "Theme Toggle" permanecem visíveis
+        } else {
+          // Quando não está no modo de edição, restaura a visibilidade baseada na existência de dados
+          if (storedData.length > 0) {
+            if (clearButton) clearButton.style.display = "inline-block";
+            if (downloadButton) downloadButton.style.display = "inline-block";
+            if (copyButton) copyButton.style.display = "inline-block";
+            if (filterControlsGroup) filterControlsGroup.style.display = "flex";
+            if (monthSelect) monthSelect.style.display = "inline-block";
+            if (chartContainer) chartContainer.style.display = "block";
+            if (clearFilter)
+              clearFilter.style.display = document.getElementById("filterInput")
+                .value
+                ? "inline-block"
+                : "none";
+            if (toggleTableBtn) toggleTableBtn.style.display = "inline-block";
+          } else {
+            // Se não há dados, esconde todos, exceto o botão de voltar
+            if (clearButton) clearButton.style.display = "none";
+            if (downloadButton) downloadButton.style.display = "none";
+            if (copyButton) copyButton.style.display = "none";
+            if (filterControlsGroup) filterControlsGroup.style.display = "none";
+            if (monthSelect) monthSelect.style.display = "none";
+            if (chartContainer) chartContainer.style.display = "none";
+            if (clearFilter) clearFilter.style.display = "none";
+            if (toggleTableBtn) toggleTableBtn.style.display = "none";
+          }
+        }
+        // Controla a margem do botão de "Voltar"
+        if (backButton) {
+          backButton.style.margin =
+            storedData.length > 0 &&
+            !(isEditModeActive && selectedMTRs.size > 0)
+              ? "5px"
+              : "0 auto";
+        }
+      }
+
       document.addEventListener("DOMContentLoaded", () => {
         applySavedTheme(); // Aplica o tema salvo ao carregar a página
 
@@ -1398,8 +1536,15 @@
         }
 
         // Inicializa storedData e as variáveis globais aqui
-        storedData = JSON.parse(localStorage.getItem("residuosData") || "[]");
-        // console.log("Stored data on DOMContentLoaded:", storedData); // Log para depuração inicial
+        // Garante que cada item tenha a propriedade 'grupo'
+        storedData = JSON.parse(
+          localStorage.getItem("residuosData") || "[]"
+        ).map((item) => {
+          if (item.grupo === undefined) {
+            item.grupo = ""; // Inicializa nova propriedade 'grupo'
+          }
+          return item;
+        });
 
         const monthSelect = document.getElementById("monthFilter");
         // Limpar opções existentes antes de adicionar novas
@@ -1443,7 +1588,8 @@
         });
 
         applyFiltersAndRender("", ""); // Aplica filtros e renderiza a tabela e o gráfico
-        toggleButtons();
+        toggleButtons(); // Chama toggleButtons após o storedData ser inicializado
+        updateActionButtonsVisibility(); // Garante que os botões de ação em massa sejam atualizados no carregamento
 
         // Adiciona listener para a imagem do rodapé APÓS o DOM estar pronto
         const footerImage = document.getElementById("footerImage");
@@ -1452,6 +1598,280 @@
             swapFooterImage(footerImage)
           );
         }
+
+        // Adiciona listener para o novo botão de alternar modo de edição
+        const toggleEditModeBtn = document.getElementById("toggleEditModeBtn");
+        if (toggleEditModeBtn) {
+          toggleEditModeBtn.addEventListener("click", toggleEditMode);
+        }
+
+        // Event listener para manipulação de checkboxes na tabela
+        const historyTable = document.getElementById("historyTable");
+        if (historyTable) {
+          historyTable.addEventListener("click", (e) => {
+            // Manipulação de checkboxes (selecionar/desselecionar)
+            if (e.target.matches(".row-checkbox")) {
+              const checkbox = e.target;
+              const mtrId = checkbox.dataset.mtrId;
+              const dateId = checkbox.dataset.dateId;
+              const uniqueId = `${mtrId}_${dateId}`;
+
+              if (checkbox.checked) {
+                selectedMTRs.add(uniqueId);
+              } else {
+                selectedMTRs.delete(uniqueId);
+              }
+              updateActionButtonsVisibility();
+              // Atualiza o checkbox "Selecionar Todos"
+              const allCheckboxes = document.querySelectorAll(".row-checkbox");
+              const selectAllCheckbox =
+                document.getElementById("selectAllCheckbox");
+              if (selectAllCheckbox) {
+                selectAllCheckbox.checked =
+                  selectedMTRs.size === allCheckboxes.length;
+              }
+            } else if (e.target.matches("#selectAllCheckbox")) {
+              const selectAllCheckbox = e.target;
+              const allCheckboxes = document.querySelectorAll(".row-checkbox");
+              selectedMTRs.clear();
+              allCheckboxes.forEach((cb) => {
+                cb.checked = selectAllCheckbox.checked;
+                if (selectAllCheckbox.checked) {
+                  selectedMTRs.add(`${cb.dataset.mtrId}_${cb.dataset.dateId}`);
+                }
+              });
+              updateActionButtonsVisibility();
+            }
+          });
+        }
+
+        // --- Gerenciamento de Ações em Massa de Grupo (antigo) ---
+        // Este modal ainda existe, mas sua funcionalidade é mais específica agora para "grupo"
+        const editSelectedBtn = document.getElementById("editSelectedBtn"); // Botão para editar grupo de selecionados
+        const deleteSelectedBtn = document.getElementById("deleteSelectedBtn");
+        const bulkEditModal = document.getElementById("bulkEditModal"); // Modal de edição de grupo
+        const bulkEditGroupInput =
+          document.getElementById("bulkEditGroupInput");
+        const bulkEditModalSaveBtn = document.getElementById(
+          "bulkEditModalSaveBtn"
+        );
+        const bulkEditModalCancelBtn = document.getElementById(
+          "bulkEditModalCancelBtn"
+        );
+        const bulkEditSelectedCountSpan = document.getElementById(
+          "bulkEditSelectedCount"
+        );
+
+        editSelectedBtn.addEventListener("click", () => {
+          if (selectedMTRs.size === 0) {
+            showAlertModal("Nenhum MTR selecionado para editar.", "no_data");
+            return;
+          }
+          bulkEditSelectedCountSpan.textContent = selectedMTRs.size;
+          bulkEditGroupInput.value = ""; // Limpa o input
+          bulkEditModal.style.display = "flex"; // Mostra o modal
+          bulkEditGroupInput.focus();
+        });
+
+        bulkEditModalSaveBtn.addEventListener("click", () => {
+          const newGroup = bulkEditGroupInput.value.trim();
+          let changesMade = 0;
+          storedData = storedData.map((item) => {
+            const uniqueId = `${item.mtrFormatted}_${item.dataEmissao}`;
+            if (selectedMTRs.has(uniqueId)) {
+              if (item.grupo !== newGroup) {
+                // Apenas atualiza se houver mudança
+                item.grupo = newGroup;
+                changesMade++;
+              }
+            }
+            return item;
+          });
+          localStorage.setItem("residuosData", JSON.stringify(storedData));
+          bulkEditModal.style.display = "none";
+          selectedMTRs.clear(); // Limpa seleção após a ação
+          applyFiltersAndRender(
+            document.getElementById("filterInput").value,
+            document.getElementById("monthFilter").value
+          );
+          showAlertModal(
+            `${changesMade} MTR(s) tiveram o grupo atualizado.`,
+            "success"
+          );
+          updateActionButtonsVisibility();
+          const selectAllCheckbox =
+            document.getElementById("selectAllCheckbox");
+          if (selectAllCheckbox) selectAllCheckbox.checked = false; // Desseleciona "selecionar todos"
+        });
+
+        bulkEditModalCancelBtn.addEventListener("click", () => {
+          bulkEditModal.style.display = "none";
+        });
+
+        deleteSelectedBtn.addEventListener("click", () => {
+          if (selectedMTRs.size === 0) {
+            showAlertModal("Nenhum MTR selecionado para excluir.", "no_data");
+            return;
+          }
+          showConfirmModal(
+            `Tem certeza que deseja excluir ${selectedMTRs.size} MTR(s) selecionado(s)? Esta ação não pode ser desfeita.`,
+            (confirmed) => {
+              if (confirmed) {
+                const originalLength = storedData.length;
+                storedData = storedData.filter((item) => {
+                  const uniqueId = `${item.mtrFormatted}_${item.dataEmissao}`;
+                  return !selectedMTRs.has(uniqueId);
+                });
+                const deletedCount = originalLength - storedData.length;
+                localStorage.setItem(
+                  "residuosData",
+                  JSON.stringify(storedData)
+                );
+                selectedMTRs.clear(); // Limpa seleção após a ação
+                applyFiltersAndRender(
+                  document.getElementById("filterInput").value,
+                  document.getElementById("monthFilter").value
+                );
+                showAlertModal(
+                  `${deletedCount} MTR(s) excluído(s) com sucesso.`,
+                  "success"
+                );
+                toggleButtons(); // Atualiza a visibilidade dos botões gerais (limpar histórico, etc.)
+                updateActionButtonsVisibility();
+                const selectAllCheckbox =
+                  document.getElementById("selectAllCheckbox");
+                if (selectAllCheckbox) selectAllCheckbox.checked = false; // Desseleciona "selecionar todos"
+              }
+            }
+          );
+        });
+
+        // --- Novo Gerenciamento de Edição em Lote (genérico) ---
+        const batchEditBtn = document.getElementById("batchEditBtn");
+        const batchEditBatchModal = document.getElementById(
+          "batchEditBatchModal"
+        );
+        const batchEditFieldSelect = document.getElementById(
+          "batchEditFieldSelect"
+        );
+        const batchEditValueInput = document.getElementById(
+          "batchEditValueInput"
+        );
+        const batchEditModalSaveBtn = document.getElementById(
+          "batchEditModalSaveBtn"
+        );
+        const batchEditModalCancelBtn = document.getElementById(
+          "batchEditModalCancelBtn"
+        );
+        const batchEditCountModalSpan = document.getElementById(
+          "batchEditCountModal"
+        );
+
+        if (batchEditBtn) {
+          batchEditBtn.addEventListener("click", () => {
+            if (selectedMTRs.size === 0) {
+              showAlertModal(
+                "Nenhum MTR selecionado para edição em lote.",
+                "no_data"
+              );
+              return;
+            }
+            batchEditCountModalSpan.textContent = selectedMTRs.size;
+            batchEditFieldSelect.value = ""; // Reseta seleção do campo
+            batchEditValueInput.value = ""; // Limpa o input de valor
+            batchEditValueInput.style.display = "none"; // Esconde o input de valor inicialmente
+            batchEditBatchModal.style.display = "flex"; // Mostra o modal
+          });
+        }
+
+        if (batchEditFieldSelect) {
+          batchEditFieldSelect.addEventListener("change", () => {
+            if (batchEditFieldSelect.value) {
+              batchEditValueInput.style.display = "block";
+              batchEditValueInput.focus();
+            } else {
+              batchEditValueInput.style.display = "none";
+              batchEditValueInput.value = "";
+            }
+          });
+        }
+
+        if (batchEditModalSaveBtn) {
+          batchEditModalSaveBtn.addEventListener("click", () => {
+            const fieldToUpdate = batchEditFieldSelect.value;
+            const newValue = batchEditValueInput.value.trim();
+
+            if (!fieldToUpdate) {
+              showAlertModal(
+                "Por favor, selecione um campo para editar.",
+                "error"
+              );
+              return;
+            }
+
+            showConfirmModal(
+              `Tem certeza que deseja alterar o campo '${fieldToUpdate}' para '${newValue}' em ${selectedMTRs.size} MTR(s) selecionado(s)? Esta ação não pode ser desfeita.`,
+              (confirmed) => {
+                if (confirmed) {
+                  let changesMade = 0;
+                  storedData = storedData.map((item) => {
+                    const uniqueId = `${item.mtrFormatted}_${item.dataEmissao}`;
+                    if (selectedMTRs.has(uniqueId)) {
+                      if (item[fieldToUpdate] !== newValue) {
+                        // Atualiza apenas se houver mudança
+                        // Validação específica para campos numéricos durante a edição em lote
+                        if (
+                          fieldToUpdate === "litros" ||
+                          fieldToUpdate === "toneladas"
+                        ) {
+                          const parsedValue = parseFloat(
+                            newValue.replace(",", ".")
+                          );
+                          if (isNaN(parsedValue)) {
+                            console.error(
+                              `Valor inválido para ${fieldToUpdate}. Mantendo valor original.`
+                            );
+                            // Não altere o item se o valor for inválido, mas não bloqueie todo o processo
+                            return item;
+                          }
+                        }
+                        item[fieldToUpdate] = newValue;
+                        changesMade++;
+                      }
+                    }
+                    return item;
+                  });
+                  localStorage.setItem(
+                    "residuosData",
+                    JSON.stringify(storedData)
+                  );
+                  batchEditBatchModal.style.display = "none";
+                  selectedMTRs.clear(); // Limpa seleção após a ação
+                  applyFiltersAndRender(
+                    document.getElementById("filterInput").value,
+                    document.getElementById("monthFilter").value
+                  );
+                  showAlertModal(
+                    `${changesMade} MTR(s) tiveram o campo '${fieldToUpdate}' atualizado.`,
+                    "success"
+                  );
+                  updateActionButtonsVisibility();
+                  const selectAllCheckbox =
+                    document.getElementById("selectAllCheckbox");
+                  if (selectAllCheckbox) selectAllCheckbox.checked = false; // Desseleciona "selecionar todos"
+                }
+              }
+            );
+          });
+        }
+
+        if (batchEditModalCancelBtn) {
+          batchEditModalCancelBtn.addEventListener("click", () => {
+            batchEditBatchModal.style.display = "none";
+          });
+        }
+
+        updateActionButtonsVisibility(); // Chamada inicial para definir o estado dos botões
       }); // Fechamento do DOMContentLoaded
     </script>
   </body>
