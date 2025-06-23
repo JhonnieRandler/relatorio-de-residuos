@@ -52,6 +52,8 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
+    <!-- Link para o CSS centralizado -->
+    <link rel="stylesheet" href="style.css" />
     <!-- Preload das imagens para carregamento mais rápido -->
     <link rel="preload" as="image" href="doubt.png" />
     <link rel="preload" as="image" href="footer.png" />
@@ -62,190 +64,28 @@
     <!-- Preload do áudio -->
     <link rel="preload" as="audio" href="blink.mp3" />
     <style>
-      :root {
-        /* Cores do tema claro */
-        --background-color: #f5f5f5;
-        --text-color: #333;
-        --header-color: #333;
-        --button-bg-color: #ffffff;
-        --button-text-color: #333;
-        --button-hover-bg-color: #4caf50;
-        --button-hover-text-color: white;
-        --modal-bg-color: #fefefe;
-        --footer-bg-color: #ffcead;
-        --box-shadow-color: rgba(0, 0, 0, 0.1);
-
-        /* Cores específicas para o botão de tema no modo claro */
-        --theme-toggle-normal-bg: #ffffff;
-        --theme-toggle-normal-color: #333;
-        --theme-toggle-hover-bg: #000000;
-        --theme-toggle-hover-color: #ffffff;
-      }
-
-      [data-theme="dark"] {
-        /* Cores do tema noturno */
-        --background-color: #1a1a1a;
-        --text-color: #e0e0e0;
-        --header-color: #f5f5f5;
-        --button-bg-color: #333333;
-        --button-text-color: #e0e0e0;
-        --button-hover-bg-color: #367d39;
-        --button-hover-text-color: white;
-        --modal-bg-color: #333333;
-        --footer-bg-color: #3d2a21; /* Um marrom mais escuro para o rodapé */
-        --box-shadow-color: rgba(255, 255, 255, 0.1);
-
-        /* Cores específicas para o botão de tema no modo noturno */
-        --theme-toggle-normal-bg: #333333;
-        --theme-toggle-normal-color: #e0e0e0;
-        --theme-toggle-hover-bg: #ffffff;
-        --theme-toggle-hover-color: #ffa500; /* Laranja/Amarelo */
-      }
-
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        width: 100%;
-        overflow-x: hidden;
-      }
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        font-family: Arial, sans-serif;
-        background-color: var(--background-color);
-        color: var(--text-color);
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-        transition: background-color 0.3s ease, color 0.3s ease;
-      }
+      /* Estilos específicos da página 404 */
       main {
-        flex: 1 0 auto;
-        width: 100%;
-        max-width: 95%;
-        margin: 20px auto;
-        padding: 0 20px;
-        text-align: center;
-        display: flex; /* Adicionado para centralizar conteúdo */
+        display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
       }
       h1 {
-        color: var(--header-color);
-        margin-bottom: 20px;
         font-size: 3em;
       }
       p {
         font-size: 1.2em;
         margin-bottom: 20px;
       }
-      button {
-        padding: 10px 20px;
-        margin: 10px 0;
-        background-color: var(--button-bg-color);
-        color: var(--button-text-color);
-        border: none;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px var(--box-shadow-color);
-        cursor: pointer;
-        font-size: 16px;
-        transition: background-color 0.3s, transform 0.2s, color 0.3s ease,
-          box-shadow 0.3s ease;
-      }
-      button:hover {
-        background-color: var(--button-hover-bg-color);
-        color: var(--button-hover-text-color);
-        transform: translateY(-2px);
-      }
-      footer {
-        flex: 0 0 auto;
-        width: 100%;
-        background-color: var(--footer-bg-color);
-        padding: 15px;
-        text-align: center;
-        box-shadow: 0 -2px 4px var(--box-shadow-color);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 15px;
-        box-sizing: border-box;
-        transition: background-color 0.3s ease, box-shadow 0.3s ease;
-      }
-      footer img {
-        max-width: 100px;
-        height: auto;
-        cursor: pointer;
-      }
-      footer p {
-        color: var(--text-color);
-        font-size: 14px;
-        margin: 0;
-        flex: 1;
-        overflow-wrap: break-word;
-      }
-      .theme-toggle-button {
-        background-color: var(--theme-toggle-normal-bg);
-        color: var(--theme-toggle-normal-color);
-        border: none;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 0;
-        cursor: pointer;
-        font-size: 18px;
-        box-shadow: 0 2px 4px var(--box-shadow-color);
-        transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s,
-          box-shadow 0.3s ease;
-        margin-left: 10px;
-      }
 
-      .theme-toggle-button:hover {
-        background-color: var(--theme-toggle-hover-bg);
-        color: var(--theme-toggle-hover-color);
-        transform: translateY(-2px);
-      }
-      .header-controls {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-bottom: 20px;
-      }
+      /* Media queries específicas da página 404 */
       @media screen and (max-width: 600px) {
-        main {
-          padding: 10px;
-        }
         h1 {
           font-size: 24px;
         }
         p {
           font-size: 1em;
-        }
-        button {
-          padding: 8px 16px;
-          font-size: 14px;
-        }
-        footer {
-          flex-direction: column;
-          padding: 10px 15px;
-        }
-        footer img {
-          max-width: 80px;
-          margin-bottom: 10px;
-        }
-        footer p {
-          font-size: 12px;
-          max-width: 100%;
-        }
-        .header-controls {
-          flex-direction: column;
-          gap: 10px;
         }
       }
     </style>
