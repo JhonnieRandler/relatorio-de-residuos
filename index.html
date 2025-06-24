@@ -123,6 +123,7 @@
         border-radius: 8px;
         box-shadow: 0 2px 4px var(--box-shadow-color);
         cursor: pointer;
+        font-size: 16px;
         transition: background-color 0.3s, transform 0.2s, color 0.3s ease,
           box-shadow 0.3s ease;
       }
@@ -389,7 +390,7 @@
         <button
           class="history-button"
           id="dashboardLinkButton"
-          onclick="window.location.href='dashboard/index.html'"
+          onclick="window.location.href='dashboard/'"
         >
           <i class="fas fa-chart-bar"></i> Dashboard
         </button>
@@ -397,7 +398,7 @@
         <button
           class="history-button"
           id="historicalRecordsButton"
-          onclick="window.location.href='historico/index.html'"
+          onclick="window.location.href='historico/'"
         >
           <i class="fas fa-history"></i> Histórico
         </button>
@@ -1417,7 +1418,7 @@
           }
           // Display initial loading message
           if (progressIndicator) {
-            progressIndicator.innerHTML = `<span>Carregando arquivos para processamento...</span><span>(Isso pode levar alguns instantes para pastas grandes)</span>`;
+            progressIndicator.innerHTML = `<span>Carregando 0 de ${filesToProcess.length} arquivos...</span><span>(Aguarde...)</span>`;
           }
 
           let filesToProcess = [];
@@ -1586,7 +1587,7 @@
 
           // Update progress indicator before starting the loop
           if (progressIndicator) {
-            progressIndicator.innerHTML = `<span>Carregando 0 de ${filesToProcess.length} arquivos...</span><span>(Aguarde...)</span>`;
+            progressIndicator.innerHTML = `<span>Processando 0 de ${filesToProcess.length} arquivos...</span><span>(Aguarde...)</span>`;
           }
 
           for (const file of filesToProcess) {
