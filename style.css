@@ -291,6 +291,51 @@ footer p {
   margin: 0 auto 15px auto;
 }
 
+/* Responsiveness for dashboard cards */
+.dashboard-container {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(180px, 1fr)
+  ); /* Default for wide screens: auto-fit with min 180px */
+  gap: 30px;
+  margin-top: 20px;
+}
+
+@media (max-width: 1200px) {
+  /* Adjust for 4 columns or fewer */
+  .dashboard-container {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 1024px) {
+  /* Tablet landscape and smaller, for 3 columns */
+  .dashboard-container {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  /* Tablet portrait and smaller, for 2 columns */
+  .dashboard-container {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+  .chart-card {
+    height: 350px; /* Increased fixed height for charts on smaller screens */
+  }
+}
+
+@media (max-width: 480px) {
+  /* Small phone portrait, for 1 column */
+  .dashboard-container {
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(100%, 1fr)
+    ); /* Force single column to take full width */
+  }
+}
+
 /* Media queries comuns (aplicadas globalmente) */
 @media screen and (max-width: 600px) {
   main {
