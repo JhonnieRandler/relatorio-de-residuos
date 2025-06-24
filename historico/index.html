@@ -82,7 +82,7 @@
       }
       .filter-controls-group {
         display: flex;
-        /* flex-wrap: wrap; REMOVIDO para que os itens dentro deste grupo fiquem em uma linha */
+        flex-wrap: nowrap; /* ALTERADO: Para manter os itens em uma linha dentro deste grupo */
         gap: 5px;
         align-items: center;
         justify-content: center;
@@ -93,8 +93,8 @@
         position: relative;
         display: flex;
         align-items: center;
-        flex: 1 1 220px;
-        min-width: 180px;
+        flex: 1; /* Permite que o input cresça e ocupe o espaço disponível */
+        min-width: 180px; /* Mantém um tamanho mínimo para o input */
       }
       .filter-input {
         margin: 0;
@@ -348,7 +348,7 @@
           flex-direction: column; /* Força os itens a empilhar em telas menores */
           width: 100%;
           gap: 10px;
-          flex-wrap: wrap; /* Mantido para que o grupo possa quebrar linha se for muito grande para a linha */
+          /* flex-wrap: wrap; Mantido para que o grupo possa quebrar linha se for muito grande para a linha */
           min-width: auto;
         }
         .filter-input-wrapper {
@@ -1381,15 +1381,6 @@
           return;
         }
 
-        const headers = Array.from(table.querySelectorAll("thead th"))
-          .map((th) => th.textContent.trim().toUpperCase())
-          .filter(
-            (headerText) =>
-              headerText !== "Nº" && headerText !== "GRUPO" && headerText !== ""
-          ); // Exclui Nº, GRUPO e a coluna vazia do checkbox
-
-        const headerLine = headers.join("\t");
-
         const tableRows = table.querySelectorAll("tbody tr");
         if (tableRows.length === 0) {
           showAlertModal("Nenhum dado para copiar.", "no_data");
@@ -1399,21 +1390,16 @@
         const fullTextToCopy = Array.from(tableRows)
           .map((row) => {
             const cells = Array.from(row.cells);
-            // Collect text only for columns present in 'headers'
-            const headerElements = Array.from(
-              table.querySelectorAll("thead th")
-            );
-            const lineData = headers.map((headerText) => {
-              const colIndex = headerElements.findIndex(
-                (th) => th.textContent.trim().toUpperCase() === headerText
-              );
-              return cells[colIndex] ? cells[colIndex].textContent : "";
-            });
-            return lineData.join("\t");
+            // Copia o texto de todas as células, exceto as duas primeiras (checkbox e número de ordem)
+            // e a última (coluna GRUPO).
+            return cells
+              .slice(2, -1)
+              .map((cell) => cell.textContent.trim())
+              .join("\t");
           })
           .join("\n");
 
-        const finalCopyText = `${headerLine}\n${fullTextToCopy}`;
+        const finalCopyText = fullTextToCopy;
 
         if (copyToClipboard(finalCopyText)) {
           showAlertModal(
@@ -1571,7 +1557,7 @@
         let startDate = null;
         let endDate = new Date(today); // Clone today for endDate
 
-        // Helper para formatar a data como YYYY-MM-DD
+        // Helper para formatar a data como నేపథ్యంలో-MM-DD
         const formatDate = (date) => date.toISOString().slice(0, 10);
 
         switch (period) {
@@ -1973,16 +1959,18 @@
 
         // Função para mostrar/esconder grupos de filtro no modal
         function showFilterGroup(groupToShow) {
+          // Esconde todos os grupos de filtro primeiro
           monthFilterGroup.classList.remove("active");
           intervalFilterGroup.classList.remove("active");
           predefinedFilterGroup.classList.remove("active");
 
-          // Limpa todos os inputs/selects dentro dos grupos antes de mostrar o ativo
+          // Limpa os valores de todos os inputs/selects dentro dos grupos
           modalMonthFilter.value = "";
           modalStartDateFilter.value = "";
           modalEndDateFilter.value = "";
           modalPredefinedPeriodFilter.value = "";
 
+          // Ativa o grupo de filtro selecionado
           if (groupToShow === "month") {
             monthFilterGroup.classList.add("active");
           } else if (groupToShow === "interval") {
@@ -1995,11 +1983,11 @@
         // Event listener para abrir o modal de filtros
         if (openFilterOptionsBtn) {
           openFilterOptionsBtn.addEventListener("click", () => {
-            // Ao abrir o modal, define o tipo de filtro selecionado com base no filtro ativo atual
+            // Ao abrir o modal, pré-preenche o tipo de filtro e os valores se houver um filtro ativo
             if (currentMonthFilter) {
               filterTypeSelect.value = "month";
               modalMonthFilter.value = currentMonthFilter;
-            } else if (currentStartDateFilter || currentEndDateFilter) {
+            } else if (currentStartDateFilter && currentEndDateFilter) {
               filterTypeSelect.value = "interval";
               modalStartDateFilter.value = currentStartDateFilter;
               modalEndDateFilter.value = currentEndDateFilter;
@@ -2007,10 +1995,11 @@
               filterTypeSelect.value = "predefined";
               modalPredefinedPeriodFilter.value = currentPredefinedPeriodFilter;
             } else {
-              filterTypeSelect.value = ""; // Nenhum tipo selecionado por padrão
+              filterTypeSelect.value = ""; // Nenhuma opção selecionada por padrão
             }
 
-            showFilterGroup(filterTypeSelect.value); // Mostra o grupo correto ou nenhum
+            // Garante que apenas o grupo relevante seja visível (ou nenhum se não houver filtro ativo)
+            showFilterGroup(filterTypeSelect.value);
             filterOptionsModal.style.display = "flex";
           });
         }
