@@ -421,17 +421,19 @@
         }, 400);
       }
 
-      // Function to redirect to the main page
+      // Função para redirecionar para a página principal, adaptando-se ao ambiente
       function redirectToMainPage() {
         const isLocal =
           window.location.hostname === "127.0.0.1" ||
           window.location.hostname === "localhost";
 
         if (isLocal) {
+          // Para desenvolvimento local, assume que a página principal está na raiz do servidor
           window.location.href = window.location.origin + "/";
         } else {
-          // Changed to absolute path from the root
-          window.location.href = "/";
+          // Para GitHub Pages, usa o caminho absoluto do projeto
+          window.location.href =
+            "https://jhonnierandler.github.io/relatorio-de-residuos/";
         }
       }
 
