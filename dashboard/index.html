@@ -430,8 +430,8 @@
         if (isLocal) {
           window.location.href = window.location.origin + "/";
         } else {
-          // Adjusted for the correct relative path if in a subfolder (like /dashboard/index.html)
-          window.location.href = "../index.html";
+          // Changed to absolute path from the root
+          window.location.href = "/";
         }
       }
 
