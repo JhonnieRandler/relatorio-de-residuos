@@ -1205,8 +1205,12 @@
           ...litrosPorTipo.map((v) => parseFloat(v)),
           ...toneladasPorTipo.map((v) => parseFloat(v))
         );
-        // Aumenta o multiplicador para dar mais espaço acima das barras.
-        const yMax = maxValue ? maxValue * 1.35 : 10; // Alterado de 1.25 para 1.35 para mais espaço
+
+        // Define yMax com padding (35% extra no topo)
+        const yMax = maxValue ? maxValue * 1.35 : 10;
+
+        // Define stepSize igual a yMax (para ter apenas 0 e yMax como ticks visíveis)
+        const stepSize = yMax;
 
         const canvas = document.getElementById("residuosChart");
         const ctx = canvas.getContext("2d");
@@ -1271,20 +1275,27 @@
                   color: textColor, // Cor dos rótulos do eixo X
                 },
                 grid: {
-                  color: gridColor, // Cor das linhas de grade do eixo X
+                  display: true, // Garante que a linha do eixo X seja exibida
+                  drawOnChartArea: false, // Desabilita as linhas de grade que atravessam a área do gráfico
+                  drawTicks: false, // Desabilita os pequenos traços dos ticks
+                  color: gridColor, // Cor da linha do eixo X
                 },
               },
               y: {
                 beginAtZero: true,
-                max: yMax,
+                min: 0, // Garante que o eixo comece em zero
+                max: yMax, // Define o máximo dinamicamente
                 stacked: true,
                 grid: {
-                  display: false,
-                  color: gridColor, // Cor das linhas de grade do eixo Y
+                  display: true, // Garante que a linha do eixo Y seja exibida
+                  drawOnChartArea: false, // Desabilita as linhas de grade que atravessam a área do gráfico
+                  drawTicks: false, // Desabilita os pequenos traços dos ticks
+                  color: gridColor, // Cor da linha do eixo Y
                 },
                 ticks: {
-                  display: false,
-                  color: textColor, // Cor dos rótulos do eixo Y
+                  display: false, // Oculta os rótulos do eixo Y
+                  color: textColor, // Cor dos rótulos do eixo Y (ainda definido, mas não visível)
+                  stepSize: stepSize, // Define o tamanho do passo igual a yMax
                 },
               },
             },
