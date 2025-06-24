@@ -40,7 +40,7 @@
     <meta name="twitter:title" content="Histórico de Resíduos" />
     <meta
       name="twitter:description"
-      content="Histórico detalhado e visualização de resíduos gerados, com gráficos interactivos e opções de filtragem."
+      content="Histórico detalhado e visualização de resíduos gerados, com gráficos interativos e opções de filtragem."
     />
     <meta
       name="twitter:image"
@@ -1557,7 +1557,7 @@
         let startDate = null;
         let endDate = new Date(today); // Clone today for endDate
 
-        // Helper para formatar a data como నేపథ్యంలో-MM-DD
+        // Helper para formatar a data como YYYY-MM-DD
         const formatDate = (date) => date.toISOString().slice(0, 10);
 
         switch (period) {
@@ -2057,9 +2057,11 @@
         }
 
         // Listener para o filtro de texto
-        document
-          .getElementById("filterInput")
-          .addEventListener("input", (e) => {
+        const filterInput = document.getElementById("filterInput");
+        const clearFilterButton = document.getElementById("clearFilter");
+
+        if (filterInput) {
+          filterInput.addEventListener("input", (e) => {
             // Limpa todos os filtros de período quando o filtro de texto é usado
             currentMonthFilter = "";
             currentStartDateFilter = "";
@@ -2073,11 +2075,27 @@
               currentStartDateFilter,
               currentEndDateFilter
             );
-            document.getElementById("clearFilter").style.display = e.target
-              .value
-              ? "inline-block"
-              : "none";
+            // Mostra ou esconde o botão "X" de limpar
+            if (clearFilterButton) {
+              clearFilterButton.style.display = e.target.value
+                ? "inline-block"
+                : "none";
+            }
           });
+        }
+
+        // NOVO: Listener para o botão de limpar filtro de texto
+        if (clearFilterButton) {
+          clearFilterButton.addEventListener("click", () => {
+            const filterInput = document.getElementById("filterInput");
+            if (filterInput) {
+              filterInput.value = ""; // Limpa o valor do input
+              // Dispara o evento 'input' para que a lógica de filtragem seja executada
+              // e o botão "X" seja escondido automaticamente.
+              filterInput.dispatchEvent(new Event("input", { bubbles: true }));
+            }
+          });
+        }
 
         applyFiltersAndRender(
           document.getElementById("filterInput").value,
