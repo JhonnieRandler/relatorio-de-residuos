@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard de Resíduos</title>
+    <!-- Metadados para SEO e Descrição da Página -->
+    <meta
+      name="description"
+      content="Painel de controle interativo para visualizar e analisar o histórico de resíduos gerados."
+    />
+    <meta name="author" content="Jhon Randler" />
+    <meta
+      name="keywords"
+      content="dashboard de resíduos, gestão de resíduos, análise de dados, relatórios, gráficos, MTR, ferramenta gratuita"
+    />
+
+    <!-- Open Graph Metadados para Redes Sociais (Facebook, WhatsApp, LinkedIn) -->
+    <meta property="og:title" content="Dashboard de Resíduos" />
+    <meta
+      property="og:description"
+      content="Painel de controle interativo para visualizar e analisar o histórico de resíduos gerados."
+    />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:url"
+      content="https://jhonnierandler.github.io/relatorio-de-residuos/dashboard/index.html"
+    />
+    <meta
+      property="og:image"
+      content="https://jhonnierandler.github.io/relatorio-de-residuos/footer.png"
+    />
+    <meta property="og:image:width" content="408" />
+    <meta property="og:image:height" content="408" />
+    <meta property="og:locale" content="pt_BR" />
+
+    <!-- Twitter Card Metadados -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Dashboard de Resíduos" />
+    <meta
+      name="twitter:description"
+      content="Painel de controle interativo para visualizar e analisar o histórico de resíduos gerados."
+    />
+    <meta
+      name="twitter:image"
+      content="https://jhonnierandler.github.io/relatorio-de-residuos/footer.png"
+    />
+    <meta name="twitter:creator" content="@JhonnieRandler" />
+
+    <link rel="icon" type="image/png" href="../footer.png" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <!-- Link para o CSS centralizado, assumindo que está no mesmo nível que index.html -->
+    <link rel="stylesheet" href="../style.css" />
+
+    <!-- Preload das imagens e áudio -->
+    <link rel="preload" as="image" href="../doubt.png" />
+    <link rel="preload" as="image" href="../footer.png" />
+    <link rel="preload" as="image" href="../blink.png" />
+    <link rel="preload" as="image" href="../like.png" />
+    <link rel="preload" as="image" href="../point.png" />
+    <link rel="preload" as="audio" href="../blink.mp3" />
+
+    <style>
+      /* Estilos específicos para o Dashboard */
+      .dashboard-container {
+        display: grid;
+        grid-template-columns: repeat(
+          5,
+          1fr
+        ); /* Default for wide screens: 5 columns, occupying full width */
+        gap: 30px; /* Increased gap for more spacing */
+        margin-top: 20px;
+      }
+      .dashboard-card {
+        background-color: var(--table-row-bg);
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px var(--box-shadow-color);
+        text-align: center;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      }
+      .dashboard-card h3 {
+        margin-top: 0;
+        color: var(--header-color);
+        font-size: 1.2em;
+      }
+      .dashboard-card p {
+        font-size: 2em;
+        font-weight: bold;
+        color: var(--text-color);
+      }
+      .chart-card {
+        grid-column: 1 / -1; /* Occupies full width on all screens */
+        background-color: var(--table-row-bg);
+        padding: 25px; /* Increased padding */
+        border-radius: 8px;
+        box-shadow: 0 2px 4px var(--box-shadow-color);
+        height: 450px; /* Increased fixed height for the chart container */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        margin-block: 25px; /* Added margin-block */
+      }
+      .chart-card canvas {
+        max-width: 100%;
+        height: 100%;
+        width: 100%;
+      }
+      /* Estilo para o botão Voltar no topo */
+      .back-button {
+        margin-left: 20px; /* Adiciona espaço à esquerda do botão */
+        padding: 10px 20px;
+        background-color: var(--button-bg-color);
+        color: var(--button-text-color);
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px var(--box-shadow-color);
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s, transform 0.2s, color 0.3s ease,
+          box-shadow 0.3s ease;
+      }
+      .back-button:hover {
+        background-color: var(--button-hover-bg-color);
+        color: var(--button-hover-text-color);
+        transform: translateY(-2px);
+      }
+      .download-chart-button {
+        padding: 8px 15px;
+        margin-bottom: 10px;
+        background-color: var(--button-bg-color);
+        color: var(--button-text-color);
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px var(--box-shadow-color);
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s, transform 0.2s, color 0.3s ease,
+          box-shadow 0.3s ease;
+      }
+      .download-chart-button:hover {
+        background-color: var(--button-hover-bg-color);
+        color: var(--button-hover-text-color);
+        transform: translateY(-2px);
+      }
+
+      /* Responsiveness for dashboard cards */
+      @media (max-width: 1200px) {
+        /* For screens <= 1200px, 3 columns */
+        .dashboard-container {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+
+      @media (max-width: 768px) {
+        /* For screens <= 768px, 2 columns */
+        .dashboard-container {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .chart-card {
+          height: 350px; /* Increased fixed height for charts on smaller screens */
+        }
+        /* Ajuste para o header-controls em telas menores */
+        .header-controls {
+          flex-direction: column; /* Empilha os itens verticalmente */
+          align-items: center; /* Centraliza os itens */
+        }
+        .header-controls h1 {
+          margin-right: 0; /* Remove margem direita para não empurrar */
+          margin-bottom: 10px; /* Adiciona espaço abaixo do título */
+        }
+        .header-controls .back-button {
+          margin-left: 0; /* Remove margem esquerda */
+          margin-top: 10px; /* Adiciona espaço acima do botão */
+        }
+      }
+
+      @media (max-width: 480px) {
+        /* For screens <= 480px, 1 column */
+        .dashboard-container {
+          grid-template-columns: repeat(1, 1fr);
+        }
+      }
+
+      /* Reusing modal and theme toggle styles from style.css */
+      /* Just ensure modal overlay and content classes are visible */
+      .modal-overlay.active {
+        display: flex;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="header-controls">
+        <h1>Painel de Controle de Resíduos</h1>
+        <button id="themeToggle" class="theme-toggle-button">
+          <i class="fas fa-moon"></i>
+        </button>
+        <!-- Botão Voltar movido para o topo -->
+        <button id="backButton" class="back-button">
+          <i class="fas fa-arrow-left"></i> Voltar
+        </button>
+      </div>
+
+      <div class="dashboard-container">
+        <div class="dashboard-card">
+          <h3>Total de MTRs</h3>
+          <p id="totalMTRs">0</p>
+        </div>
+        <div class="dashboard-card">
+          <h3>Total de Litros</h3>
+          <p id="totalLitros">0,00</p>
+        </div>
+        <div class="dashboard-card">
+          <h3>Total de Toneladas</h3>
+          <p id="totalToneladas">0,00</p>
+        </div>
+        <div class="dashboard-card">
+          <h3>Destinadores Únicos</h3>
+          <p id="uniqueDestinadores">0</p>
+        </div>
+        <div class="dashboard-card">
+          <h3>Transportadores Únicos</h3>
+          <p id="uniqueTransportadores">0</p>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <button
+          class="download-chart-button"
+          onclick="downloadChart('typeDistributionChart', 'DistribuicaoDeResiduosPorTipo')"
+        >
+          <i class="fas fa-download"></i> Baixar Gráfico
+        </button>
+        <canvas id="typeDistributionChart"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <button
+          class="download-chart-button"
+          onclick="downloadChart('monthlyTrendChart', 'TendenciaMensalDeResiduos')"
+        >
+          <i class="fas fa-download"></i> Baixar Gráfico
+        </button>
+        <canvas id="monthlyTrendChart"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <button
+          class="download-chart-button"
+          onclick="downloadChart('destinadorChart', 'ResiduosPorDestinador')"
+        >
+          <i class="fas fa-download"></i> Baixar Gráfico
+        </button>
+        <canvas id="destinadorChart"></canvas>
+      </div>
+
+      <div class="chart-card">
+        <button
+          class="download-chart-button"
+          onclick="downloadChart('transportadorChart', 'ResiduosPorTransportador')"
+        >
+          <i class="fas fa-download"></i> Baixar Gráfico
+        </button>
+        <canvas id="transportadorChart"></canvas>
+      </div>
+    </main>
+
+    <footer>
+      <img id="footerImage" src="../footer.png" alt="Footer Image" />
+      <p>
+        This website was developed to facilitate the management of generated
+        waste, offering a practical and accessible tool. It is free to use by
+        everyone!
+      </p>
+      <audio id="blinkAudio" preload="auto">
+        <source src="../blink.mp3" type="audio/mpeg" />
+        Your browser does not support the audio element.
+      </audio>
+    </footer>
+
+    <!-- Custom Alert Modal (reused from other pages) -->
+    <div id="customAlertModal" class="modal-overlay">
+      <div class="modal-content">
+        <img
+          id="alertModalImage"
+          src=""
+          alt="Status Icon"
+          class="modal-image"
+        />
+        <p id="alertMessage"></p>
+        <div class="modal-buttons">
+          <button id="alertOkBtn">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Move script tags here for better loading order -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+    <script>
+      // Register Chart.js plugins globally immediately after their scripts are loaded
+      Chart.register(ChartDataLabels);
+
+      let storedData = [];
+
+      // Function to toggle theme (reused)
+      function toggleTheme() {
+        const htmlElement = document.documentElement;
+        const currentTheme = htmlElement.getAttribute("data-theme");
+        const themeToggleBtn = document.getElementById("themeToggle");
+
+        if (currentTheme === "dark") {
+          htmlElement.removeAttribute("data-theme");
+          localStorage.setItem("theme", "light");
+          if (themeToggleBtn) {
+            themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+          }
+        } else {
+          htmlElement.setAttribute("data-theme", "dark");
+          localStorage.setItem("theme", "dark");
+          if (themeToggleBtn) {
+            themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+          }
+        }
+        // Updates the charts to redraw with new text/grid colors
+        renderDashboardCharts();
+      }
+
+      // Function to apply saved theme (reused)
+      function applySavedTheme() {
+        const savedTheme = localStorage.getItem("theme");
+        const htmlElement = document.documentElement;
+        const themeToggleBtn = document.getElementById("themeToggle");
+
+        if (savedTheme === "dark") {
+          htmlElement.setAttribute("data-theme", "dark");
+          if (themeToggleBtn) {
+            themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+          }
+        } else {
+          htmlElement.removeAttribute("data-theme");
+          if (themeToggleBtn) {
+            themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+          }
+        }
+      }
+
+      // Function to display alert modals (reused)
+      function showAlertModal(message, type) {
+        // type: 'success', 'exists', 'no_data', 'error', 'info'
+        const modal = document.getElementById("customAlertModal");
+        const alertMessage = document.getElementById("alertMessage");
+        const alertModalImage = document.getElementById("alertModalImage");
+        const okBtn = document.getElementById("alertOkBtn");
+
+        if (alertMessage) alertMessage.textContent = message;
+        if (modal) modal.classList.remove("success", "error"); // Clears previous classes
+
+        let imagePath = "";
+        // Assumes 'point.png' or 'doubt.png' are at the same level
+        if (type === "success") {
+          imagePath = "../like.png";
+          if (okBtn) okBtn.style.backgroundColor = "#4CAF50";
+        } else if (type === "exists" || type === "info") {
+          imagePath = "../point.png";
+          if (okBtn) okBtn.style.backgroundColor = "#FFA000";
+        } else if (type === "no_data" || type === "error") {
+          imagePath = "../doubt.png";
+          if (okBtn) okBtn.style.backgroundColor = "#f44336";
+        }
+
+        if (alertModalImage) {
+          alertModalImage.src = imagePath;
+          alertModalImage.style.display = "block";
+        }
+        if (modal) modal.classList.add("active");
+
+        const handleOk = () => {
+          closeAlertModal();
+        };
+        const handleKeyDown = (e) => {
+          if (e.key === "Enter" || e.key === "Escape") {
+            e.preventDefault();
+            handleOk();
+          }
+        };
+
+        const closeAlertModal = () => {
+          if (modal) modal.classList.remove("active");
+          if (okBtn) okBtn.removeEventListener("click", handleOk);
+          document.removeEventListener("keydown", handleKeyDown);
+          if (alertModalImage) alertModalImage.style.display = "none";
+        };
+
+        const newOkBtn = okBtn.cloneNode(true);
+        okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+        newOkBtn.addEventListener("click", handleOk);
+        document.addEventListener("keydown", handleKeyDown);
+      }
+
+      // Function to swap footer image and play audio (reused)
+      function swapFooterImage(imgElement) {
+        const originalSrc = imgElement.src;
+        const blinkSrc = originalSrc.replace("footer.png", "blink.png");
+        const audio = document.getElementById("blinkAudio");
+
+        imgElement.src = blinkSrc;
+        if (audio) {
+          audio.currentTime = 0;
+          audio.play().catch((e) => console.error("Error playing audio:", e));
+        }
+        setTimeout(() => {
+          imgElement.src = originalSrc;
+        }, 400);
+      }
+
+      // Function to redirect to the main page
+      function redirectToMainPage() {
+        const isLocal =
+          window.location.hostname === "127.0.0.1" ||
+          window.location.hostname === "localhost";
+
+        if (isLocal) {
+          window.location.href = window.location.origin + "/";
+        } else {
+          // Adjusted for the correct relative path if in a subfolder (like /dashboard/index.html)
+          window.location.href = "../index.html";
+        }
+      }
+
+      // Function to download charts
+      function downloadChart(chartId, chartName) {
+        const chartCanvas = document.getElementById(chartId);
+        if (chartCanvas) {
+          const imageData = chartCanvas.toDataURL("image/png");
+          const a = document.createElement("a");
+          a.href = imageData;
+          a.download = `${chartName}_${new Date()
+            .toLocaleDateString("pt-BR")
+            .replace(/\//g, "-")}.png`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          showAlertModal(
+            `Gráfico '${chartName
+              .replace(/([A-Z])/g, " $1")
+              .trim()}' baixado com sucesso!`,
+            "success"
+          );
+        } else {
+          showAlertModal(
+            `Erro: Não foi possível encontrar o gráfico com ID '${chartId}'.`,
+            "error"
+          );
+        }
+      }
+
+      let typeDistributionChart = null;
+      let monthlyTrendChart = null;
+      let destinadorChart = null; // New chart instance
+      let transportadorChart = null; // New chart instance
+
+      // Helper function to wrap long labels
+      function wrapLabel(label, maxLineLength = 15) {
+        const words = label.split(" ");
+        let lines = [];
+        let currentLine = "";
+
+        words.forEach((word) => {
+          // If adding the next word (plus a space if not the first word) exceeds maxLineLength
+          if (
+            currentLine.length + word.length + (currentLine === "" ? 0 : 1) >
+            maxLineLength
+          ) {
+            // Push the current line and start a new one with the current word
+            lines.push(currentLine);
+            currentLine = word;
+          } else {
+            // Add the word to the current line
+            currentLine += (currentLine === "" ? "" : " ") + word;
+          }
+        });
+        lines.push(currentLine); // Add the last line
+
+        return lines;
+      }
+
+      // Function to render dashboard charts
+      function renderDashboardCharts() {
+        const computedStyle = getComputedStyle(document.documentElement);
+        const textColor = computedStyle.getPropertyValue("--text-color").trim();
+        const gridColor = computedStyle
+          .getPropertyValue("--table-border-color")
+          .trim();
+
+        // Consistent colors for "Litros" and "Toneladas"
+        const litrosColorBg = "rgba(75, 192, 192, 0.7)";
+        const litrosColorBorder = "rgba(75, 192, 192, 1)";
+        const toneladasColorBg = "rgba(255, 99, 132, 0.7)";
+        const toneladasColorBorder = "rgba(255, 99, 132, 1)";
+
+        // 1. Gráfico de Distribuição por Tipo (barras empilhadas de litros e toneladas)
+        const tipos = [...new Set(storedData.map((item) => item.tipo))].filter(
+          (tipo) => tipo && tipo !== "Não encontrado"
+        );
+
+        const litrosPorTipo = tipos.map((tipo) =>
+          storedData
+            .filter((item) => item.tipo === tipo && item.litros)
+            .reduce(
+              (sum, item) =>
+                sum + (parseFloat(item.litros.replace(",", ".")) || 0),
+              0
+            )
+        );
+        const toneladasPorTipo = tipos.map((tipo) =>
+          storedData
+            .filter((item) => item.tipo === tipo && item.toneladas)
+            .reduce(
+              (sum, item) =>
+                sum + (parseFloat(item.toneladas.replace(",", ".")) || 0),
+              0
+            )
+        );
+
+        // Calculates the maximum value for the Y axis considering stacking
+        const combinedValues = tipos.map((tipo, index) => {
+          return (litrosPorTipo[index] || 0) + (toneladasPorTipo[index] || 0);
+        });
+        const maxValueTypeChart =
+          combinedValues.length > 0 ? Math.max(...combinedValues) : 0; // Ensures 0 if empty
+        const yMaxTypeChart =
+          maxValueTypeChart > 0 ? maxValueTypeChart * 1.3 : 10; // Increased multiplier for label space
+
+        const ctxType = document
+          .getElementById("typeDistributionChart")
+          .getContext("2d");
+        if (typeDistributionChart) typeDistributionChart.destroy();
+        typeDistributionChart = new Chart(ctxType, {
+          type: "bar",
+          plugins: [ChartDataLabels],
+          data: {
+            labels: tipos,
+            datasets: [
+              {
+                label: "Litros",
+                data: litrosPorTipo, // Already numeric
+                backgroundColor: litrosColorBg,
+                borderColor: litrosColorBorder,
+                borderWidth: 1,
+                stack: "Stack 0",
+              },
+              {
+                label: "Toneladas",
+                data: toneladasPorTipo, // Already numeric
+                backgroundColor: toneladasColorBg,
+                borderColor: toneladasColorBorder,
+                borderWidth: 1,
+                stack: "Stack 0",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+              // Added layout padding for the entire chart
+              padding: { right: 30 },
+            },
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  color: textColor,
+                },
+              },
+              title: {
+                display: true,
+                text: "Distribuição de Resíduos por Tipo",
+                color: textColor,
+                font: {
+                  size: 16,
+                  weight: "bold",
+                },
+              },
+              datalabels: {
+                anchor: "end",
+                align: "top",
+                formatter: (value) => {
+                  // Adjusted for parseFloat
+                  const numValue = parseFloat(value);
+                  return numValue > 0
+                    ? numValue.toFixed(2).replace(".", ",")
+                    : "";
+                },
+                color: textColor,
+                font: { weight: "bold", size: 10 },
+                offset: 20, // Increased offset for labels
+              },
+            },
+            scales: {
+              x: {
+                ticks: {
+                  display: true, // Display X-axis values
+                  color: textColor, // Keep text color for ticks
+                  callback: function (value, index, ticks) {
+                    const label = this.getLabelForValue(value);
+                    return wrapLabel(label, 15); // Apply word wrap
+                  },
+                  autoSkip: false, // Prevent Chart.js from skipping labels
+                  maxRotation: 0, // Ensure labels are not rotated
+                  minRotation: 0, // Ensure labels are not rotated
+                },
+                grid: {
+                  color: gridColor, // Vertical grid lines kept visible
+                  drawBorder: true, // Ensure X-axis border line is drawn
+                },
+              },
+              y: {
+                beginAtZero: true,
+                stacked: true,
+                max: yMaxTypeChart, // Sets the maximum limit of the Y axis
+                ticks: {
+                  display: false, // Hides Y-axis values
+                  color: textColor,
+                  stepSize: yMaxTypeChart, // Only show tick at 0 and yMax
+                },
+                grid: {
+                  color: gridColor, // Horizontal grid lines visible
+                  drawBorder: true, // Ensures Y-axis border line is drawn
+                },
+              },
+            },
+          },
+        });
+
+        // 2. Gráfico de Tendência Mensal (Litros e Toneladas)
+        const monthlyData = {}; // { 'MM/YYYY': { liters: X, tons: Y } }
+        storedData.forEach((item) => {
+          const dateParts = item.dataEmissao.split("/");
+          if (dateParts.length === 3) {
+            const monthYear = `${dateParts[1]}/${dateParts[2]}`;
+            if (!monthlyData[monthYear]) {
+              monthlyData[monthYear] = { litros: 0, toneladas: 0 };
+            }
+            monthlyData[monthYear].litros +=
+              parseFloat(item.litros.replace(",", ".")) || 0;
+            monthlyData[monthYear].toneladas +=
+              parseFloat(item.toneladas.replace(",", ".")) || 0;
+          }
+        });
+
+        const sortedMonths = Object.keys(monthlyData).sort((a, b) => {
+          const [monthA, yearA] = a.split("/").map(Number);
+          const [monthB, yearB] = b.split("/").map(Number);
+          if (yearA !== yearB) return yearA - yearB;
+          return monthA - monthB;
+        });
+
+        const monthlyLitros = sortedMonths.map(
+          (month) => monthlyData[month].litros
+        ); // Already numeric
+        const monthlyToneladas = sortedMonths.map(
+          (month) => monthlyData[month].toneladas
+        ); // Already numeric
+
+        const ctxMonthly = document
+          .getElementById("monthlyTrendChart")
+          .getContext("2d");
+        if (monthlyTrendChart) monthlyTrendChart.destroy();
+        monthlyTrendChart = new Chart(ctxMonthly, {
+          type: "line",
+          plugins: [ChartDataLabels],
+          data: {
+            labels: sortedMonths,
+            datasets: [
+              {
+                label: "Litros Totais",
+                data: monthlyLitros,
+                borderColor: litrosColorBorder,
+                backgroundColor: litrosColorBg,
+                fill: true,
+                tension: 0.3,
+              },
+              {
+                label: "Toneladas Totais",
+                data: monthlyToneladas,
+                borderColor: toneladasColorBorder,
+                backgroundColor: toneladasColorBg,
+                fill: true,
+                tension: 0.3,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  color: textColor,
+                },
+              },
+              title: {
+                display: true,
+                text: "Tendência Mensal de Resíduos (Litros e Toneladas)",
+                color: textColor,
+                font: {
+                  size: 16,
+                  weight: "bold",
+                },
+              },
+              datalabels: {
+                display: false, // Disables datalabels for lines to avoid clutter
+              },
+            },
+            scales: {
+              x: {
+                ticks: { color: textColor },
+                grid: { color: gridColor },
+              },
+              y: {
+                beginAtZero: true,
+                ticks: { color: textColor },
+                grid: { color: gridColor },
+              },
+            },
+          },
+        });
+
+        // 3. Gráfico de Resíduos por Destinador
+        const destinadorData = {};
+        storedData.forEach((item) => {
+          const destinador = item.razaoSocial2 || "Não Informado";
+          if (!destinadorData[destinador]) {
+            destinadorData[destinador] = { litros: 0, toneladas: 0 };
+          }
+          destinadorData[destinador].litros +=
+            parseFloat(item.litros.replace(",", ".")) || 0;
+          destinadorData[destinador].toneladas +=
+            parseFloat(item.toneladas.replace(",", ".")) || 0;
+        });
+
+        // Calculate combined values for each destinador for yMax calculation
+        const combinedDestinadorValues = Object.keys(destinadorData).map(
+          (d) =>
+            (destinadorData[d].litros || 0) + (destinadorData[d].toneladas || 0)
+        );
+
+        // Filter destinadores to only include those with actual data
+        const filteredDestinadores = Object.keys(destinadorData)
+          .filter(
+            (d) =>
+              destinadorData[d].litros > 0 || destinadorData[d].toneladas > 0
+          )
+          .sort();
+
+        const destinadorLitros = filteredDestinadores.map(
+          (d) => destinadorData[d].litros
+        ); // Already numeric
+        const destinadorToneladas = filteredDestinadores.map(
+          (d) => destinadorData[d].toneladas
+        ); // Already numeric
+
+        const maxValueDestinadorChart =
+          combinedDestinadorValues.length > 0
+            ? Math.max(...combinedDestinadorValues)
+            : 0;
+        const yMaxDestinadorChart =
+          maxValueDestinadorChart > 0 ? maxValueDestinadorChart * 1.3 : 10; // Increased multiplier for label space
+
+        const ctxDestinador = document
+          .getElementById("destinadorChart")
+          .getContext("2d");
+        if (destinadorChart) destinadorChart.destroy();
+        destinadorChart = new Chart(ctxDestinador, {
+          type: "bar",
+          plugins: [ChartDataLabels],
+          data: {
+            labels: filteredDestinadores, // Use filtered destinadores for labels
+            datasets: [
+              {
+                label: "Litros",
+                data: destinadorLitros, // Already numeric
+                backgroundColor: litrosColorBg,
+                borderColor: litrosColorBorder,
+                borderWidth: 1,
+                stack: "DestinadorStack",
+              },
+              {
+                label: "Toneladas",
+                data: destinadorToneladas, // Already numeric
+                backgroundColor: toneladasColorBg,
+                borderColor: toneladasColorBorder,
+                borderWidth: 1,
+                stack: "DestinadorStack",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+              // Added layout padding for the entire chart
+              padding: { right: 30 },
+            },
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  color: textColor,
+                },
+              },
+              title: {
+                display: true,
+                text: "Resíduos por Destinador",
+                color: textColor,
+                font: {
+                  size: 16,
+                  weight: "bold",
+                },
+              },
+              datalabels: {
+                anchor: "end",
+                align: "top",
+                formatter: (value) => {
+                  // Adjusted for parseFloat
+                  const numValue = parseFloat(value);
+                  return numValue > 0
+                    ? numValue.toFixed(2).replace(".", ",")
+                    : "";
+                },
+                color: textColor,
+                font: { weight: "bold", size: 10 },
+                offset: 20, // Increased offset for labels
+              },
+            },
+            scales: {
+              x: {
+                ticks: {
+                  display: true, // Display X-axis values
+                  color: textColor, // Keep text color for ticks
+                  callback: function (value, index, ticks) {
+                    const label = this.getLabelForValue(value);
+                    return wrapLabel(label, 15); // Apply word wrap
+                  },
+                  autoSkip: false, // Prevent Chart.js from skipping labels
+                  maxRotation: 0, // Ensure labels are not rotated
+                  minRotation: 0, // Ensure labels are not rotated
+                },
+                grid: {
+                  color: gridColor, // Vertical grid lines kept visible
+                  drawBorder: true, // Ensure X-axis border line is drawn
+                },
+              },
+              y: {
+                beginAtZero: true,
+                stacked: true,
+                max: yMaxDestinadorChart, // Sets the maximum limit of the Y axis
+                ticks: {
+                  display: false, // Hides Y-axis values
+                  color: textColor,
+                  stepSize: yMaxDestinadorChart, // Only show tick at 0 and yMax
+                },
+                grid: {
+                  color: gridColor, // Horizontal grid lines visible
+                  drawBorder: true, // Ensures Y-axis border line is drawn
+                },
+              },
+            },
+          },
+        });
+
+        // 4. Gráfico de Resíduos por Transportador
+        const transportadorData = {};
+        storedData.forEach((item) => {
+          const transportador = item.razaoSocial1 || "Não Informado";
+          if (!transportadorData[transportador]) {
+            transportadorData[transportador] = { litros: 0, toneladas: 0 };
+          }
+          transportadorData[transportador].litros +=
+            parseFloat(item.litros.replace(",", ".")) || 0;
+          transportadorData[transportador].toneladas +=
+            parseFloat(item.toneladas.replace(",", ".")) || 0;
+        });
+
+        // Calculate combined values for each transportador for yMax calculation
+        const combinedTransportadorValues = Object.keys(transportadorData).map(
+          (t) =>
+            (transportadorData[t].litros || 0) +
+            (transportadorData[t].toneladas || 0)
+        );
+
+        // Filter transportadores to only include those with actual data
+        const filteredTransportadores = Object.keys(transportadorData)
+          .filter(
+            (t) =>
+              transportadorData[t].litros > 0 ||
+              transportadorData[t].toneladas > 0
+          )
+          .sort();
+
+        const transportadorLitros = filteredTransportadores.map(
+          (t) => transportadorData[t].litros
+        ); // Already numeric
+        const transportadorToneladas = filteredTransportadores.map(
+          (t) => transportadorData[t].toneladas
+        ); // Already numeric
+
+        const maxValueTransportadorChart =
+          combinedTransportadorValues.length > 0
+            ? Math.max(...combinedTransportadorValues)
+            : 0;
+        const yMaxTransportadorChart =
+          maxValueTransportadorChart > 0
+            ? maxValueTransportadorChart * 1.3
+            : 10; // Increased multiplier for label space
+
+        const ctxTransportador = document
+          .getElementById("transportadorChart")
+          .getContext("2d");
+        if (transportadorChart) transportadorChart.destroy();
+        transportadorChart = new Chart(ctxTransportador, {
+          type: "bar",
+          plugins: [ChartDataLabels],
+          data: {
+            labels: filteredTransportadores, // Use filtered transportadores for labels
+            datasets: [
+              {
+                label: "Litros",
+                data: transportadorLitros, // Corrected: Use actual data array
+                backgroundColor: litrosColorBg,
+                borderColor: litrosColorBorder,
+                borderWidth: 1,
+                stack: "TransportadorStack",
+              },
+              {
+                label: "Toneladas",
+                data: transportadorToneladas, // Corrected: Use actual data array
+                backgroundColor: toneladasColorBg,
+                borderColor: toneladasColorBorder,
+                borderWidth: 1,
+                stack: "TransportadorStack",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: {
+              // Added layout padding for the entire chart
+              padding: { right: 30 },
+            },
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  color: textColor,
+                },
+              },
+              title: {
+                display: true,
+                text: "Resíduos por Transportador",
+                color: textColor,
+                font: {
+                  size: 16,
+                  weight: "bold",
+                },
+              },
+              datalabels: {
+                anchor: "end",
+                align: "top",
+                formatter: (value) => {
+                  // Adjusted for parseFloat
+                  const numValue = parseFloat(value);
+                  return numValue > 0
+                    ? numValue.toFixed(2).replace(".", ",")
+                    : "";
+                },
+                color: textColor,
+                font: { weight: "bold", size: 10 },
+                offset: 20, // Increased offset for labels
+              },
+            },
+            scales: {
+              x: {
+                ticks: {
+                  display: true, // Display X-axis values
+                  color: textColor, // Keep text color for ticks
+                  callback: function (value, index, ticks) {
+                    const label = this.getLabelForValue(value);
+                    return wrapLabel(label, 15); // Apply word wrap
+                  },
+                  autoSkip: false, // Prevent Chart.js from skipping labels
+                  maxRotation: 0, // Ensure labels are not rotated
+                  minRotation: 0, // Ensure labels are not rotated
+                },
+                grid: {
+                  color: gridColor, // Vertical grid lines kept visible
+                  drawBorder: true, // Ensure X-axis border line is drawn
+                },
+              },
+              y: {
+                beginAtZero: true,
+                stacked: true,
+                ticks: {
+                  display: false, // Hides Y-axis values
+                  color: textColor,
+                  stepSize: yMaxTransportadorChart, // Only show tick at 0 and yMax
+                },
+                grid: {
+                  color: gridColor, // Horizontal grid lines visible
+                  drawBorder: true, // Ensures Y-axis border line is drawn
+                },
+              },
+            },
+          },
+        });
+      }
+
+      // Function to calculate and display summary cards
+      function updateSummaryCards() {
+        const totalMTRs = storedData.length;
+        const totalLitros = storedData.reduce(
+          (sum, item) => sum + (parseFloat(item.litros.replace(",", ".")) || 0),
+          0
+        );
+        const totalToneladas = storedData.reduce(
+          (sum, item) =>
+            sum + (parseFloat(item.toneladas.replace(",", ".")) || 0),
+          0
+        );
+
+        const uniqueDestinadores = new Set(
+          storedData
+            .map((item) => item.razaoSocial2)
+            .filter((name) => name && name !== "Não encontrada")
+        ).size;
+        const uniqueTransportadores = new Set(
+          storedData
+            .map((item) => item.razaoSocial1)
+            .filter((name) => name && name !== "Não encontrada")
+        ).size;
+
+        document.getElementById("totalMTRs").textContent = totalMTRs;
+        document.getElementById("totalLitros").textContent = totalLitros
+          .toFixed(2)
+          .replace(".", ",");
+        document.getElementById("totalToneladas").textContent = totalToneladas
+          .toFixed(2)
+          .replace(".", ",");
+        document.getElementById("uniqueDestinadores").textContent =
+          uniqueDestinadores;
+        document.getElementById("uniqueTransportadores").textContent =
+          uniqueTransportadores;
+      }
+
+      // Throttling function for resize events
+      function throttle(func, delay) {
+        let timeoutId;
+        return function (...args) {
+          if (!timeoutId) {
+            timeoutId = setTimeout(() => {
+              func.apply(this, args);
+              timeoutId = null;
+            }, delay);
+          }
+        };
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        // Register Chart.js plugins globally immediately after their scripts are loaded
+        Chart.register(ChartDataLabels);
+
+        applySavedTheme();
+
+        const themeToggleBtn = document.getElementById("themeToggle");
+        if (themeToggleBtn) {
+          themeToggleBtn.addEventListener("click", toggleTheme);
+        }
+
+        const backButton = document.getElementById("backButton");
+        if (backButton) {
+          backButton.addEventListener("click", redirectToMainPage);
+        }
+
+        const footerImage = document.getElementById("footerImage");
+        if (footerImage) {
+          footerImage.addEventListener("click", () =>
+            swapFooterImage(footerImage)
+          );
+        }
+
+        storedData = JSON.parse(localStorage.getItem("residuosData") || "[]");
+
+        if (storedData.length === 0) {
+          showAlertModal(
+            "Nenhum dado de resíduos disponível para o dashboard. Por favor, processe alguns PDFs na página inicial.",
+            "no_data"
+          );
+          // Optionally hide elements if no data
+          document.querySelector(".dashboard-container").style.display = "none";
+          document
+            .getElementById("typeDistributionChart")
+            .closest(".chart-card").style.display = "none";
+          document
+            .getElementById("monthlyTrendChart")
+            .closest(".chart-card").style.display = "none";
+          document
+            .getElementById("destinadorChart")
+            .closest(".chart-card").style.display = "none";
+          document
+            .getElementById("transportadorChart")
+            .closest(".chart-card").style.display = "none";
+        } else {
+          updateSummaryCards();
+          renderDashboardCharts();
+        }
+
+        // Add resize listener for chart responsiveness
+        window.addEventListener(
+          "resize",
+          throttle(() => {
+            renderDashboardCharts();
+          }, 200)
+        );
+      });
+    </script>
+  </body>
+</html>
