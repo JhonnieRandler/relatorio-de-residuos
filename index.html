@@ -1397,6 +1397,9 @@
 
         // Function to handle files from input or drag-and-drop
         async function handleFiles(source) {
+          let filesToProcess = []; // Moved declaration to the top
+          const uniqueFileIdentifiers = new Set(); // For deduplication
+
           console.log("handleFiles called.");
           const textOutput = document.getElementById("textOutput");
           const errorDiv = document.getElementById("error");
@@ -1420,9 +1423,6 @@
           if (progressIndicator) {
             progressIndicator.innerHTML = `<span>Carregando 0 de ${filesToProcess.length} arquivos...</span><span>(Aguarde...)</span>`;
           }
-
-          let filesToProcess = [];
-          const uniqueFileIdentifiers = new Set(); // For deduplication
 
           // Function to add a file to filesToProcess if it's unique
           function addFileIfUnique(file) {
