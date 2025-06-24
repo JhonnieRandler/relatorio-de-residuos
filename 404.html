@@ -3,32 +3,33 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>404 - Página Não Encontrada</title>
+    <title>Página Não Encontrada - 404</title>
     <!-- Metadados para SEO e Descrição da Página -->
     <meta
       name="description"
-      content="Página não encontrada para a ferramenta de gestão de resíduos."
+      content="Página de erro 404 personalizada para o site de gestão de resíduos. Ajuda a guiar o usuário de volta ao site principal."
     />
     <meta name="author" content="Jhon Randler" />
     <meta
       name="keywords"
-      content="404, página não encontrada, erro, gestão de resíduos, MTR"
+      content="erro 404, página não encontrada, resíduos, MTR, gestão, capivara, jacaré"
     />
 
-    <!-- Open Graph Metadados para Redes Sociais -->
-    <meta property="og:title" content="404 - Página Não Encontrada" />
+    <!-- Open Graph Metadados para Redes Sociais (Facebook, WhatsApp, LinkedIn) -->
+    <meta property="og:title" content="Página Não Encontrada - 404" />
     <meta
       property="og:description"
-      content="Página não encontrada para a ferramenta de gestão de resíduos."
+      content="Parece que a capivara do nosso servidor pegou o jacaré errado e não conseguiu encontrar a página que você procura. Não se preocupe, isso acontece com os melhores!"
     />
     <meta property="og:type" content="website" />
     <meta
       property="og:url"
       content="https://jhonnierandler.github.io/relatorio-de-residuos/404.html"
     />
+    <!-- IMPORTANTE: Usar URL absoluta para a imagem para funcionar no WhatsApp e outras plataformas -->
     <meta
       property="og:image"
-      content="https://jhonnierandler.github.io/relatorio-de-residuos/footer.png"
+      content="https://jhonnierandler.github.io/relatorio-de-residuos/doubt.png"
     />
     <meta property="og:image:width" content="408" />
     <meta property="og:image:height" content="408" />
@@ -36,14 +37,14 @@
 
     <!-- Twitter Card Metadados -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="404 - Página Não Encontrada" />
+    <meta name="twitter:title" content="Página Não Encontrada - 404" />
     <meta
       name="twitter:description"
-      content="Página não encontrada para a ferramenta de gestão de resíduos."
+      content="Parece que a capivara do nosso servidor pegou o jacaré errado e não conseguiu encontrar a página que você procura. Não se preocupe, isso acontece com os melhores!"
     />
     <meta
       name="twitter:image"
-      content="https://jhonnierandler.github.io/relatorio-de-residuos/footer.png"
+      content="https://jhonnierandler.github.io/relatorio-de-residuos/doubt.png"
     />
     <meta name="twitter:creator" content="@JhonnieRandler" />
 
@@ -52,57 +53,110 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-    <!-- Link para o CSS centralizado -->
     <link rel="stylesheet" href="style.css" />
-    <!-- Preload das imagens para carregamento mais rápido -->
-    <link rel="preload" as="image" href="doubt.png" />
-    <link rel="preload" as="image" href="footer.png" />
-    <link rel="preload" as="image" href="blink.png" />
-    <link rel="preload" as="image" href="like.png" />
-    <link rel="preload" as="image" href="point.png" />
-    <link rel="preload" as="image" href="sure.png" />
-    <!-- Preload do áudio -->
-    <link rel="preload" as="audio" href="blink.mp3" />
     <style>
-      /* Estilos específicos da página 404 */
-      main {
+      /* Ajuste para que o main ocupe o espaço restante e o rodapé fique no final */
+      body {
         display: flex;
         flex-direction: column;
-        justify-content: center;
-        align-items: center;
-      }
-      h1 {
-        font-size: 3em;
-      }
-      p {
-        font-size: 1.2em;
-        margin-bottom: 20px;
+        min-height: 100vh;
       }
 
-      /* Media queries específicas da página 404 */
-      @media screen and (max-width: 600px) {
-        h1 {
-          font-size: 24px;
-        }
-        p {
-          font-size: 1em;
-        }
+      main {
+        flex: 1; /* Permite que o main ocupe o espaço restante */
+        display: flex; /* Para centralizar o conteúdo dentro do main */
+        flex-direction: column;
+        justify-content: center; /* Centers content vertically in main */
+        align-items: center; /* Centers content horizontally in main */
+        padding: 30px; /* Mantém o preenchimento */
+        box-sizing: border-box;
+
+        background-color: var(--card-bg-color);
+        border-radius: 12px;
+        text-align: center; /* Centraliza o texto e elementos inline */
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        margin: 20px auto; /* Adiciona margens e centraliza o main horizontalmente */
+        max-width: var(
+          --max-width
+        ); /* Garante que o main siga a largura máxima do site */
+        width: 100%; /* Ocupa toda a largura disponível */
+      }
+
+      /* Estilos para o cabeçalho específico da página 404 quando dentro do main */
+      main .header-controls {
+        /* Targeting header-controls when it's a child of main */
+        display: flex;
+        justify-content: center; /* CHANGE: Centers the title and button together */
+        align-items: center; /* Ensures vertical centering of title and button */
+        width: 100%; /* Ensures it takes full width of main */
+        margin-bottom: 20px; /* Space between the header and the image/text */
+        padding: 0;
+        box-sizing: border-box;
+      }
+      main .header-controls h1 {
+        /* Targeting h1 inside this specific header-controls */
+        font-size: 2.5em;
+        color: var(--primary-color);
+        margin: 0; /* Remove default margin */
+        margin-right: 15px; /* Add some space between title and button */
+      }
+
+      main img {
+        max-width: 150px;
+        height: auto;
+        border-radius: 8px;
+        margin-top: 20px; /* Espaçamento após o cabeçalho */
+      }
+
+      main p {
+        font-size: 1.1em;
+        color: var(--text-color);
+        line-height: 1.6;
+        margin-top: 20px;
+      }
+
+      main button {
+        /* This applies to the "Voltar" button */
+        background-color: var(--button-bg-color);
+        color: var(--button-text-color);
+        padding: 12px 25px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1em;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 20px;
+      }
+
+      main button:hover {
+        background-color: var(--button-hover-bg-color);
+        transform: translateY(-2px);
       }
     </style>
   </head>
   <body>
     <main>
       <div class="header-controls">
-        <h1>404 - Página Não Encontrada</h1>
+        <h1 class="main-title">Página Não Encontrada - 404</h1>
         <button id="themeToggle" class="theme-toggle-button">
           <i class="fas fa-moon"></i>
         </button>
       </div>
-      <p>A página que você está procurando não existe ou foi movida.</p>
-      <button onclick="redirectToMainPage()">
-        <i class="fas fa-home"></i> Ir para a Página Inicial
+
+      <img src="doubt.png" alt="Capivara Confusa" />
+      <p>
+        Parece que a capivara do nosso servidor pegou o jacaré errado e não
+        conseguiu encontrar a página que você procura. Não se preocupe, isso
+        acontece com os melhores!
+      </p>
+      <button onclick="window.location.href='index.html'">
+        <i class="fas fa-home"></i> Voltar para a Página Inicial
       </button>
     </main>
+
     <footer>
       <img id="footerImage" src="footer.png" alt="Footer Image" />
       <p>
@@ -158,29 +212,12 @@
         }
       }
 
-      // Função para redirecionar para a página principal, adaptando-se ao ambiente
-      function redirectToMainPage() {
-        const isLocal =
-          window.location.hostname === "127.0.0.1" ||
-          window.location.hostname === "localhost";
-
-        if (isLocal) {
-          // Para desenvolvimento local, assume que a página principal está na raiz do servidor
-          window.location.href = window.location.origin + "/";
-        } else {
-          // Para GitHub Pages, usa o caminho absoluto do projeto
-          // Aqui, ajustamos o caminho para subir um nível se a 404.html estiver em um subdiretório.
-          // Se 404.html estiver na raiz, a URL base já será suficiente.
-          window.location.href =
-            "https://jhonnierandler.github.io/relatorio-de-residuos/";
-        }
-      }
-
       // Função para trocar a imagem do rodapé e reproduzir áudio
       function swapFooterImage(imgElement) {
         const originalSrc = imgElement.src;
-        // Ajusta o caminho do blink.png para a 404.html (assumindo que 404.html está na raiz, assim como footer.png e blink.png)
-        const blinkSrc = originalSrc.replace("footer.png", "blink.png");
+        const blinkSrc = originalSrc.includes("footer.png")
+          ? originalSrc.replace("footer.png", "blink.png")
+          : "blink.png";
         const audio = document.getElementById("blinkAudio");
 
         imgElement.src = blinkSrc;
@@ -196,14 +233,13 @@
       }
 
       document.addEventListener("DOMContentLoaded", () => {
-        applySavedTheme(); // Aplica o tema salvo ao carregar a página
+        applySavedTheme();
 
         const themeToggleBtn = document.getElementById("themeToggle");
         if (themeToggleBtn) {
           themeToggleBtn.addEventListener("click", toggleTheme);
         }
 
-        // Adiciona listener para a imagem do rodapé APÓS o DOM estar pronto
         const footerImage = document.getElementById("footerImage");
         if (footerImage) {
           footerImage.addEventListener("click", () =>
