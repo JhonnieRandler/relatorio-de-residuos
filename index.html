@@ -385,10 +385,19 @@
             >0</span
           >)
         </button>
+        <!-- Botão para o Dashboard (texto alterado) -->
         <button
           class="history-button"
-          id="historyButton"
-          onclick="window.location.href='historico/'"
+          id="dashboardLinkButton"
+          onclick="window.location.href='dashboard/index.html'"
+        >
+          <i class="fas fa-chart-bar"></i> Dashboard
+        </button>
+        <!-- Novo botão para o Histórico (texto alterado) -->
+        <button
+          class="history-button"
+          id="historicalRecordsButton"
+          onclick="window.location.href='historico/index.html'"
         >
           <i class="fas fa-history"></i> Histórico
         </button>
@@ -1429,7 +1438,7 @@
             const fileLastModified =
               typeof file.lastModified === "number" ? file.lastModified : 0;
 
-            const identifier = `${file.name}-${fileSize}-${fileLastModified}`;
+            const identifier = `${file.name}-${fileSize}-${file.lastModified}`;
 
             if (!uniqueFileIdentifiers.has(identifier)) {
               filesToProcess.push(file);
@@ -1577,7 +1586,7 @@
 
           // Update progress indicator before starting the loop
           if (progressIndicator) {
-            progressIndicator.innerHTML = `<span>Processando 0 de ${filesToProcess.length} arquivos...</span><span>(Aguarde...)</span>`;
+            progressIndicator.innerHTML = `<span>Carregando 0 de ${filesToProcess.length} arquivos...</span><span>(Aguarde...)</span>`;
           }
 
           for (const file of filesToProcess) {
@@ -1924,8 +1933,13 @@
           const toggleEditModeBtn =
             document.getElementById("toggleEditModeBtn"); // Editar Tabela / Encerrar Edição
           const batchEditBtn = document.getElementById("batchEditBtn"); // Edição em Lote
-          const historyButton = document.getElementById("historyButton"); // Histórico
-          const copyTableDataBtn = document.getElementById("copyTableDataBtn"); // Novo: Botão Copiar Dados
+          const dashboardLinkButton = document.getElementById(
+            "dashboardLinkButton"
+          ); // Botão Dashboard
+          const historicalRecordsButton = document.getElementById(
+            "historicalRecordsButton"
+          ); // Botão Histórico
+          const copyTableDataBtn = document.getElementById("copyTableDataBtn"); // Botão Copiar Dados
 
           // Atualiza as contagens exibidas nos botões
           if (selectedCountSpan)
@@ -1980,19 +1994,28 @@
             }
           }
 
-          // --- Lógica para o Botão "Histórico" ---
-          if (historyButton) {
-            // O botão "Histórico" é mostrado se há dados no armazenamento local
-            // E a página NÃO está no modo de edição direta da tabela
-            // E não há itens atualmente selecionados (para evitar conflito com ações em massa).
+          // --- Lógica para o Botão "Dashboard" e "Histórico" ---
+          if (dashboardLinkButton) {
             if (
               hasStoredDataInLocalStorage &&
               !isEditModeActive &&
               !hasSelectedItems
             ) {
-              historyButton.style.display = "inline-block";
+              dashboardLinkButton.style.display = "inline-block";
             } else {
-              historyButton.style.display = "none";
+              dashboardLinkButton.style.display = "none";
+            }
+          }
+
+          if (historicalRecordsButton) {
+            if (
+              hasStoredDataInLocalStorage &&
+              !isEditModeActive &&
+              !hasSelectedItems
+            ) {
+              historicalRecordsButton.style.display = "inline-block";
+            } else {
+              historicalRecordsButton.style.display = "none";
             }
           }
 
@@ -2173,7 +2196,7 @@
 
             localStorage.setItem("residuosData", JSON.stringify(storedData));
             bulkEditModal.style.display = "none";
-            selectedMTRs.clear(); // Clear selection
+            selectedMTRs.clear(); // Limpa seleção após a ação
             renderTable(currentTableData); // Re-render to reflect changes
             showAlertModal(
               `${changesMade} MTR(s) tiveram o grupo atualizado.`,
