@@ -1435,14 +1435,18 @@
             batchEditCountSpan.textContent = selectedMTRs.size;
         }
 
+        const hasStoredData = storedData.length > 0;
+
         // Visibilidade do botão "Editar Tabela"
         if (toggleEditModeBtn) {
-          if (selectedMTRs.size > 0) {
-            // Se algum MTR estiver selecionado, oculta "Editar Tabela"
-            toggleEditModeBtn.style.display = "none";
-          } else {
-            // Caso contrário, mostra-o
+          if (hasStoredData && selectedMTRs.size === 0) {
+            // Mostra se há dados e nenhum item está selecionado
             toggleEditModeBtn.style.display = "inline-block";
+          } else if (isEditModeActive) {
+            // Mantém visível se já estiver no modo de edição (para o botão "Encerrar Edição")
+            toggleEditModeBtn.style.display = "inline-block";
+          } else {
+            toggleEditModeBtn.style.display = "none";
           }
         }
 
@@ -1492,7 +1496,7 @@
           // O botão de "Voltar" e o "Theme Toggle" permanecem visíveis
         } else {
           // Quando não está no modo de edição, restaura a visibilidade baseada na existência de dados
-          if (storedData.length > 0) {
+          if (hasStoredData) {
             if (clearButton) clearButton.style.display = "inline-block";
             if (downloadButton) downloadButton.style.display = "inline-block";
             if (copyButton) copyButton.style.display = "inline-block";
@@ -1520,8 +1524,7 @@
         // Controla a margem do botão de "Voltar"
         if (backButton) {
           backButton.style.margin =
-            storedData.length > 0 &&
-            !(isEditModeActive && selectedMTRs.size > 0)
+            hasStoredData && !(isEditModeActive && selectedMTRs.size > 0)
               ? "5px"
               : "0 auto";
         }
