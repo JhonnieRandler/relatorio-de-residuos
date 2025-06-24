@@ -935,13 +935,14 @@
             { header: "TONELADAS", key: "toneladas" },
           ];
 
-          // Add headers
-          const headerTexts = columnsToCopy.map((col) => col.header);
-          clipboardText += headerTexts.join("\t") + "\n";
+          // NÃO adiciona os cabeçalhos à string de cópia.
+          // Comentado para evitar copiar os cabeçalhos:
+          // const headerTexts = columnsToCopy.map((col) => col.header);
+          // clipboardText += headerTexts.join("\t") + "\n";
 
-          // Add rows
+          // Adiciona as linhas, mapeando apenas as colunas desejadas
           currentTableData.forEach((item) => {
-            const rowData = columnsToCopy.map((col) => item[col.key] || ""); // Use the actual data object
+            const rowData = columnsToCopy.map((col) => item[col.key] || ""); // Usa o objeto de dados real
             clipboardText += rowData.join("\t") + "\n";
           });
 
