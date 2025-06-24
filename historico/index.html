@@ -491,12 +491,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <script>
       let sortDirection = {};
-      let currentSortColumn = null; // Coluna atualmente ordenada
-      let currentSortDirection = "asc"; // Direção atual da ordenação ('asc' ou 'desc')
-      let storedData = []; // Declarado aqui, será inicializado em DOMContentLoaded
-      let isTableVisible = true; // Estado para a visibilidade da tabela
-      let selectedMTRs = new Set(); // Para armazenar os IDs dos MTRs selecionados
-      let isEditModeActive = false; // Novo: Estado do modo de edição
+      let currentSortColumn = null;
+      let currentSortDirection = "asc";
+      let storedData = [];
+      let isTableVisible = true;
+      let selectedMTRs = new Set();
+      let isEditModeActive = false;
 
       // Mapeamento de nomes de colunas para chaves de dados (não usado diretamente para render, mas para referência)
       const columnKeys = {
@@ -931,7 +931,7 @@
             column === "mtrFormatted" ||
             column === "mtrRef"
           ) {
-            // Remove o prefixo "MTR nº: " para MTR e trata vírgula como separador decimal para números
+            // Remove o prefixo "MTR nº: " para MTR, e trata vírgula como separador decimal para números
             if (column === "mtrFormatted")
               valA = String(valA).replace("MTR nº: ", "");
             if (column === "mtrFormatted")
@@ -1676,6 +1676,19 @@
           bulkEditGroupInput.focus();
         });
 
+        // Adiciona listeners para Enter e Esc no input do modal de edição de grupo
+        if (bulkEditGroupInput) {
+          bulkEditGroupInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              bulkEditModalSaveBtn.click();
+            } else if (e.key === "Escape") {
+              e.preventDefault();
+              bulkEditModalCancelBtn.click();
+            }
+          });
+        }
+
         bulkEditModalSaveBtn.addEventListener("click", () => {
           const newGroup = bulkEditGroupInput.value.trim();
           let changesMade = 0;
@@ -1795,6 +1808,19 @@
             } else {
               batchEditValueInput.style.display = "none";
               batchEditValueInput.value = "";
+            }
+          });
+        }
+
+        // Adiciona listeners para Enter e Esc no input do modal de edição em lote
+        if (batchEditValueInput) {
+          batchEditValueInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              batchEditModalSaveBtn.click();
+            } else if (e.key === "Escape") {
+              e.preventDefault();
+              batchEditModalCancelBtn.click();
             }
           });
         }
