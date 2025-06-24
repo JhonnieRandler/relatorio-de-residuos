@@ -188,11 +188,144 @@
         text-align: center;
       }
       /* Estilo específico para o botão de cancelar no modal de confirmação */
-      #folderModalCancelBtn {
+      #folderModalCancelBtn,
+      #bulkEditModalCancelBtn,
+      #batchEditModalCancelBtn {
         background-color: #f44336;
       }
-      #folderModalCancelBtn:hover {
+      #folderModalCancelBtn:hover,
+      #bulkEditModalCancelBtn:hover,
+      #batchEditModalCancelBtn:hover {
         background-color: #d32f2f;
+      }
+
+      /* Novo estilo para o botão de edição em lote */
+      .action-button {
+        display: none; /* Escondido por padrão, mostrado com JS */
+      }
+      .action-button.active {
+        display: inline-block;
+      }
+
+      /* Estilo para a célula editável */
+      .editable-table-input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 4px;
+        border: 1px solid var(--input-border-color);
+        border-radius: 4px;
+        background-color: var(--button-bg-color);
+        color: var(--button-text-color);
+      }
+
+      /* Estilo para o input e select do modal de edição em massa */
+      .editable-input,
+      .editable-select {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 8px; /* Ajustado para 8px para consistência com filter-input */
+        border: 1px solid var(--input-border-color);
+        border-radius: 8px; /* Ajustado para 8px para consistência com filter-input */
+        background-color: var(--button-bg-color);
+        color: var(--button-text-color);
+        outline: none;
+        margin-top: 10px; /* Adicionado margem superior */
+      }
+
+      /* Estilo para o checkbox da tabela (linhas individuais) */
+      .row-checkbox {
+        margin: 0;
+        vertical-align: middle;
+        width: 18px; /* Tamanho fixo */
+        height: 18px; /* Tamanho fixo */
+        appearance: none; /* Remove o estilo padrão do navegador */
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        border: 2px solid var(--input-border-color);
+        border-radius: 4px;
+        background-color: var(--button-bg-color);
+        cursor: pointer;
+        position: relative;
+        display: inline-block; /* Para centralizar com text-align */
+      }
+
+      .row-checkbox:checked {
+        background-color: var(
+          --button-hover-bg-color
+        ); /* Cor de fundo quando marcado */
+        border-color: var(
+          --button-hover-bg-color
+        ); /* Cor da borda quando marcado */
+      }
+
+      .row-checkbox:checked::after {
+        content: "\2713"; /* Sinal de 'check' */
+        color: var(--button-hover-text-color); /* Cor do sinal de check */
+        font-size: 14px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      /* Estilo para o checkbox de "selecionar todos" no cabeçalho */
+      #selectAllCheckbox {
+        margin: 0;
+        vertical-align: middle;
+        width: 18px; /* Tamanho fixo */
+        height: 18px; /* Tamanho fixo */
+        appearance: none; /* Remove o estilo padrão do navegador */
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        border: 2px solid var(--input-border-color);
+        border-radius: 4px;
+        background-color: var(--button-bg-color);
+        cursor: pointer;
+        position: relative;
+        display: inline-block; /* Para centralizar com text-align */
+      }
+
+      #selectAllCheckbox:checked {
+        background-color: var(
+          --button-hover-bg-color
+        ); /* Cor de fundo quando marcado */
+        border-color: var(
+          --button-hover-bg-color
+        ); /* Cor da borda quando marcado */
+      }
+
+      #selectAllCheckbox:checked::after {
+        content: "\2713"; /* Sinal de 'check' */
+        color: var(--button-hover-text-color); /* Cor do sinal de check */
+        font-size: 14px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      /* Centraliza o conteúdo das colunas de checkbox e Nº */
+      .checkbox-column,
+      .number-column {
+        text-align: center;
+      }
+
+      /* Sobrescrita de estilos para o header-controls na página index.html */
+      /* Garante que o header-controls dentro do main use justify-content: center */
+      main .header-controls {
+        display: flex;
+        justify-content: center; /* Alinha o conteúdo ao centro */
+        align-items: center; /* Centraliza verticalmente os itens */
+        width: 100%;
+        margin-bottom: 20px;
+        padding: 10px 0; /* Ajuste o padding conforme necessário */
+        box-sizing: border-box;
+      }
+
+      /* Espaçamento entre o título e o botão de tema */
+      main .header-controls h1 {
+        margin-right: 15px; /* Adiciona espaço à direita do título */
+        white-space: nowrap; /* Impede quebra de linha do título */
       }
 
       /* Media queries específicas da página inicial */
@@ -227,13 +360,39 @@
         </label>
         <input type="file" id="pdfInput" accept="application/pdf" multiple />
       </div>
-      <button
-        class="history-button"
-        id="historyButton"
-        onclick="window.location.href='historico/'"
-      >
-        <i class="fas fa-history"></i> Histórico
-      </button>
+      <div class="buttons" id="mainPageButtons">
+        <!-- New buttons for edit mode will go here -->
+        <button id="toggleEditModeBtn">
+          <i class="fas fa-edit"></i> Editar Tabela
+        </button>
+        <button id="copyTableDataBtn" class="action-button">
+          <i class="fas fa-copy"></i> Copiar Dados
+        </button>
+        <button id="batchEditBtn" class="action-button">
+          <i class="fas fa-layer-group"></i> Edição em Lote (<span
+            id="batchEditCount"
+            >0</span
+          >)
+        </button>
+        <button id="editSelectedBtn" class="action-button">
+          <i class="fas fa-edit"></i> Editar Grupo (<span id="selectedCount"
+            >0</span
+          >)
+        </button>
+        <button id="deleteSelectedBtn" class="action-button">
+          <i class="fas fa-trash"></i> Excluir Selecionados (<span
+            id="deleteSelectedCount"
+            >0</span
+          >)
+        </button>
+        <button
+          class="history-button"
+          id="historyButton"
+          onclick="window.location.href='historico/'"
+        >
+          <i class="fas fa-history"></i> Histórico
+        </button>
+      </div>
       <div id="textOutput"></div>
       <div id="progressIndicator"></div>
       <!-- Novo elemento para o indicador de progresso -->
@@ -288,16 +447,78 @@
       </div>
     </div>
 
+    <!-- Modal de Edição em Massa de Grupo (antigo) -->
+    <div id="bulkEditModal" class="modal-overlay">
+      <div class="modal-content">
+        <img
+          id="bulkEditModalImage"
+          src="point.png"
+          alt="Ícone de Edição em Massa"
+          class="modal-image"
+        />
+        <p id="bulkEditModalMessage">
+          Editar Grupo para <span id="bulkEditSelectedCount">0</span> MTR(s):
+        </p>
+        <input
+          type="text"
+          id="bulkEditGroupInput"
+          class="editable-input"
+          placeholder="Nome do Grupo"
+        />
+        <div class="modal-buttons">
+          <button id="bulkEditModalSaveBtn">Salvar</button>
+          <button id="bulkEditModalCancelBtn">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Novo Modal de Edição em Lote (genérico) -->
+    <div id="batchEditBatchModal" class="modal-overlay">
+      <div class="modal-content">
+        <img
+          id="batchEditModalImage"
+          src="point.png"
+          alt="Ícone de Edição em Lote"
+          class="modal-image"
+        />
+        <p id="batchEditModalMessage">
+          Editar <span id="batchEditCountModal">0</span> MTR(s) selecionado(s):
+        </p>
+        <select id="batchEditFieldSelect" class="editable-select">
+          <option value="">Selecione o campo para editar</option>
+          <option value="razaoSocial1">TRANSPORTADOR</option>
+          <option value="razaoSocial2">DESTINADOR</option>
+          <option value="tipo">TIPO</option>
+          <option value="litros">LITROS</option>
+          <option value="toneladas">TONELADAS</option>
+          <option value="grupo">GRUPO</option>
+        </select>
+        <input
+          type="text"
+          id="batchEditValueInput"
+          class="editable-input"
+          placeholder="Nova informação"
+          style="display: none"
+        />
+        <div class="modal-buttons">
+          <button id="batchEditModalSaveBtn">Salvar</button>
+          <button id="batchEditModalCancelBtn">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script>
       // Configura o worker do PDF.js
       pdfjsLib.GlobalWorkerOptions.workerSrc =
         "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js";
 
-      // Variáveis globais para ordenação
+      // Variáveis globais para ordenação e edição
       let currentTableData = []; // Stores the data currently displayed in the table
       let currentSortColumn = null;
       let currentSortDirection = "asc"; // 'asc' for ascending, 'desc' for descending
+      let selectedMTRs = new Set(); // Para armazenar os IDs dos MTRs selecionados na página inicial
+      let isEditModeActive = false; // Novo: Estado do modo de edição na página inicial
 
       // Mapeamento de nomes de colunas para chaves de dados
       const columnKeys = {
@@ -309,6 +530,7 @@
         TICKET: "mtrRef",
         LITROS: "litros",
         TONELADAS: "toneladas",
+        GRUPO: "grupo", // Adicionado para edição
       };
 
       // Função para alternar o tema
@@ -393,7 +615,7 @@
 
         // Função para exibir modais de alerta com imagem (para erros e mensagens gerais)
         function showAlertModal(message, type) {
-          // type: 'success', 'exists', 'no_data', 'error'
+          // type: 'success', 'exists', 'no_data', 'error', 'info'
           const modal = document.getElementById("customAlertModal");
           const alertMessage = document.getElementById("alertMessage");
           const alertModalImage = document.getElementById("alertModalImage");
@@ -406,9 +628,9 @@
           if (type === "success") {
             imagePath = "like.png";
             if (okBtn) okBtn.style.backgroundColor = "#4CAF50"; // Verde para sucesso
-          } else if (type === "exists") {
-            imagePath = "point.png";
-            if (okBtn) okBtn.style.backgroundColor = "#FFA000"; // Laranja para "já existente"
+          } else if (type === "exists" || type === "info") {
+            imagePath = "point.png"; // Usar 'point.png' para "já existente" e "info"
+            if (okBtn) okBtn.style.backgroundColor = "#FFA000"; // Laranja para "já existente" / info
           } else if (type === "no_data" || type === "error") {
             imagePath = "doubt.png";
             if (okBtn) okBtn.style.backgroundColor = "#f44336"; // Vermelho para erro/falha
@@ -606,6 +828,8 @@
             extracted.toneladas =
               extracted.estadoFisico === "SÓLIDO" ? quantidade : "";
           }
+          // Garante que a propriedade `grupo` exista e seja inicializada vazia
+          extracted.grupo = "";
 
           if (
             extracted.toneladas &&
@@ -691,6 +915,49 @@
           }
         }
 
+        // Função para copiar os dados da tabela para a área de transferência
+        function copyTableDataToClipboard() {
+          if (currentTableData.length === 0) {
+            showAlertModal("Nenhum dado na tabela para copiar.", "no_data");
+            return;
+          }
+
+          let clipboardText = "";
+          // Define the columns to include and their order (excluding 'grupo')
+          const columnsToCopy = [
+            { header: "DATA", key: "dataEmissao" },
+            { header: "MTR", key: "mtrFormatted" },
+            { header: "TRANSPORTADOR", key: "razaoSocial1" },
+            { header: "DESTINADOR", key: "razaoSocial2" },
+            { header: "TIPO", key: "tipo" },
+            { header: "TICKET", key: "mtrRef" },
+            { header: "LITROS", key: "litros" },
+            { header: "TONELADAS", key: "toneladas" },
+          ];
+
+          // Add headers
+          const headerTexts = columnsToCopy.map((col) => col.header);
+          clipboardText += headerTexts.join("\t") + "\n";
+
+          // Add rows
+          currentTableData.forEach((item) => {
+            const rowData = columnsToCopy.map((col) => item[col.key] || ""); // Use the actual data object
+            clipboardText += rowData.join("\t") + "\n";
+          });
+
+          if (copyToClipboard(clipboardText)) {
+            showAlertModal(
+              "Dados da tabela copiados para a área de transferência!",
+              "success"
+            );
+          } else {
+            showAlertModal(
+              "Falha ao copiar os dados para a área de transferência. Por favor, tente novamente.",
+              "error"
+            );
+          }
+        }
+
         /**
          * Reads entries from a directory recursively.
          * @param {FileSystemDirectoryEntry} directoryEntry The directory entry to read.
@@ -746,106 +1013,290 @@
           });
         }
 
+        // Função para salvar alterações de célula individual (na página inicial)
+        function saveIndividualCellChange(e) {
+          console.log("saveIndividualCellChange called.");
+          const input = e.target;
+          const mtrId = input.dataset.mtrId;
+          const dateId = input.dataset.dateId;
+          const columnKey = input.dataset.columnKey;
+          const newValue = input.value.trim();
+
+          // Encontra o item em currentTableData
+          const itemIndex = currentTableData.findIndex(
+            (item) => item.mtrFormatted === mtrId && item.dataEmissao === dateId
+          );
+
+          if (itemIndex > -1) {
+            const originalValue = currentTableData[itemIndex][columnKey];
+            if (originalValue !== newValue) {
+              // Validação para campos numéricos
+              if (columnKey === "litros" || columnKey === "toneladas") {
+                const parsedValue = parseFloat(newValue.replace(",", "."));
+                if (isNaN(parsedValue)) {
+                  showAlertModal(
+                    `Valor inválido para ${columnKey}. Por favor, insira um número.`,
+                    "error"
+                  );
+                  input.value = originalValue; // Reverte o valor do input
+                  return;
+                }
+                currentTableData[itemIndex][columnKey] = newValue; // Salva como string com vírgula
+              } else {
+                currentTableData[itemIndex][columnKey] = newValue;
+              }
+
+              // Atualiza também o localStorage
+              let storedData = JSON.parse(
+                localStorage.getItem("residuosData") || "[]"
+              );
+              const storedItemIndex = storedData.findIndex(
+                (item) =>
+                  item.mtrFormatted === mtrId && item.dataEmissao === dateId
+              );
+              if (storedItemIndex > -1) {
+                storedData[storedItemIndex][columnKey] =
+                  currentTableData[itemIndex][columnKey];
+                localStorage.setItem(
+                  "residuosData",
+                  JSON.stringify(storedData)
+                );
+                console.log(
+                  `Dados salvos no localStorage para MTR ${mtrId}, coluna ${columnKey}.`
+                );
+              } else {
+                console.warn(
+                  `Item não encontrado no localStorage para MTR ${mtrId}, coluna ${columnKey}.`
+                );
+              }
+
+              showAlertModal(
+                `Campo '${columnKey}' atualizado para '${newValue}'.`,
+                "success"
+              );
+              // No need to re-render the whole table here, just update the cell value
+              // renderTable(currentTableData); // Removed to avoid losing focus if many edits are made
+            }
+          } else {
+            console.warn(
+              `Item não encontrado em currentTableData para MTR ${mtrId}.`
+            );
+          }
+        }
+
+        // Função para alternar o modo de edição (na página inicial)
+        function toggleEditMode() {
+          console.log(
+            "toggleEditMode called. isEditModeActive before:",
+            isEditModeActive
+          );
+          isEditModeActive = !isEditModeActive;
+          const toggleEditModeBtn =
+            document.getElementById("toggleEditModeBtn");
+          if (toggleEditModeBtn) {
+            if (isEditModeActive) {
+              toggleEditModeBtn.innerHTML =
+                '<i class="fas fa-check"></i> Encerrar Edição';
+              showAlertModal(
+                "Modo de edição ativado. Clique nas células para editar.",
+                "info"
+              );
+            } else {
+              toggleEditModeBtn.innerHTML =
+                '<i class="fas fa-edit"></i> Editar Tabela';
+              // No need to show alert here, as changes are saved on blur/enter.
+              // showAlertModal("Modo de edição desativado. Alterações salvas.", "success");
+            }
+          }
+          renderTable(currentTableData); // Re-renderiza a tabela para aplicar/remover inputs editáveis
+          updateActionButtonsVisibility(); // Ajusta a visibilidade de outros botões
+          console.log(
+            "toggleEditMode finished. isEditModeActive after:",
+            isEditModeActive
+          );
+        }
+
         /**
          * Renders the data in the table.
          * @param {Array<Object>} dataToRender The array of MTR objects to display.
          */
         function renderTable(dataToRender) {
+          // console.log("renderTable called with dataToRender.length:", dataToRender.length); // Removed log
           const textOutput = document.getElementById("textOutput");
+          currentTableData = dataToRender; // Update the global variable
+          selectedMTRs.clear(); // Clear selections on re-render
+
           if (dataToRender.length === 0) {
             if (textOutput) textOutput.innerHTML = "";
+            updateActionButtonsVisibility(); // Important: update buttons if table becomes empty
             return;
           }
 
+          // Define a ordem e as chaves para as colunas da tabela
+          const orderedColumnKeys = [
+            { header: "DATA", key: "dataEmissao" },
+            { header: "MTR", key: "mtrFormatted" },
+            { header: "TRANSPORTADOR", key: "razaoSocial1" },
+            { header: "DESTINADOR", key: "razaoSocial2" },
+            { header: "TIPO", key: "tipo" },
+            { header: "TICKET", key: "mtrRef" },
+            { header: "LITROS", key: "litros" },
+            { header: "TONELADAS", key: "toneladas" },
+            { header: "GRUPO", key: "grupo" }, // Adicionado para edição
+          ];
+
+          let tableHeadersHtml = `
+              <th class="checkbox-column"><input type="checkbox" id="selectAllCheckbox"></th>
+              <th class="number-column">Nº</th>
+          `;
+          orderedColumnKeys.forEach((col) => {
+            tableHeadersHtml += `<th data-column="${col.key}">${col.header} <span class="sort-arrow"></span></th>`;
+          });
+
           let tableRows = dataToRender
-            .map(
-              (data, index) => `
-                <tr>
-                  <td>${index + 1}</td> <!-- Índice visual da linha -->
-                  <td>${data.dataEmissao}</td>
-                  <td>${data.mtrFormatted}</td>
-                  <td>${data.razaoSocial1}</td>
-                  <td>${data.razaoSocial2}</td>
-                  <td>${data.tipo}</td>
-                  <td>${data.mtrRef}</td>
-                  <td>${data.litros}</td>
-                  <td>${data.toneladas}</td>
-                </tr>
-              `
-            )
+            .map((data, index) => {
+              let cellsHtml = "";
+              // Coluna do Checkbox
+              cellsHtml += `<td class="checkbox-column"><input type="checkbox" class="row-checkbox" data-mtr-id="${data.mtrFormatted}" data-date-id="${data.dataEmissao}"></td>`;
+              // Coluna do Número
+              cellsHtml += `<td class="number-column">${index + 1}</td>`;
+
+              orderedColumnKeys.forEach((col) => {
+                let cellContent = data[col.key] || "";
+                if (isEditModeActive) {
+                  cellsHtml += `<td>
+                                          <input type="text" class="editable-table-input" value="${cellContent}"
+                                                 data-column-key="${col.key}"
+                                                 data-mtr-id="${data.mtrFormatted}"
+                                                 data-date-id="${data.dataEmissao}">
+                                        </td>`;
+                } else {
+                  cellsHtml += `<td>${cellContent}</td>`;
+                }
+              });
+
+              return `<tr data-mtr-id="${data.mtrFormatted}" data-date-id="${data.dataEmissao}">${cellsHtml}</tr>`;
+            })
             .join("");
 
           if (textOutput) {
             textOutput.innerHTML = `
-                    <button id="copyButton"><i class="fas fa-copy"></i> Copiar</button>
-                    <div class="table-container">
-                      <table>
-                        <thead>
-                          <tr>
-                            <th>Nº</th> <!-- Nova coluna para o índice visual -->
-                            <th data-column="dataEmissao">DATA <span class="sort-arrow"></span></th>
-                            <th data-column="mtrFormatted">MTR <span class="sort-arrow"></span></th>
-                            <th data-column="razaoSocial1">TRANSPORTADOR <span class="sort-arrow"></span></th>
-                            <th data-column="razaoSocial2">DESTINADOR <span class="sort-arrow"></span></th>
-                            <th data-column="tipo">TIPO <span class="sort-arrow"></span></th>
-                            <th data-column="mtrRef">TICKET <span class="sort-arrow"></span></th>
-                            <th data-column="litros">LITROS <span class="sort-arrow"></span></th>
-                            <th data-column="toneladas">TONELADAS <span class="sort-arrow"></span></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          ${tableRows}
-                        </tbody>
-                      </table>
-                    </div>
-                `;
+                      <div class="table-container">
+                        <table>
+                          <thead>
+                            <tr>
+                              ${tableHeadersHtml}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            ${tableRows}
+                          </tbody>
+                        </table>
+                      </div>
+                  `;
           }
 
-          // Add sorting event listeners to headers (excluding the new Nº column)
-          const headers = textOutput.querySelectorAll("th");
+          // Add sorting event listeners to headers
+          const headers = textOutput.querySelectorAll("th[data-column]");
           headers.forEach((header) => {
-            // Only add listener to sortable columns (those with data-column attribute)
-            if (header.dataset.column) {
-              header.addEventListener("click", () => {
-                const column = header.dataset.column;
-                sortTable(column);
-              });
-            }
+            header.addEventListener("click", () => {
+              const column = header.dataset.column;
+              sortTable(column);
+            });
           });
 
           // Update sort arrows
           updateSortArrows();
 
-          const copyButton = document.getElementById("copyButton");
-          if (copyButton) {
-            copyButton.addEventListener("click", () => {
-              const tableRowsToCopy = document.querySelectorAll(
-                "#textOutput table tbody tr"
-              );
-              if (tableRowsToCopy.length > 0) {
-                const copyText = Array.from(tableRowsToCopy)
-                  .map((row) => {
-                    // Mapeia as células da linha, começando da segunda célula (índice 1) para excluir o Nº
-                    return Array.from(row.cells)
-                      .slice(1) // Exclui a primeira célula (Nº)
-                      .map((cell) => cell.textContent)
-                      .join("\t");
-                  })
-                  .join("\n");
+          // Add listeners for individual cell edits if in edit mode
+          if (isEditModeActive) {
+            textOutput
+              .querySelectorAll(".editable-table-input")
+              .forEach((input) => {
+                input.addEventListener("blur", saveIndividualCellChange);
+                input.addEventListener("keydown", (e) => {
+                  if (e.key === "Enter") {
+                    input.blur();
+                  }
+                  if (e.key === "Escape") {
+                    const mtrId = input.dataset.mtrId;
+                    const dateId = input.dataset.dateId;
+                    const columnKey = input.dataset.columnKey;
+                    const item = currentTableData.find(
+                      (d) =>
+                        d.mtrFormatted === mtrId && d.dataEmissao === dateId
+                    );
+                    if (item) {
+                      input.value = item[columnKey] || "";
+                    }
+                    input.blur();
+                  }
+                });
+              });
+          }
 
-                if (copyToClipboard(copyText)) {
-                  showAlertModal(
-                    "Dados copiados para a área de transferência!",
-                    "success"
-                  );
+          // Event listener for checkbox interactions
+          const tableContainer = document.querySelector(
+            "#textOutput .table-container"
+          );
+          if (tableContainer) {
+            // Remove existing listeners to prevent duplicates after re-rendering
+            const oldSelectAllCheckbox =
+              document.getElementById("selectAllCheckbox");
+            if (oldSelectAllCheckbox) {
+              const newSelectAllCheckbox = oldSelectAllCheckbox.cloneNode(true);
+              oldSelectAllCheckbox.parentNode.replaceChild(
+                newSelectAllCheckbox,
+                oldSelectAllCheckbox
+              );
+              newSelectAllCheckbox.addEventListener("change", (e) => {
+                const selectAllCheckbox = e.target;
+                const allCheckboxes = document.querySelectorAll(
+                  "#textOutput .row-checkbox"
+                );
+                selectedMTRs.clear();
+                allCheckboxes.forEach((cb) => {
+                  cb.checked = selectAllCheckbox.checked;
+                  if (selectAllCheckbox.checked) {
+                    selectedMTRs.add(
+                      `${cb.dataset.mtrId}_${cb.dataset.dateId}`
+                    );
+                  }
+                });
+                updateActionButtonsVisibility();
+              });
+            }
+
+            // Event delegation for row checkboxes
+            tableContainer.addEventListener("change", (e) => {
+              if (e.target.matches(".row-checkbox")) {
+                const checkbox = e.target;
+                const mtrId = checkbox.dataset.mtrId;
+                const dateId = checkbox.dataset.dateId;
+                const uniqueId = `${mtrId}_${dateId}`;
+
+                if (checkbox.checked) {
+                  selectedMTRs.add(uniqueId);
                 } else {
-                  showAlertModal("Erro ao copiar os dados.", "error");
+                  selectedMTRs.delete(uniqueId);
                 }
-              } else {
-                showAlertModal("Nenhum dado para copiar.", "no_data");
+                updateActionButtonsVisibility();
+                // Update "Select All" checkbox status
+                const allCheckboxes = document.querySelectorAll(
+                  "#textOutput .row-checkbox"
+                );
+                const selectAllCheckbox =
+                  document.getElementById("selectAllCheckbox");
+                if (selectAllCheckbox) {
+                  selectAllCheckbox.checked =
+                    selectedMTRs.size === allCheckboxes.length &&
+                    allCheckboxes.length > 0;
+                }
               }
             });
           }
+
+          updateActionButtonsVisibility(); // Update button visibility after rendering
         }
 
         /**
@@ -853,6 +1304,7 @@
          * @param {string} column The data key to sort by.
          */
         function sortTable(column) {
+          console.log("sortTable called with column:", column);
           // Determine sort direction
           if (currentSortColumn === column) {
             currentSortDirection =
@@ -935,6 +1387,7 @@
 
         // Function to handle files from input or drag-and-drop
         async function handleFiles(source) {
+          console.log("handleFiles called.");
           const textOutput = document.getElementById("textOutput");
           const errorDiv = document.getElementById("error");
           const messageBox = document.getElementById("messageBox");
@@ -1060,7 +1513,7 @@
                     );
                   }
                 } else if (item.kind === "file" && item.getAsFile) {
-                  // Fallback for browsers that don't support webkitGetAsEntry well for files,
+                  // Fallback for browsers that's don't support webkitGetAsEntry well for files,
                   // or for simple file drops where getAsFile() might be the primary method.
                   try {
                     const file = item.getAsFile();
@@ -1270,7 +1723,7 @@
             `[Verificação Duplicatas] Histórico final salvo. Total de MTRs no histórico: ${storedData.length}`
           );
 
-          // Set currentTableData for sorting
+          // Set currentTableData for sorting and display
           currentTableData = tempDataForTableDisplay;
 
           // Render table ONLY if there is data to display in this execution
@@ -1459,19 +1912,112 @@
           updateHistoryButtonVisibility();
         }
 
-        // Função para atualizar a visibilidade do botão de histórico
-        function updateHistoryButtonVisibility() {
-          const historyButton = document.getElementById("historyButton");
-          const storedData = JSON.parse(
-            localStorage.getItem("residuosData") || "[]"
+        // Função para atualizar a visibilidade dos botões de ação na página inicial
+        function updateActionButtonsVisibility() {
+          const editSelectedBtn = document.getElementById("editSelectedBtn"); // Editar Grupo
+          const deleteSelectedBtn =
+            document.getElementById("deleteSelectedBtn"); // Excluir Selecionados
+          const selectedCountSpan = document.getElementById("selectedCount");
+          const deleteSelectedCountSpan = document.getElementById(
+            "deleteSelectedCount"
           );
+          const toggleEditModeBtn =
+            document.getElementById("toggleEditModeBtn"); // Editar Tabela / Encerrar Edição
+          const batchEditBtn = document.getElementById("batchEditBtn"); // Edição em Lote
+          const historyButton = document.getElementById("historyButton"); // Histórico
+          const copyTableDataBtn = document.getElementById("copyTableDataBtn"); // Novo: Botão Copiar Dados
+
+          // Atualiza as contagens exibidas nos botões
+          if (selectedCountSpan)
+            selectedCountSpan.textContent = selectedMTRs.size;
+          if (deleteSelectedCountSpan)
+            deleteSelectedCountSpan.textContent = selectedMTRs.size;
+          if (batchEditBtn) {
+            const batchEditCountSpan =
+              batchEditBtn.querySelector("#batchEditCount");
+            if (batchEditCountSpan)
+              batchEditCountSpan.textContent = selectedMTRs.size;
+          }
+
+          const hasDataInCurrentTable = currentTableData.length > 0;
+          const hasSelectedItems = selectedMTRs.size > 0;
+          const hasStoredDataInLocalStorage =
+            JSON.parse(localStorage.getItem("residuosData") || "[]").length > 0;
+
+          // --- Lógica para o Botão de Alternar Modo de Edição ("Editar Tabela" / "Encerrar Edição") ---
+          if (toggleEditModeBtn) {
+            // Botão visível se há dados na tabela e não há itens selecionados, OU se já está no modo de edição.
+            if (hasDataInCurrentTable && !hasSelectedItems) {
+              toggleEditModeBtn.style.display = "inline-block";
+            } else {
+              toggleEditModeBtn.style.display = "none";
+            }
+            // Se já estiver no modo de edição, o botão deve permanecer visível para a opção "Encerrar Edição"
+            if (isEditModeActive) {
+              toggleEditModeBtn.style.display = "inline-block";
+            }
+          }
+
+          // --- Lógica para os Botões "Editar Grupo" e "Excluir Selecionados" ---
+          if (editSelectedBtn && deleteSelectedBtn) {
+            // Estes botões ficam ativos (visíveis) quando há itens selecionados E NÃO está no modo de edição direta.
+            if (hasSelectedItems && !isEditModeActive) {
+              editSelectedBtn.classList.add("active");
+              deleteSelectedBtn.classList.add("active");
+            } else {
+              editSelectedBtn.classList.remove("active");
+              deleteSelectedBtn.classList.remove("active");
+            }
+          }
+
+          // --- Lógica para o Botão "Edição em Lote" ---
+          if (batchEditBtn) {
+            // Este botão fica ativo (visível) apenas quando a página está no modo de edição direta da tabela E há itens selecionados.
+            if (isEditModeActive && hasSelectedItems) {
+              batchEditBtn.classList.add("active");
+            } else {
+              batchEditBtn.classList.remove("active");
+            }
+          }
+
+          // --- Lógica para o Botão "Histórico" ---
           if (historyButton) {
-            if (storedData.length > 0) {
+            // O botão "Histórico" é mostrado se há dados no armazenamento local
+            // E a página NÃO está no modo de edição direta da tabela
+            // E não há itens atualmente selecionados (para evitar conflito com ações em massa).
+            if (
+              hasStoredDataInLocalStorage &&
+              !isEditModeActive &&
+              !hasSelectedItems
+            ) {
               historyButton.style.display = "inline-block";
             } else {
               historyButton.style.display = "none";
             }
           }
+
+          // --- Lógica para o Botão "Copiar Dados" (Novo) ---
+          if (copyTableDataBtn) {
+            // O botão "Copiar Dados" é mostrado se há dados na tabela atual
+            // E a página NÃO está no modo de edição direta da tabela
+            // E não há itens atualmente selecionados.
+            if (
+              hasDataInCurrentTable &&
+              !isEditModeActive &&
+              !hasSelectedItems
+            ) {
+              copyTableDataBtn.style.display = "inline-block";
+            } else {
+              copyTableDataBtn.style.display = "none";
+            }
+          }
+        }
+
+        // Função para atualizar a visibilidade do botão de histórico
+        // (Esta função é uma wrapper para updateActionButtonsVisibility com um nome mais específico para o histórico)
+        function updateHistoryButtonVisibility() {
+          // A lógica principal agora reside em updateActionButtonsVisibility
+          updateActionButtonsVisibility();
         }
 
         // Adiciona listener para a imagem do rodapé
@@ -1537,8 +2083,301 @@
           });
         }
 
+        // --- Adiciona listeners para os novos botões de ação ---
+        const toggleEditModeBtn = document.getElementById("toggleEditModeBtn");
+        if (toggleEditModeBtn) {
+          toggleEditModeBtn.addEventListener("click", toggleEditMode);
+        }
+
+        const copyTableDataBtn = document.getElementById("copyTableDataBtn");
+        if (copyTableDataBtn) {
+          copyTableDataBtn.addEventListener("click", copyTableDataToClipboard);
+        }
         // Chamada inicial para garantir que o botão esteja no estado correto ao carregar a página
         updateHistoryButtonVisibility();
+
+        // --- Gerenciamento de Ações em Massa de Grupo ---
+        const editSelectedBtn = document.getElementById("editSelectedBtn"); // Botão "Editar Grupo"
+        const deleteSelectedBtn = document.getElementById("deleteSelectedBtn");
+        const bulkEditModal = document.getElementById("bulkEditModal"); // Modal de edição de grupo
+        const bulkEditGroupInput =
+          document.getElementById("bulkEditGroupInput");
+        const bulkEditModalSaveBtn = document.getElementById(
+          "bulkEditModalSaveBtn"
+        );
+        const bulkEditModalCancelBtn = document.getElementById(
+          "bulkEditModalCancelBtn"
+        );
+        const bulkEditSelectedCountSpan = document.getElementById(
+          "bulkEditSelectedCount"
+        );
+
+        if (editSelectedBtn) {
+          editSelectedBtn.addEventListener("click", () => {
+            if (selectedMTRs.size === 0) {
+              showAlertModal(
+                "Nenhum MTR selecionado para editar o grupo.",
+                "no_data"
+              );
+              return;
+            }
+            bulkEditSelectedCountSpan.textContent = selectedMTRs.size;
+            bulkEditGroupInput.value = ""; // Clear input
+            bulkEditModal.style.display = "flex"; // Show modal
+            bulkEditGroupInput.focus();
+          });
+        }
+
+        if (bulkEditModalSaveBtn) {
+          bulkEditModalSaveBtn.addEventListener("click", () => {
+            const newGroup = bulkEditGroupInput.value.trim();
+            let changesMade = 0;
+            let storedData = JSON.parse(
+              localStorage.getItem("residuosData") || "[]"
+            );
+
+            selectedMTRs.forEach((uniqueId) => {
+              const [mtrId, dateId] = uniqueId.split("_");
+              // Find and update in currentTableData
+              const currentItem = currentTableData.find(
+                (item) =>
+                  item.mtrFormatted === mtrId && item.dataEmissao === dateId
+              );
+              if (currentItem && currentItem.grupo !== newGroup) {
+                currentItem.grupo = newGroup;
+                changesMade++;
+              }
+
+              // Find and update in localStorage data
+              const storedItem = storedData.find(
+                (item) =>
+                  item.mtrFormatted === mtrId && item.dataEmissao === dateId
+              );
+              if (storedItem && storedItem.grupo !== newGroup) {
+                storedItem.grupo = newGroup;
+              }
+            });
+
+            localStorage.setItem("residuosData", JSON.stringify(storedData));
+            bulkEditModal.style.display = "none";
+            selectedMTRs.clear(); // Clear selection
+            renderTable(currentTableData); // Re-render to reflect changes
+            showAlertModal(
+              `${changesMade} MTR(s) tiveram o grupo atualizado.`,
+              "success"
+            );
+            updateActionButtonsVisibility();
+            const selectAllCheckbox =
+              document.getElementById("selectAllCheckbox");
+            if (selectAllCheckbox) selectAllCheckbox.checked = false; // Deselect "select all"
+          });
+        }
+
+        if (bulkEditModalCancelBtn) {
+          bulkEditModalCancelBtn.addEventListener("click", () => {
+            bulkEditModal.style.display = "none";
+          });
+        }
+
+        // --- Excluir Selecionados ---
+        if (deleteSelectedBtn) {
+          deleteSelectedBtn.addEventListener("click", () => {
+            if (selectedMTRs.size === 0) {
+              showAlertModal("Nenhum MTR selecionado para excluir.", "no_data");
+              return;
+            }
+            showFolderConfirmModal(
+              `Tem certeza que deseja excluir ${selectedMTRs.size} MTR(s) selecionado(s)? Esta ação não pode ser desfeita.`
+            ).then((confirmed) => {
+              if (confirmed) {
+                const originalCurrentTableDataLength = currentTableData.length;
+                currentTableData = currentTableData.filter((item) => {
+                  const uniqueId = `${item.mtrFormatted}_${item.dataEmissao}`;
+                  return !selectedMTRs.has(uniqueId);
+                });
+
+                let storedData = JSON.parse(
+                  localStorage.getItem("residuosData") || "[]"
+                );
+                storedData = storedData.filter((item) => {
+                  const uniqueId = `${item.mtrFormatted}_${item.dataEmissao}`;
+                  return !selectedMTRs.has(uniqueId);
+                });
+                localStorage.setItem(
+                  "residuosData",
+                  JSON.stringify(storedData)
+                );
+
+                const deletedCount =
+                  originalCurrentTableDataLength - currentTableData.length;
+                selectedMTRs.clear();
+                renderTable(currentTableData); // Re-render with remaining items
+                showAlertModal(
+                  `${deletedCount} MTR(s) excluído(s) com sucesso.`,
+                  "success"
+                );
+                updateHistoryButtonVisibility(); // Update general buttons
+                updateActionButtonsVisibility();
+                const selectAllCheckbox =
+                  document.getElementById("selectAllCheckbox");
+                if (selectAllCheckbox) selectAllCheckbox.checked = false;
+              }
+            });
+          });
+        }
+
+        // --- Gerenciamento de Edição em Lote (genérico) ---
+        const batchEditBtn = document.getElementById("batchEditBtn");
+        const batchEditBatchModal = document.getElementById(
+          "batchEditBatchModal"
+        );
+        const batchEditFieldSelect = document.getElementById(
+          "batchEditFieldSelect"
+        );
+        const batchEditValueInput = document.getElementById(
+          "batchEditValueInput"
+        );
+        const batchEditModalSaveBtn = document.getElementById(
+          "batchEditModalSaveBtn"
+        );
+        const batchEditModalCancelBtn = document.getElementById(
+          "batchEditModalCancelBtn"
+        );
+        const batchEditCountModalSpan = document.getElementById(
+          "batchEditCountModal"
+        );
+
+        if (batchEditBtn) {
+          batchEditBtn.addEventListener("click", () => {
+            if (selectedMTRs.size === 0) {
+              showAlertModal(
+                "Nenhum MTR selecionado para edição em lote.",
+                "no_data"
+              );
+              return;
+            }
+            batchEditCountModalSpan.textContent = selectedMTRs.size;
+            batchEditFieldSelect.value = ""; // Reseta seleção do campo
+            batchEditValueInput.value = ""; // Limpa o input de valor
+            batchEditValueInput.style.display = "none"; // Esconde o input de valor inicialmente
+            batchEditBatchModal.style.display = "flex"; // Mostra o modal
+          });
+        }
+
+        if (batchEditFieldSelect) {
+          batchEditFieldSelect.addEventListener("change", () => {
+            if (batchEditFieldSelect.value) {
+              batchEditValueInput.style.display = "block";
+              batchEditValueInput.focus();
+            } else {
+              batchEditValueInput.style.display = "none";
+              batchEditValueInput.value = "";
+            }
+          });
+        }
+
+        if (batchEditModalSaveBtn) {
+          batchEditModalSaveBtn.addEventListener("click", () => {
+            const fieldToUpdate = batchEditFieldSelect.value;
+            const newValue = batchEditValueInput.value.trim();
+
+            if (!fieldToUpdate) {
+              showAlertModal(
+                "Por favor, selecione um campo para editar.",
+                "error"
+              );
+              return;
+            }
+
+            // Esconde o modal de edição em lote antes de mostrar o de confirmação
+            batchEditBatchModal.style.display = "none";
+
+            showFolderConfirmModal(
+              `Tem certeza que deseja alterar o campo '${fieldToUpdate}' para '${newValue}' em ${selectedMTRs.size} MTR(s) selecionado(s)? Esta ação não pode ser desfeita.`
+            ).then((confirmed) => {
+              if (confirmed) {
+                let changesMade = 0;
+                let storedData = JSON.parse(
+                  localStorage.getItem("residuosData") || "[]"
+                );
+
+                selectedMTRs.forEach((uniqueId) => {
+                  const [mtrId, dateId] = uniqueId.split("_");
+
+                  // Update in currentTableData
+                  const currentItem = currentTableData.find(
+                    (item) =>
+                      item.mtrFormatted === mtrId && item.dataEmissao === dateId
+                  );
+                  if (currentItem && currentItem[fieldToUpdate] !== newValue) {
+                    // Specific validation for numeric fields during batch edit
+                    if (
+                      fieldToUpdate === "litros" ||
+                      fieldToUpdate === "toneladas"
+                    ) {
+                      const parsedValue = parseFloat(
+                        newValue.replace(",", ".")
+                      );
+                      if (isNaN(parsedValue)) {
+                        console.error(
+                          `Valor inválido para ${fieldToUpdate} para MTR ${mtrId}. Pulando atualização.`
+                        );
+                        return; // Skip this item if invalid
+                      }
+                    }
+                    currentItem[fieldToUpdate] = newValue;
+                    changesMade++;
+                  }
+
+                  // Update in localStorage data
+                  const storedItem = storedData.find(
+                    (item) =>
+                      item.mtrFormatted === mtrId && item.dataEmissao === dateId
+                  );
+                  if (storedItem && storedItem[fieldToUpdate] !== newValue) {
+                    // Specific validation for numeric fields in localStorage data
+                    if (
+                      fieldToUpdate === "litros" ||
+                      fieldToUpdate === "toneladas"
+                    ) {
+                      const parsedValue = parseFloat(
+                        newValue.replace(",", ".")
+                      );
+                      if (isNaN(parsedValue)) {
+                        return; // Skip update in localStorage if invalid
+                      }
+                    }
+                    storedItem[fieldToUpdate] = newValue;
+                  }
+                });
+
+                localStorage.setItem(
+                  "residuosData",
+                  JSON.stringify(storedData)
+                );
+                selectedMTRs.clear(); // Limpa seleção após a ação
+                renderTable(currentTableData); // Re-render to reflect changes
+                showAlertModal(
+                  `${changesMade} MTR(s) tiveram o campo '${fieldToUpdate}' atualizado.`,
+                  "success"
+                );
+                updateActionButtonsVisibility();
+                const selectAllCheckbox =
+                  document.getElementById("selectAllCheckbox");
+                if (selectAllCheckbox) selectAllCheckbox.checked = false; // Desseleciona "selecionar todos"
+              } else {
+                // Se o usuário cancelar a confirmação, mostra o modal de edição em lote novamente
+                batchEditBatchModal.style.display = "flex";
+              }
+            });
+          });
+        }
+
+        if (batchEditModalCancelBtn) {
+          batchEditModalCancelBtn.addEventListener("click", () => {
+            batchEditBatchModal.style.display = "none";
+          });
+        }
       }); // Fechamento do DOMContentLoaded
     </script>
   </body>
