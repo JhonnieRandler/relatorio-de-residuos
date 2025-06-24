@@ -314,18 +314,18 @@
       /* Garante que o header-controls dentro do main use justify-content: center */
       main .header-controls {
         display: flex;
-        justify-content: center; /* Alinha o conteúdo ao centro */
-        align-items: center; /* Centraliza verticalmente os itens */
+        justify-content: center;
+        align-items: center;
         width: 100%;
         margin-bottom: 20px;
-        padding: 10px 0; /* Ajuste o padding conforme necessário */
+        padding: 10px 0;
         box-sizing: border-box;
       }
 
       /* Espaçamento entre o título e o botão de tema */
       main .header-controls h1 {
-        margin-right: 15px; /* Adiciona espaço à direita do título */
-        white-space: nowrap; /* Impede quebra de linha do título */
+        margin-right: 15px;
+        white-space: nowrap;
       }
 
       /* Media queries específicas da página inicial */
@@ -1121,7 +1121,6 @@
          * @param {Array<Object>} dataToRender The array of MTR objects to display.
          */
         function renderTable(dataToRender) {
-          // console.log("renderTable called with dataToRender.length:", dataToRender.length); // Removed log
           const textOutput = document.getElementById("textOutput");
           currentTableData = dataToRender; // Update the global variable
           selectedMTRs.clear(); // Clear selections on re-render
@@ -2128,6 +2127,19 @@
           });
         }
 
+        // Adiciona listeners para Enter e Esc no input do modal de edição de grupo
+        if (bulkEditGroupInput) {
+          bulkEditGroupInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              bulkEditModalSaveBtn.click();
+            } else if (e.key === "Escape") {
+              e.preventDefault();
+              bulkEditModalCancelBtn.click();
+            }
+          });
+        }
+
         if (bulkEditModalSaveBtn) {
           bulkEditModalSaveBtn.addEventListener("click", () => {
             const newGroup = bulkEditGroupInput.value.trim();
@@ -2272,6 +2284,19 @@
             } else {
               batchEditValueInput.style.display = "none";
               batchEditValueInput.value = "";
+            }
+          });
+        }
+
+        // Adiciona listeners para Enter e Esc no input do modal de edição em lote
+        if (batchEditValueInput) {
+          batchEditValueInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              batchEditModalSaveBtn.click();
+            } else if (e.key === "Escape") {
+              e.preventDefault();
+              batchEditModalCancelBtn.click();
             }
           });
         }
