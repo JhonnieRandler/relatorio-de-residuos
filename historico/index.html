@@ -98,7 +98,7 @@
       }
       .filter-input {
         margin: 0;
-        padding: 8px;
+        padding: 10px;
         width: 100%;
         background-color: var(--button-bg-color);
         color: var(--button-text-color);
@@ -1079,7 +1079,7 @@
 
           // Tratamento especial para data (DD/MM/YYYY)
           if (column === "dataEmissao") {
-            // Converte DD/MM/YYYY para ISO నేపథ్యంలో-MM-DD para comparação correta
+            // Converte DD/MM/YYYY para ISO YYYY-MM-DD para comparação correta
             const dateA = valA.split("/").reverse().join("-");
             const dateB = valB.split("/").reverse().join("-");
             if (dateA < dateB) return currentSortDirection === "asc" ? -1 : 1;
@@ -2433,6 +2433,30 @@
         if (batchEditModalCancelBtn) {
           batchEditModalCancelBtn.addEventListener("click", () => {
             batchEditBatchModal.style.display = "none";
+          });
+        }
+
+        // **** NOVO: Adiciona a funcionalidade de download do gráfico ****
+        const downloadChartBtn = document.getElementById("downloadChart");
+        if (downloadChartBtn) {
+          downloadChartBtn.addEventListener("click", () => {
+            const canvas = document.getElementById("residuosChart");
+            if (canvas && window.myChart) {
+              const link = document.createElement("a");
+              // O gráfico já é desenhado com fundo branco na função updateChart,
+              // então a imagem gerada terá um fundo branco, independentemente do tema.
+              link.href = canvas.toDataURL("image/png");
+              link.download = "grafico_residuos.png";
+              document.body.appendChild(link); // Necessário para o Firefox
+              link.click();
+              document.body.removeChild(link);
+              showAlertModal("O download do gráfico foi iniciado.", "success");
+            } else {
+              showAlertModal(
+                "Não foi possível baixar o gráfico, pois ele não foi encontrado.",
+                "error"
+              );
+            }
           });
         }
 
